@@ -1,0 +1,1041 @@
+<title>Compass Job Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: brand band header with role switch; left nav + work area; engineer view is a phone-width column. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#EEF2F6; --line:#D9E0E8;
+  --fg:#18212E; --muted:#5A687B; --brand:#2B3A52; --band:#2B3A52; --band-fg:#FFFFFF;
+  --accent:#1E6E76; --accent-soft:#DCEFF0; --accent-fg:#FFFFFF;
+  --ok:#23784A; --ok-soft:#DDF1E5; --warn:#9A6212; --warn-soft:#FBEFD9; --crit:#B23A2E; --crit-soft:#F9E1DE;
+  --info:#3A5A8C; --info-soft:#E1E9F5;
+  --f-display:"Montserrat",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#161D27; --surface-2:#1C2531; --line:#2A3544;
+  --fg:#E5EAF1; --muted:#97A4B6; --brand:#AFC1DC; --band:#1A2433; --band-fg:#E5EAF1;
+  --accent:#4DB3BC; --accent-soft:#163238; --accent-fg:#0B1217;
+  --ok:#5CC48A; --ok-soft:#14301F; --warn:#E3A84B; --warn-soft:#33270F; --crit:#F0806F; --crit-soft:#3A1A16;
+  --info:#8FB0E3; --info-soft:#1B2840; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#161D27; --surface-2:#1C2531; --line:#2A3544;
+  --fg:#E5EAF1; --muted:#97A4B6; --brand:#AFC1DC; --band:#1A2433; --band-fg:#E5EAF1;
+  --accent:#4DB3BC; --accent-soft:#163238; --accent-fg:#0B1217;
+  --ok:#5CC48A; --ok-soft:#14301F; --warn:#E3A84B; --warn-soft:#33270F; --crit:#F0806F; --crit-soft:#3A1A16;
+  --info:#8FB0E3; --info-soft:#1B2840; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--band)}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;color:var(--fg)}
+h1{font-size:22px;font-weight:700}
+h2{font-size:17px;font-weight:600}
+h3{font-size:14px;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.num{text-align:right;white-space:nowrap}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--band);color:var(--band-fg);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand b{font-family:var(--f-display);font-weight:600;letter-spacing:.06em;font-size:15px;color:var(--band-fg)}
+.brand span{font-size:12px;opacity:.75}
+.roles{margin-left:auto;display:flex;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.roles button{border:0;background:transparent;color:var(--band-fg);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:13px;opacity:.85}
+.roles button[aria-pressed="true"]{background:var(--band-fg);color:var(--band);opacity:1;font-weight:600}
+.demo-tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:2px 6px;opacity:.85}
+
+/* Shell */
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 56px)}
+.nav{border-right:1px solid var(--line);background:var(--surface);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.nav .who{padding:4px 10px 12px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.nav button{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--fg)}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav .count{font-family:var(--f-mono);font-size:11px;background:var(--surface-2);color:var(--muted);border-radius:999px;padding:1px 7px}
+.nav .count.hot{background:var(--crit-soft);color:var(--crit)}
+.nav .foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--line)}
+main{padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.page-head .sub{color:var(--muted);margin-top:4px;max-width:70ch}
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+  .nav .who,.nav .foot{display:none}
+  .nav button{white-space:nowrap}
+}
+
+/* Panels & grids */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-b{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.split{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+@media (max-width:980px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3,.split{grid-template-columns:1fr}}
+@media (max-width:560px){.g2,.g4{grid-template-columns:1fr}}
+.stat{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .v{font-family:var(--f-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat.crit .v{color:var(--crit)} .stat.warn .v{color:var(--warn)}
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
+.val td{padding:7px 0;border-bottom:1px dashed var(--line)}
+.val td.calc{color:var(--muted);font-size:12.5px;padding-left:12px}
+.val tr.total td{border-top:2px solid var(--fg);border-bottom:0;font-weight:600;padding-top:10px}
+.val tr.zero td{color:var(--muted)}
+
+/* Chips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;border-radius:999px;padding:2px 9px;white-space:nowrap;background:var(--surface-2);color:var(--muted)}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.crit{background:var(--crit-soft);color:var(--crit)} .chip.info{background:var(--info-soft);color:var(--info)}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+.pri{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 6px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pri.Emergency{border-color:var(--crit);color:var(--crit)} .pri.Urgent{border-color:var(--warn);color:var(--warn)}
+.tag{font-size:11px;border:1px dashed var(--warn);color:var(--warn);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+/* Buttons & forms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12.5px;font-weight:500;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:8px 10px}
+textarea{min-height:84px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:var(--surface)}
+.check input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.on{border-color:var(--accent);background:var(--accent-soft)}
+
+/* Callouts & alerts */
+.note{border-left:3px solid var(--info);background:var(--info-soft);padding:10px 12px;border-radius:0 6px 6px 0}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)} .note.crit{border-color:var(--crit);background:var(--crit-soft)} .note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.alert{display:grid;grid-template-columns:4px minmax(0,1fr);border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.alert .bar{background:var(--warn)} .alert.crit .bar{background:var(--crit)} .alert.closed .bar{background:var(--ok)}
+.alert .in{padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+
+/* Photos */
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.photo{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.photo img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover}
+.photo figcaption{font-size:11.5px;padding:5px 8px;color:var(--muted)}
+
+/* Timeline */
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.tl li:last-child{border-bottom:0}
+.tl time{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+
+/* Flow steps */
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps span{font-size:11.5px;padding:3px 8px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.steps span.done{background:var(--ok-soft);color:var(--ok)} .steps span.now{background:var(--accent);color:var(--accent-fg)}
+
+/* Engineer phone */
+.phone{max-width:420px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;min-height:640px;display:flex;flex-direction:column}
+.phone-h{background:var(--band);color:var(--band-fg);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.phone-h h2{color:var(--band-fg);font-size:16px}
+.phone-b{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.jobcard{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface);text-align:left;width:100%}
+.jobcard:hover{border-color:var(--accent)}
+.sig{width:100%;height:140px;border:1px dashed var(--muted);border-radius:6px;background:var(--surface-2);touch-action:none;display:block}
+.signed{font-family:"Brush Script MT","Segoe Script",cursive;font-size:24px;color:var(--brand)}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:calc(100% - 32px);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.hide-sm{} @media (max-width:640px){.hide-sm{display:none}}
+@media (prefers-reduced-motion:no-preference){.btn,.nav button,.jobcard{transition:background .15s,border-color .15s}}
+</style>
+
+<header class="top">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".55"/><path d="M16 3 L19 16 L16 29 L13 16 Z" fill="currentColor"/><path d="M3 16 L16 13.5 L29 16 L16 18.5 Z" fill="currentColor" opacity=".5"/></svg>
+    <div><b>COMPASS MEP</b><br><span>Job &amp; supply chain portal</span></div>
+  </div>
+  <span class="demo-tag">Demo · sample data</span>
+  <nav class="roles" aria-label="View as">
+    <button data-role="compass">Compass helpdesk</button>
+    <button data-role="wates">Wates portal</button>
+    <button data-role="engineer">Engineer app</button>
+  </nav>
+</header>
+<div id="app"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* ============================== Helpers ============================== */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gbp = n => n == null || isNaN(n) ? '—' : (n < 0 ? '−' : '') + '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2 = n => Math.round(n * 100) / 100;
+const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtD = iso => iso ? new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const fmtT = iso => iso ? new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+const hrs = h => { const H = Math.floor(h), M = Math.round((h - H) * 60); return `${H}h ${String(M).padStart(2,'0')}m`; };
+const DEMO_TODAY = new Date('2026-11-18T12:00:00');
+const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const nowISO = () => new Date().toISOString();
+
+/* ============================== Rate card (from the Wates Schedule of Rates, 11 Nov 2026) ============================== */
+const RATES = {
+  building:   { label:'Building services engineer', short:'Building services', normal:65,  ooh:97.5, sun:130 },
+  specialist: { label:'Specialist systems engineer', short:'Specialist systems', normal:80,  ooh:120,  sun:160 },
+  lift:       { label:'Lift engineer', short:'Lift', normal:185, ooh:null, sun:null },
+  service:    { label:'Specialist service (managed supply chain)', short:'Specialist service' }
+};
+const BANDS = { normal:'Normal hours', ooh:'Out of hours', sun:'Sunday / bank holiday' };
+const CALLOUT = { Emergency:95, standard:55 };
+const ZONE_B = 75;
+const SERVICE_CATS = ['Structural engineering','Waterproofing','Asbestos','Swimming pools','Water hygiene','Drainage','Passive fire protection','Manufacturer attendance','Power and plant','Building fabric and access','Site services','Any other specialist'];
+const PRIORITIES = ['Emergency','Urgent','Routine','Planned'];
+const CIS = { gross:'Gross (0%)', net20:'Net 20%', net30:'Net 30% (unverified)', na:'Not in CIS' };
+const CIS_RATE = { gross:0, net20:.20, net30:.30, na:0 };
+
+/* ============================== Seed data ============================== */
+function samplePhotoRef(label, ts, gps, kind, hue){ return { sample:true, label, ts, gps, kind, hue }; }
+function seed(){
+  const S = {};
+  S.settings = {
+    returnVisitCallout:false, multiTrade:'per_trade', approvalPolicy:'except_emergency', approvalThreshold:500,
+    inspectionFee:120, inspectionCreditDays:180, inspectionReviewMonths:6,
+    materialsMarkup:15, specialistFee:12.5, specialistMin:50
+  };
+  S.contracts = [
+    { id:'C1', name:'Castle Point', client:'Wates', note:'End client: Castle Point Borough Council (corporate, non-dwelling estate)' },
+    { id:'C2', name:'South East Corporate Estate', client:'Wates', note:'Offices across the wider South East' }
+  ];
+  S.sites = [
+    { id:'S1', contract:'C1', name:'Waterside Farm Leisure Centre', area:'Canvey Island, Essex', postcode:'SS8', zone:'A', type:'Leisure centre & pool', contact:'Jo Harding (Duty Manager)', phone:'01268 000 101', gps:'51.5303, 0.5713', access:'Report to reception. Plant room keys held by duty manager.', asbestos:'Register held at reception. ACMs noted in pool hall ceiling void (encapsulated).', notes:'' },
+    { id:'S2', contract:'C1', name:'Council Offices, Kiln Road', area:'Thundersley, Essex', postcode:'SS7', zone:'A', type:'Offices', contact:'Facilities desk', phone:'01268 000 102', gps:'51.5590, 0.5880', access:'Sign in at main reception; visitor pass required.', asbestos:'Register on site. No ACMs recorded in plant areas.', notes:'Parking in rear staff car park, bays 40–44.' },
+    { id:'S3', contract:'C1', name:'Runnymede Pool', area:'Thundersley, Essex', postcode:'SS7', zone:'A', type:'Swimming pool', contact:'Centre Manager', phone:'01268 000 103', gps:'51.5627, 0.5862', access:'Plant room accessed via external door, key safe code from Wates helpdesk.', asbestos:'Register held by centre manager.', notes:'' },
+    { id:'S4', contract:'C1', name:'Paddocks Community Centre', area:'Canvey Island, Essex', postcode:'SS8', zone:'A', type:'Community hall', contact:'Keyholder (caretaker)', phone:'01268 000 104', gps:'51.5214, 0.5856', access:'Building unstaffed. Caretaker meets engineer on site by appointment.', asbestos:'Register in caretaker office.', notes:'Often unattended. Confirm keyholder the day before.' },
+    { id:'S5', contract:'C2', name:'Guildford Regional Office', area:'Guildford, Surrey', postcode:'GU1', zone:'B', type:'Offices', contact:'Building manager', phone:'01483 000 105', gps:'51.2362, -0.5704', access:'Sign in at security desk.', asbestos:'Register at security desk.', notes:'Zone B: about 75 minutes from London base.' }
+  ];
+  const ok = (y) => y; // readability
+  S.contractors = [
+    { id:'K1', name:'Compass MEP (direct)', type:'dlo', trades:['building','specialist'], rates:null, cis:'na', vat:true,
+      compliance:[{item:'Public liability insurance',exp:'2027-06-30',block:true},{item:"Employer's liability insurance",exp:'2027-06-30',block:true},{item:'SSIP: CHAS',exp:'2027-03-14'},{item:'Company RAMS library',exp:'2027-01-31'}],
+      engineers:[{name:'Dan Okafor',trade:'building',cscs:'2028-02-01',asb:'2027-05-10',dbs:'2027-09-01'},{name:'Priya Shah',trade:'specialist',cscs:'2027-11-20',asb:'2027-04-02',dbs:'2027-08-15'}] },
+    { id:'K2', name:'Brightline Fire & Security Ltd', type:'sub', trades:['specialist'], rates:{normal:52,ooh:75,sun:100,callout:30}, cis:'gross', vat:true, sba:{signed:'2026-02-01',exp:'2027-02-01'}, nextSB:7,
+      compliance:[{item:'Public liability insurance (£10m)',exp:'2027-04-30',block:true},{item:"Employer's liability insurance",exp:'2027-04-30',block:true},{item:'BAFE SP203-1',exp:'2027-08-31',block:true},{item:'SSIP: SafeContractor',exp:'2027-01-15'},{item:'RAMS: fire alarm servicing',exp:'2027-03-01'},{item:'Self-billing agreement',exp:'2027-02-01'}],
+      engineers:[{name:'Sam Reid',trade:'specialist',cscs:'2027-10-11',asb:'2027-06-19',dbs:'2027-02-03'}] },
+    { id:'K3', name:'K. Mensah t/a Eastway Plumbing & Heating', type:'sub', trades:['building'], rates:{normal:42,ooh:60,sun:80,callout:25}, cis:'net20', vat:false, sba:{signed:'2026-05-12',exp:'2027-05-12'}, nextSB:4,
+      compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-30',block:true},{item:"Employer's liability insurance",exp:'2027-05-01',block:true},{item:'Gas Safe registration',exp:'2027-07-31',block:true},{item:'SSIP: Constructionline Gold',exp:'2027-02-20'},{item:'RAMS: plumbing & heating',exp:'2027-05-12'},{item:'Self-billing agreement',exp:'2027-05-12'}],
+      engineers:[{name:'Kwame Mensah',trade:'building',cscs:'2027-03-30',asb:'2026-12-08',dbs:'2027-07-21'}] },
+    { id:'K4', name:'Apex Lift Services Ltd', type:'sub', trades:['lift'], rates:{normal:140,ooh:190,sun:240,callout:40}, cis:'gross', vat:true, sba:{signed:'2026-03-01',exp:'2027-03-01'}, nextSB:3,
+      compliance:[{item:'Public liability insurance (£10m)',exp:'2027-09-30',block:true},{item:"Employer's liability insurance",exp:'2027-09-30',block:true},{item:'LEIA membership',exp:'2027-12-31',block:true},{item:'SSIP: CHAS',exp:'2027-05-01'},{item:'Self-billing agreement',exp:'2027-03-01'}],
+      engineers:[{name:'Lee Turner',trade:'lift',cscs:'2027-08-08',asb:'2027-01-12',dbs:'2027-06-06'}] },
+    { id:'K5', name:'AquaSure Water Hygiene Ltd', type:'spec', trades:['service'], cats:['Water hygiene','Swimming pools'], rates:null, cis:'na', vat:true, sba:{signed:'2026-04-10',exp:'2027-04-10'}, nextSB:2,
+      compliance:[{item:'Public liability insurance (£5m)',exp:'2027-04-10',block:true},{item:"Employer's liability insurance",exp:'2027-04-10',block:true},{item:'Legionella Control Association',exp:'2027-06-30',block:true},{item:'SSIP: SafeContractor',exp:'2027-03-03'},{item:'Self-billing agreement',exp:'2027-04-10'}],
+      engineers:[{name:'Ruth Allen',trade:'service',cscs:'2027-09-09',asb:'2027-02-02',dbs:'2027-05-05'}] },
+    { id:'K6', name:'Northgate Asbestos Surveys Ltd', type:'spec', trades:['service'], cats:['Asbestos'], rates:null, cis:'gross', vat:true, sba:{signed:'2025-11-01',exp:'2026-11-01'}, nextSB:1,
+      compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-09',block:true},{item:"Employer's liability insurance",exp:'2027-01-31',block:true},{item:'UKAS accreditation',exp:'2027-04-30',block:true},{item:'Self-billing agreement',exp:'2026-11-01'}],
+      engineers:[{name:'Mark Chen',trade:'service',cscs:'2027-01-01',asb:'2027-01-01',dbs:'2026-10-30'}] }
+  ];
+  const chk = {signin:true,asbestos:true,rams:true,permit:true,safe:true};
+  S.jobs = [
+    { id:'CMP-1041', wRef:'WTS-55120', contract:'C1', site:'S1', priority:'Emergency', trade:'building', band:'ooh', source:'Phone',
+      received:'2026-11-12T19:05', loc:'Main pool hall, north side by spectator seating', nte:500,
+      desc:'Water leaking from ceiling void onto poolside in main pool hall. Area cordoned off by duty manager.',
+      est:{hours:2, materials:60}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-12T19:40', po:'PO-771402', amount:null},
+      contractor:'K1', engineer:'Dan Okafor', status:'complete',
+      visit:{ arrive:'2026-11-12T22:10', depart:'2026-11-13T00:25', hours:2.25, gps:'51.5304, 0.5711', checklist:chk,
+        before:[samplePhotoRef('Leak above poolside','2026-11-12T22:14','51.5304, 0.5711','before',200)],
+        after:[samplePhotoRef('Valve isolated & capped','2026-11-13T00:18','51.5304, 0.5711','after',160)],
+        notes:'Traced leak to failed 28mm gate valve on LTHW flow above ceiling. Isolated, drained down section and fitted temporary caps. Two ceiling tiles removed and bagged. Replacement 28mm valve required (not held in van stock).',
+        materials:[{desc:'28mm compression end caps x2, PTFE, wipes', cost:18.40}], expenses:0,
+        outcome:'parts', outcomeDetail:'28mm gate valve (LTHW) on 2-day lead time', signedBy:'Jo Harding (Duty Manager)', signature:null },
+      log:[['2026-11-12T19:05','Helpdesk','Order logged from phone call (Paul Coffey, Wates).'],['2026-11-12T19:12','System','Emergency: dispatched immediately, estimate sent to Wates.'],['2026-11-12T19:40','Wates','Estimate approved by Paul Coffey. PO-771402.'],['2026-11-12T22:10','Dan Okafor','Checked in on site (GPS verified).'],['2026-11-13T00:25','Dan Okafor','Checked out. Report submitted. Parts required.'],['2026-11-13T00:26','System','Return visit CMP-1047 created (no call-out, planned works).'],['2026-11-13T09:05','Rishi Rao','Report approved. Valuation issued to Wates.']] },
+    { id:'CMP-1047', wRef:'WTS-55120', parent:'CMP-1041', contract:'C1', site:'S1', priority:'Planned', trade:'building', band:'normal', source:'Return visit',
+      received:'2026-11-13T00:26', loc:'Main pool hall ceiling void', nte:500,
+      desc:'Return visit: fit replacement 28mm LTHW gate valve, refill and vent system, reinstate ceiling tiles.',
+      est:{hours:1.5, materials:85}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-13T10:02', po:'PO-771402', amount:null},
+      contractor:null, engineer:null, status:'approved', window:'20 Nov, 08:00–10:00',
+      log:[['2026-11-13T00:26','System','Created from CMP-1041 (parts required). No call-out: return visit booked as planned works.'],['2026-11-13T10:02','Wates','Estimate approved by Paul Coffey.']] },
+    { id:'CMP-1040', wRef:'WTS-55098', contract:'C1', site:'S1', priority:'Urgent', trade:'lift', band:'normal', source:'Email',
+      received:'2026-11-11T08:40', loc:'Passenger lift, reception to first floor', nte:900,
+      desc:'Passenger lift out of service, doors not closing fully. Electrician needed for isolation.',
+      est:{hours:2, materials:0}, assist:{trade:'building', hours:1}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-11T09:15', po:'PO-771355', amount:null},
+      contractor:'K4', engineer:'Lee Turner', status:'review',
+      visit:{ arrive:'2026-11-11T13:05', depart:'2026-11-11T14:35', hours:1.5, gps:'51.5302, 0.5714', checklist:chk,
+        before:[samplePhotoRef('Lift car door gap','2026-11-11T13:09','51.5302, 0.5714','before',30)],
+        after:[samplePhotoRef('Door operator motor','2026-11-11T14:20','51.5302, 0.5714','after',45)],
+        notes:'Door operator motor overheating and stalling on close. Reset and cleaned door tracks; lift returned to service on reduced cycle. Motor at end of life and needs replacing.',
+        materials:[], expenses:0, outcome:'further', outcomeDetail:'Replace lift door operator motor and controller. Quote Q-209 issued.', signedBy:'Jo Harding (Duty Manager)', signature:null },
+      log:[['2026-11-11T08:40','Helpdesk','Order logged from Wates email.'],['2026-11-11T09:15','Wates','Estimate approved. PO-771355.'],['2026-11-11T09:30','Helpdesk','Dispatched to Apex Lift Services (compliance checked).'],['2026-11-11T14:35','Lee Turner','Report submitted. Further works found.'],['2026-11-11T14:36','System','Quote Q-209 raised (from call-out, no inspection fee). Wates notified.']] },
+    { id:'CMP-1042', wRef:'WTS-55104', contract:'C1', site:'S4', priority:'Routine', trade:'building', band:'normal', source:'Email',
+      received:'2026-11-13T11:20', loc:'Ground floor accessible WC', nte:350,
+      desc:'Accessible WC: cistern running continuously, flush handle loose.',
+      est:{hours:1, materials:35}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-13T14:00', po:'PO-771420', amount:null},
+      contractor:'K3', engineer:'Kwame Mensah', status:'hold', window:'17 Nov, 09:00–12:00',
+      visit:{ arrive:'2026-11-17T09:20', depart:'2026-11-17T09:50', hours:0.5, gps:'51.5215, 0.5855', checklist:{},
+        before:[samplePhotoRef('Main entrance locked','2026-11-17T09:24','51.5215, 0.5855','noaccess',0)], after:[],
+        notes:'Building locked on arrival. Called keyholder at 09:22 and 09:35 with no answer. Waited 30 minutes.', materials:[], expenses:0,
+        outcome:'noaccess', calls:2, withinWindow:true, signedBy:'', signature:null },
+      log:[['2026-11-13T11:20','Helpdesk','Order logged from Wates email.'],['2026-11-13T14:00','Wates','Estimate approved. PO-771420.'],['2026-11-14T10:00','Helpdesk','Dispatched to Eastway Plumbing & Heating. Appointment 17 Nov 09:00–12:00.'],['2026-11-17T09:50','Kwame Mensah','No access. Timestamped photo and call log attached.'],['2026-11-17T09:51','System','Exception raised. Wates notified by email and portal.']] },
+    { id:'CMP-1043', wRef:'WTS-55110', contract:'C1', site:'S2', priority:'Routine', trade:'specialist', band:'normal', source:'Email',
+      received:'2026-11-14T09:02', loc:'Fire alarm panel, main reception', nte:400,
+      desc:'Fire alarm panel showing fault on zone 4 (first floor east).',
+      est:{hours:1.5, materials:40}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-14T10:30', po:'PO-771433', amount:null},
+      contractor:'K2', engineer:'Sam Reid', status:'review',
+      visit:{ arrive:'2026-11-17T10:05', depart:'2026-11-17T11:10', hours:1.08, gps:'51.5591, 0.5879', checklist:chk,
+        before:[samplePhotoRef('Panel: zone 4 fault','2026-11-17T10:08','51.5591, 0.5879','before',210)],
+        after:[samplePhotoRef('Panel: normal','2026-11-17T11:02','51.5591, 0.5879','after',140)],
+        notes:'Faulty optical smoke detector in room 1.14 (head contaminated). Replaced head, tested zone 4 and confirmed at panel. System healthy.',
+        materials:[{desc:'Optical smoke detector head', cost:38.00}], expenses:6.50,
+        outcome:'complete', signedBy:'Facilities desk (A. Patel)', signature:null },
+      log:[['2026-11-14T09:02','Helpdesk','Order logged from Wates email.'],['2026-11-14T10:30','Wates','Estimate approved. PO-771433.'],['2026-11-14T11:00','Helpdesk','Dispatched to Brightline Fire & Security.'],['2026-11-17T11:10','Sam Reid','Report submitted. Work complete.']] },
+    { id:'CMP-1044', wRef:'WTS-55131', contract:'C1', site:'S3', priority:'Planned', trade:'service', svcCat:'Water hygiene', band:'normal', source:'Email',
+      received:'2026-11-17T15:30', loc:'Whole site: pool plant, hot and cold water services', nte:900,
+      desc:'Annual legionella risk assessment, including sampling of outlets and TMV checks.',
+      specialist:{ contractor:'K5', cost:640, labourPct:0, ref:'AQ-Q-3381' },
+      est:{hours:0, materials:0}, approved:null, contractor:null, engineer:null, status:'awaiting',
+      log:[['2026-11-17T15:30','Helpdesk','Order logged from Wates email.'],['2026-11-18T09:10','Helpdesk','Specialist quote received from supply chain. Estimate sent to Wates for approval.']] },
+    { id:'CMP-1045', wRef:'WTS-55137', contract:'C1', site:'S2', priority:'Urgent', trade:'building', band:'normal', source:'Phone',
+      received:'2026-11-18T08:15', loc:'First-floor staff kitchens (east and west)', nte:400,
+      desc:'No hot water to first-floor kitchens. Suspected failed point-of-use heater or circulation pump.',
+      est:{hours:2, materials:40}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-18T08:50', po:'PO-771460', amount:null},
+      contractor:'K1', engineer:'Dan Okafor', status:'dispatched', window:'Today, 11:00–14:00',
+      log:[['2026-11-18T08:15','Helpdesk','Order logged from phone call (Facilities desk via Wates).'],['2026-11-18T08:50','Wates','Estimate approved. PO-771460.'],['2026-11-18T09:05','Helpdesk','Dispatched to Dan Okafor (Compass). Appointment 11:00–14:00.']] },
+    { id:'CMP-1046', wRef:'WTS-55139', contract:'C2', site:'S5', priority:'Routine', trade:'building', band:'normal', source:'Email',
+      received:'2026-11-18T10:05', loc:'Stair cores A and B, levels 1–3', nte:600,
+      desc:'Replace three failed emergency lighting bulkheads found on monthly test.',
+      est:{hours:3, materials:165}, approved:null, contractor:null, engineer:null, status:'awaiting',
+      log:[['2026-11-18T10:05','Helpdesk','Order logged from Wates email. Zone B site, so the travel supplement applies.'],['2026-11-18T10:07','System','Estimate sent to Wates for approval.']] },
+    { id:'CMP-1048', wRef:'WTS-55140', contract:'C1', site:'S2', priority:'Urgent', trade:'specialist', band:'normal', source:'Email',
+      received:'2026-11-18T09:40', loc:'Main entrance, access-controlled door D01', nte:450,
+      desc:'Access control: main entrance door not releasing on valid fob. Reception propping door manually.',
+      est:{hours:1.5, materials:60}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-18T10:10', po:'PO-771466', amount:null},
+      contractor:'K2', engineer:'Sam Reid', status:'dispatched', window:'Today, 13:00–16:00',
+      log:[['2026-11-18T09:40','Helpdesk','Order logged from Wates email.'],['2026-11-18T10:10','Wates','Estimate approved. PO-771466.'],['2026-11-18T10:20','Helpdesk','Dispatched to Brightline Fire & Security (Sam Reid).']] }
+  ];
+  S.exceptions = [
+    { id:'E-031', job:'CMP-1042', type:'noaccess', at:'2026-11-17T09:51', status:'open',
+      title:'No access at Paddocks Community Centre',
+      detail:'Engineer arrived 09:20, inside the 09:00–12:00 window. Building locked; keyholder called twice (09:22, 09:35) with no answer. Timestamped, GPS-tagged photo attached.',
+      charge:'Minimum charge applies (clause 7): arrival was within the agreed window.', ask:'Rebook the visit, or cancel the order?', actions:['Rebook visit','Cancel order'] },
+    { id:'E-030', job:'CMP-1040', type:'further', at:'2026-11-11T14:36', status:'open',
+      title:'Further works found: lift door operator motor',
+      detail:'Motor at end of life. Lift returned to service on reduced cycle. Replacement quoted as Q-209 (£2,480.00). No inspection fee: found during a call-out.',
+      charge:'Attendance charged as normal. Further works need an order (clause 16).', ask:'Approve quote Q-209?', actions:['Approve quote','Query quote'] }
+  ];
+  S.quotes = [
+    { id:'Q-204', site:'S3', desc:'Replace pool hall AHU supply fan motor', inspected:'2026-07-08', fee:120, value:4850, status:'awaiting', from:'Inspection visit' },
+    { id:'Q-206', site:'S2', desc:'Upgrade WC extract fans (x4)', inspected:'2026-09-15', fee:120, value:1960, status:'ordered', from:'Inspection visit', ordered:'2026-10-02' },
+    { id:'Q-208', site:'S4', desc:'Replace failed unvented hot water cylinder', inspected:'2026-10-21', fee:120, value:3120, status:'awaiting', from:'Inspection visit' },
+    { id:'Q-209', site:'S1', desc:'Replace lift door operator motor and controller', inspected:'2026-11-11', fee:0, value:2480, status:'awaiting', from:'Call-out CMP-1040' }
+  ];
+  S.selfbills = [
+    { id:'SB-BRI-0006', contractor:'K2', job:'CMP-1031', date:'2026-11-06', labour:182.00, materials:44.20, cis:0, vatNote:'Reverse charge' },
+    { id:'SB-EAS-0003', contractor:'K3', job:'CMP-1035', date:'2026-11-10', labour:109.00, materials:22.80, cis:21.80, vatNote:'Not VAT registered' }
+  ];
+  S.seq = { job:1049, exc:32, quote:210 };
+  return S;
+}
+
+/* ============================== State ============================== */
+const KEY = 'compass-portal-demo-v1';
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+const ui = { role:'compass', view:'dashboard', jobId:null, jobFilter:'all', eng:{ who:'Dan Okafor', jobId:null, step:'list', d:null } };
+
+const site = id => S.sites.find(s => s.id === id);
+const contractor = id => S.contractors.find(c => c.id === id);
+const contract = id => S.contracts.find(c => c.id === id);
+const job = id => S.jobs.find(j => j.id === id);
+const excFor = id => S.exceptions.filter(e => e.job === id);
+function log(j, who, text){ (j.log ||= []).push([nowISO(), who, text]); }
+
+/* ============================== Pricing engine ============================== */
+function minHours(band){ return band === 'normal' ? 1 : 2; }
+function chargeHours(h, band){ const m = minHours(band); return h <= m ? m : Math.ceil(h * 2) / 2; }
+
+/* Wates valuation. mode: 'estimate' uses est.*, 'actual' uses the visit record. */
+function valuation(j, mode='estimate'){
+  const st = S.settings, s = site(j.site) || {}, L = [];
+  const add = (label, calc, amount, opts={}) => L.push({label, calc, amount:r2(amount), ...opts});
+  if (j.trade === 'service'){
+    const sp = j.specialist || {}; const cost = (mode === 'actual' && sp.actualCost) || sp.cost || 0;
+    add(`Specialist: ${j.svcCat || 'supply chain'}`, `Specialist quotation${sp.ref ? ' ' + sp.ref : ''}, at cost`, cost);
+    const fee = Math.max(cost * st.specialistFee / 100, st.specialistMin);
+    add('Management fee', `${st.specialistFee}% of cost${fee === st.specialistMin ? ` (minimum ${gbp(st.specialistMin)} applies)` : ''}`, fee);
+    return finish(L);
+  }
+  const visit = j.visit || {};
+  const noAccess = mode === 'actual' && visit.outcome === 'noaccess';
+  // Call-out
+  if (j.parent && !st.returnVisitCallout) add('Call-out', `Not charged: return visit from ${j.parent}, booked as planned works`, 0, {zero:true});
+  else if (j.priority === 'Emergency') add('Call-out: emergency', 'Within 12 hours', CALLOUT.Emergency);
+  else add('Call-out: standard', `${j.priority} attendance`, CALLOUT.standard);
+  // Zone
+  if (s.zone === 'B') add('Zone B supplement', 'Travel beyond Zone A, up to 90 minutes each way', ZONE_B);
+  if (s.zone === 'C') add('Travel', 'Zone C: quoted per job', 0, {zero:true});
+  // Labour
+  const R = RATES[j.trade], rate = R[j.band];
+  const raw = mode === 'actual' ? (visit.hours || 0) : (j.est?.hours || 0);
+  const h = chargeHours(raw, j.band);
+  if (rate == null) add(`Labour: ${R.label}`, `${BANDS[j.band]} rate TBC in schedule`, 0, {zero:true});
+  else add(`Labour: ${R.short}`, `${h} h × ${gbp(rate)} (${BANDS[j.band].toLowerCase()})${raw < h ? ` · min/30-min rounding from ${hrs(raw)}` : ''}`, h * rate);
+  // Assisting trade (e.g. electrician isolating for lift engineer)
+  if (j.assist && !noAccess){
+    const AR = RATES[j.assist.trade], ar = AR[j.band], ah = chargeHours(j.assist.hours, j.band);
+    if (st.multiTrade === 'per_trade') add('Call-out: second trade', `${AR.short} attending same visit`, j.priority === 'Emergency' ? CALLOUT.Emergency : CALLOUT.standard);
+    else add('Call-out: second trade', 'Not charged: one call-out per visit (setting)', 0, {zero:true});
+    add(`Labour: ${AR.short} (assist)`, `${ah} h × ${gbp(ar)}`, ah * ar);
+  }
+  // Materials
+  const mat = mode === 'actual' ? (visit.materials || []).reduce((a, m) => a + Number(m.cost || 0), 0) : (j.est?.materials || 0);
+  if (mat > 0) add('Materials', `${gbp(mat)} cost + ${st.materialsMarkup}%`, mat * (1 + st.materialsMarkup / 100));
+  if (mode === 'actual' && visit.expenses > 0) add('Parking / congestion / ULEZ', 'Recharged at cost', visit.expenses);
+  return finish(L);
+}
+function finish(L){ return { lines:L, total:r2(L.reduce((a, l) => a + l.amount, 0)) }; }
+
+/* What Compass pays the contractor (self-bill). Returns null for direct labour. */
+function contractorCost(j){
+  const c = contractor(j.contractor || j.specialist?.contractor); if (!c || c.type === 'dlo') return null;
+  const st = S.settings, v = j.visit || {};
+  let labour = 0, materials = 0; const L = [];
+  if (j.trade === 'service'){
+    const cost = j.specialist.actualCost || j.specialist.cost;
+    labour = cost * (j.specialist.labourPct || 0); materials = cost - labour;
+    L.push(['Agreed quotation ' + (j.specialist.ref || ''), cost]);
+  } else {
+    const co = (j.parent && !st.returnVisitCallout) ? 0 : c.rates.callout;
+    const h = chargeHours(v.hours || 0, j.band), rate = c.rates[j.band] || c.rates.normal;
+    labour = co + h * rate;
+    materials = (v.materials || []).reduce((a, m) => a + Number(m.cost || 0), 0) + (v.expenses || 0);
+    L.push([`Call-out (contractor rate)`, co], [`Labour ${h} h × ${gbp(rate)}`, h * rate], ['Materials & expenses at cost', materials]);
+  }
+  const gross = labour + materials, cis = labour * CIS_RATE[c.cis];
+  return { c, lines:L, labour:r2(labour), materials:r2(materials), gross:r2(gross), cis:r2(cis), net:r2(gross - cis) };
+}
+function needsApproval(j){
+  const p = S.settings.approvalPolicy;
+  if (p === 'all') return true;
+  if (p === 'except_emergency') return j.priority !== 'Emergency';
+  return valuation(j).total > S.settings.approvalThreshold;
+}
+
+/* ============================== Compliance ============================== */
+function compStatus(exp){ const d = daysBetween(DEMO_TODAY, exp); return d < 0 ? 'crit' : d <= 30 ? 'warn' : 'ok'; }
+function contractorState(c){
+  const items = [...c.compliance, ...c.engineers.flatMap(e => [{item:`${e.name}: CSCS`, exp:e.cscs},{item:`${e.name}: asbestos awareness`, exp:e.asb},{item:`${e.name}: DBS`, exp:e.dbs}])];
+  const blocked = c.compliance.filter(i => i.block && compStatus(i.exp) === 'crit');
+  const warn = items.filter(i => compStatus(i.exp) === 'warn'), expired = items.filter(i => compStatus(i.exp) === 'crit');
+  return { items, blocked, warn, expired, state: blocked.length ? 'crit' : (expired.length || warn.length) ? 'warn' : 'ok' };
+}
+
+/* ============================== Labels ============================== */
+const STATUS = {
+  awaiting:['Awaiting Wates approval','warn'], approved:['Approved: ready to dispatch','info'], dispatched:['Dispatched','acc'],
+  onsite:['Engineer on site','acc'], review:['Report submitted','info'], hold:['On hold','crit'], complete:['Complete & valued','ok'], cancelled:['Cancelled','']
+};
+const WSTATUS = { ...STATUS, review:['Report being checked','info'], approved:['Approved: booking engineer','info'] };
+const chip = (st, map=STATUS) => `<span class="chip ${map[st]?.[1] || ''}">${esc(map[st]?.[0] || st)}</span>`;
+const pri = p => `<span class="pri ${esc(p)}">${esc(p)}</span>`;
+const OUTCOME = { complete:'Work completed', further:'Further works required', parts:'Parts required: return visit', noaccess:'No access', asbestos:'Suspected asbestos: work stopped' };
+
+/* ============================== Photos ============================== */
+const photoCache = {};
+function samplePhoto(p){
+  const key = p.label + p.ts + p.kind; if (photoCache[key]) return photoCache[key];
+  const c = document.createElement('canvas'); c.width = 480; c.height = 320; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 480, 320); g.addColorStop(0, `hsl(${p.hue},18%,38%)`); g.addColorStop(1, `hsl(${p.hue + 20},14%,22%)`);
+  x.fillStyle = g; x.fillRect(0, 0, 480, 320);
+  x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 14;
+  if (p.kind === 'noaccess'){ x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(150, 50, 180, 240); x.fillStyle='rgba(255,255,255,.35)'; x.fillRect(300, 170, 14, 30); }
+  else { x.beginPath(); x.moveTo(0, 110); x.lineTo(300, 110); x.lineTo(300, 320); x.stroke(); x.beginPath(); x.moveTo(480, 200); x.lineTo(360, 200); x.stroke();
+    x.fillStyle = p.kind === 'before' ? 'rgba(255,190,120,.35)' : 'rgba(140,230,180,.30)'; x.beginPath(); x.arc(300, 110, 30, 0, 7); x.fill(); }
+  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0, 282, 480, 38);
+  x.fillStyle = '#fff'; x.font = '600 13px system-ui'; x.fillText(new Date(p.ts).toLocaleString('en-GB') + '  ·  GPS ' + p.gps, 12, 306);
+  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(10, 10, 12 + x.measureText(p.kind.toUpperCase()).width + 8, 26);
+  x.fillStyle = '#fff'; x.font = '700 12px system-ui'; x.fillText(p.kind === 'noaccess' ? 'NO ACCESS' : p.kind.toUpperCase(), 18, 28);
+  return photoCache[key] = c.toDataURL('image/jpeg', .8);
+}
+const photoSrc = p => p.src || samplePhoto(p);
+const photoGrid = (arr, title) => arr?.length ? `<div class="field"><span class="eyebrow">${title}</span><div class="photos">${arr.map(p => `<figure class="photo" style="margin:0"><img src="${photoSrc(p)}" alt="${esc(p.label)}"><figcaption>${esc(p.label)} · ${fmtT(p.ts)}</figcaption></figure>`).join('')}</div></div>` : '';
+function stampPhoto(file, label, kind, gps, cb){
+  const rd = new FileReader();
+  rd.onload = () => { const im = new Image(); im.onload = () => {
+    const sc = Math.min(1, 800 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = im.width * sc; c.height = im.height * sc;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0, c.width, c.height); const ts = nowISO();
+    x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0, c.height - 34, c.width, 34); x.fillStyle = '#fff'; x.font = '600 13px system-ui';
+    x.fillText(new Date(ts).toLocaleString('en-GB') + '  ·  GPS ' + gps, 10, c.height - 12);
+    cb({ src:c.toDataURL('image/jpeg', .7), label, ts, gps, kind });
+  }; im.src = rd.result; };
+  rd.readAsDataURL(file);
+}
+
+/* ============================== Shared fragments ============================== */
+function valTable(v, opts={}){
+  return `<table class="val"><tbody>${v.lines.map(l => `<tr class="${l.zero ? 'zero' : ''}"><td>${esc(l.label)}<div class="small muted">${esc(l.calc)}</div></td><td class="num mono">${gbp(l.amount)}</td></tr>`).join('')}
+  <tr class="total"><td>${esc(opts.totalLabel || 'Total (excl. VAT)')}</td><td class="num mono">${gbp(v.total)}</td></tr></tbody></table>`;
+}
+function jobRows(list, opts={}){
+  if (!list.length) return `<div class="empty">No jobs here.</div>`;
+  const w = opts.wates;
+  return `<div class="tbl-wrap"><table><thead><tr><th>Job</th><th>Site</th><th>Priority</th><th class="hide-sm">Trade</th>${w ? '' : '<th class="hide-sm">Assigned to</th>'}<th>Status</th><th class="num">Value</th></tr></thead><tbody>
+  ${list.map(j => { const s = site(j.site), c = contractor(j.contractor || j.specialist?.contractor), v = valuation(j, j.status === 'complete' || j.status === 'review' || j.status === 'hold' ? 'actual' : 'estimate'), ex = excFor(j.id).filter(e => e.status === 'open').length;
+    return `<tr class="click" data-open="${j.id}"><td><b class="mono">${j.id}</b><div class="small muted mono">${esc(j.wRef)}</div></td>
+    <td>${esc(s.name)}<div class="small muted">${esc(contract(j.contract).name)} · Zone ${s.zone}</div></td><td>${pri(j.priority)}</td>
+    <td class="hide-sm">${esc(j.trade === 'service' ? j.svcCat : RATES[j.trade].short)}</td>
+    ${w ? '' : `<td class="hide-sm">${c ? esc(c.type === 'dlo' ? (j.engineer || 'Compass') : c.name) : '<span class="muted">Not assigned</span>'}</td>`}
+    <td>${chip(j.status, w ? WSTATUS : STATUS)}${ex ? ` <span class="chip crit">${ex} alert${ex > 1 ? 's' : ''}</span>` : ''}</td><td class="num mono">${j.visit?.outcome === 'noaccess' || j.trade !== 'lift' || RATES.lift[j.band] != null ? gbp(v.total) : '—'}</td></tr>`; }).join('')}
+  </tbody></table></div>`;
+}
+function exceptionCard(e, wates){
+  const j = job(e.job), s = site(j.site), closed = e.status !== 'open';
+  return `<div class="alert ${e.type === 'asbestos' || e.type === 'noaccess' ? 'crit' : ''} ${closed ? 'closed' : ''}"><div class="bar"></div><div class="in">
+    <div class="row" style="justify-content:space-between"><div><h3>${esc(e.title)}</h3><div class="small muted"><span class="mono">${j.id}</span> · ${esc(s.name)} · ${fmtDT(e.at)}</div></div>${closed ? '<span class="chip ok">Decision recorded</span>' : '<span class="chip warn">Wates notified · awaiting decision</span>'}</div>
+    <p>${esc(e.detail)}</p>
+    ${e.charge ? `<p class="small muted">${esc(e.charge)}</p>` : ''}
+    ${closed ? `<p class="small"><b>${esc(e.decision.text)}</b> by ${esc(e.decision.by)}, ${fmtDT(e.decision.at)}</p>`
+      : wates ? `<div class="row"><span class="small"><b>${esc(e.ask)}</b></span>${e.actions.map((a, i) => `<button class="btn sm ${i === 0 ? 'primary' : ''}" data-decide="${e.id}" data-text="${esc(a)}">${esc(a)}</button>`).join('')}<button class="btn sm" data-open="${j.id}">View job</button></div>`
+      : `<div class="row"><button class="btn sm" data-open="${j.id}">Open job</button><span class="small muted">Waiting for Wates. Shown in their portal and sent by email.</span></div>`}
+  </div></div>`;
+}
+
+/* ============================== Router ============================== */
+function render(){
+  document.querySelectorAll('.roles button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === ui.role));
+  const app = document.getElementById('app');
+  if (ui.role === 'engineer'){ app.innerHTML = `<main><div class="wrap">${viewEngineer()}</div></main>`; wireEngineer(); return; }
+  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['selfbill','Self-billing & CIS'],['settings','Rules & settings']];
+  const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes']];
+  const nav = ui.role === 'compass' ? navC : navW;
+  const who = ui.role === 'compass' ? '<b>Rishi Rao</b><div class="small muted">Admin · Compass MEP</div>' : '<b>Paul Coffey</b><div class="small muted">Wates · Castle Point & SE contracts</div>';
+  const cur = ui.view === 'job' ? (ui.role === 'compass' ? 'jobs' : 'w-jobs') : ui.view;
+  app.innerHTML = `<div class="shell"><nav class="nav" aria-label="Sections"><div class="who">${who}</div>
+    ${nav.map(([v, l, n, hot]) => `<button data-view="${v}" ${cur === v ? 'aria-current="page"' : ''}><span>${l}</span>${n ? `<span class="count ${hot ? 'hot' : ''}">${n}</span>` : ''}</button>`).join('')}
+    <div class="foot"><button class="btn sm block" data-act="reset">Reset demo data</button></div></nav>
+    <main><div class="wrap">${(VIEWS[ui.view] || VIEWS.dashboard)()}</div></main></div>`;
+  wire();
+}
+function go(view, jobId){ ui.view = view; if (jobId) ui.jobId = jobId; render(); window.scrollTo(0, 0); }
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+
+/* ============================== Compass views ============================== */
+const VIEWS = {};
+VIEWS.dashboard = () => {
+  const open = S.jobs.filter(j => !['complete','cancelled'].includes(j.status));
+  const exc = S.exceptions.filter(e => e.status === 'open');
+  const comp = S.contractors.map(c => [c, contractorState(c)]).filter(([, s]) => s.state !== 'ok');
+  const awaiting = S.jobs.filter(j => j.status === 'awaiting');
+  const ready = S.jobs.filter(j => j.status === 'approved');
+  const review = S.jobs.filter(j => j.status === 'review');
+  const valued = S.jobs.filter(j => j.status === 'complete').reduce((a, j) => a + valuation(j, 'actual').total, 0);
+  return `<div class="page-head"><div><span class="eyebrow">Wednesday 18 November 2026</span><h1>Helpdesk dashboard</h1><p class="sub">Orders received by email and phone, all logged here. Click any job to see the full record from instruction to valuation.</p></div><button class="btn primary" data-view="new">+ Log an order</button></div>
+  <div class="grid g4">
+    <div class="panel stat"><span class="eyebrow">Open jobs</span><span class="v">${open.length}</span><span class="small muted">${S.jobs.filter(j => ['dispatched','onsite'].includes(j.status)).length} with engineers now</span></div>
+    <div class="panel stat warn"><span class="eyebrow">Awaiting Wates approval</span><span class="v">${awaiting.length}</span><span class="small muted">${gbp(awaiting.reduce((a, j) => a + valuation(j).total, 0))} estimated</span></div>
+    <div class="panel stat crit"><span class="eyebrow">Open exceptions</span><span class="v">${exc.length}</span><span class="small muted">Wates notified on each</span></div>
+    <div class="panel stat"><span class="eyebrow">Valued this month</span><span class="v">${gbp(valued)}</span><span class="small muted">Ready to invoice from Xero/Sage</span></div>
+  </div>
+  <div class="grid split">
+    <div class="panel"><div class="panel-h"><h2>Needs action</h2></div><div class="panel-b">
+      ${review.map(j => `<div class="row" style="justify-content:space-between"><div><b class="mono">${j.id}</b> · ${esc(site(j.site).name)}<div class="small muted">Report submitted by ${esc(j.engineer)}. Check it and issue the valuation.</div></div><button class="btn sm primary" data-open="${j.id}">Review report</button></div>`).join('')}
+      ${ready.map(j => `<div class="row" style="justify-content:space-between"><div><b class="mono">${j.id}</b> · ${esc(site(j.site).name)}<div class="small muted">Approved by Wates${j.parent ? ` (return visit from ${j.parent})` : ''}. Choose a contractor to dispatch.</div></div><button class="btn sm primary" data-open="${j.id}">Dispatch</button></div>`).join('')}
+      ${!review.length && !ready.length ? '<div class="empty">Nothing waiting on you.</div>' : ''}
+    </div></div>
+    <div class="panel"><div class="panel-h"><h2>Contractor compliance</h2><button class="btn sm" data-view="contractors">View all</button></div><div class="panel-b">
+      ${comp.length ? comp.map(([c, s]) => `<div><div class="row" style="justify-content:space-between"><b>${esc(c.name)}</b>${s.blocked.length ? '<span class="chip crit">Blocked</span>' : '<span class="chip warn">Expiring</span>'}</div>
+        <div class="small muted">${[...s.expired, ...s.warn].slice(0, 3).map(i => `${esc(i.item)}: ${compStatus(i.exp) === 'crit' ? 'expired' : 'expires'} ${fmtD(i.exp)}`).join('<br>')}</div></div>`).join('') : '<div class="empty">All contractors compliant.</div>'}
+    </div></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Exceptions flagged to Wates</h2><button class="btn sm" data-view="alerts">All exceptions</button></div><div class="panel-b">${exc.length ? exc.map(e => exceptionCard(e)).join('') : '<div class="empty">No open exceptions.</div>'}</div></div>
+  <div class="panel"><div class="panel-h"><h2>Live jobs</h2></div>${jobRows(open)}</div>`;
+};
+VIEWS.jobs = () => {
+  const f = ui.jobFilter, filters = [['all','All'],['awaiting','Awaiting approval'],['approved','To dispatch'],['dispatched','Dispatched'],['review','Reports to check'],['hold','On hold'],['complete','Complete']];
+  const list = S.jobs.filter(j => f === 'all' || j.status === f || (f === 'dispatched' && j.status === 'onsite')).sort((a, b) => b.received.localeCompare(a.received));
+  return `<div class="page-head"><div><h1>Jobs</h1><p class="sub">Every instruction, whichever way it arrived, with its status and value.</p></div><button class="btn primary" data-view="new">+ Log an order</button></div>
+  <div class="row">${filters.map(([k, l]) => `<button class="btn sm ${f === k ? 'primary' : ''}" data-filter="${k}">${l}</button>`).join('')}</div>
+  <div class="panel">${jobRows(list)}</div>`;
+};
+VIEWS.alerts = () => {
+  const open = S.exceptions.filter(e => e.status === 'open'), closed = S.exceptions.filter(e => e.status !== 'open');
+  return `<div class="page-head"><div><h1>Exceptions</h1><p class="sub">Caught automatically: no access, further works, parts delays, suspected asbestos, and valuations over the approved estimate. Each one is sent to Wates for a decision, and the decision is recorded.</p></div></div>
+  <div class="panel"><div class="panel-h"><h2>Open</h2></div><div class="panel-b">${open.length ? open.map(e => exceptionCard(e)).join('') : '<div class="empty">None open.</div>'}</div></div>
+  ${closed.length ? `<div class="panel"><div class="panel-h"><h2>Decided</h2></div><div class="panel-b">${closed.map(e => exceptionCard(e)).join('')}</div></div>` : ''}`;
+};
+
+/* ----- Job detail (shared by Compass and Wates) ----- */
+VIEWS.job = () => {
+  const j = job(ui.jobId); if (!j) return '<div class="empty">Job not found.</div>';
+  const W = ui.role === 'wates', s = site(j.site), k = contract(j.contract), v = j.visit;
+  const est = valuation(j, 'estimate'), act = v ? valuation(j, 'actual') : null;
+  const cc = !W && v && ['review','complete','hold'].includes(j.status) ? contractorCost(j) : null;
+  const exc = excFor(j.id);
+  const approvedAmt = j.approved ? (j.approved.amount ?? est.total) : null;
+  // Dispatch block (Compass only)
+  let dispatch = '';
+  if (!W && ['approved','awaiting'].includes(j.status)){
+    const wait = j.status === 'awaiting' && needsApproval(j);
+    const opts = S.contractors.filter(c => c.trades.includes(j.trade) || (j.trade === 'service' && c.type === 'spec'));
+    dispatch = `<div class="panel"><div class="panel-h"><h2>Dispatch</h2>${wait ? '<span class="chip warn">Locked until Wates approves</span>' : ''}</div><div class="panel-b">
+      ${wait ? `<p class="small muted">Rule: ${esc(policyText())}. Change it under Rules &amp; settings.</p>` : ''}
+      <div class="field"><label for="dispatchTo">Contractor / engineer</label><select id="dispatchTo" ${wait ? 'disabled' : ''}>
+      ${opts.flatMap(c => { const st = contractorState(c); return c.engineers.filter(e => e.trade === j.trade || j.trade === 'service' || c.type !== 'dlo').map(e => `<option value="${c.id}|${esc(e.name)}" ${st.blocked.length ? 'disabled' : ''}>${esc(c.type === 'dlo' ? `${e.name} (Compass direct)` : `${c.name}: ${e.name}`)}${st.blocked.length ? ' (blocked: ' + esc(st.blocked[0].item) + ' expired)' : st.state === 'warn' ? ' (compliance expiring)' : ''}</option>`); }).join('')}
+      </select></div>
+      <div class="field"><label for="window">Appointment window</label><input type="text" id="window" value="${esc(j.window || '')}" placeholder="e.g. 20 Nov, 08:00–10:00" ${wait ? 'disabled' : ''}></div>
+      <div class="row end"><button class="btn primary" data-act="dispatch" ${wait ? 'disabled' : ''}>Dispatch &amp; notify engineer</button></div>
+      <p class="small muted">Blocked contractors can't be selected. Insurance or a key accreditation has expired.</p>
+    </div></div>`;
+  }
+  const approval = j.approved
+    ? `<div class="note ok small">Approved by <b>${esc(j.approved.by)}</b>, ${fmtDT(j.approved.at)} · Order no. <b class="mono">${esc(j.approved.po)}</b> · ${gbp(approvedAmt)}</div>`
+    : W && j.status === 'awaiting'
+      ? `<div class="field"><label for="po-${j.id}">Wates order number</label><input type="text" id="po-${j.id}" placeholder="PO-…"></div><div class="row"><button class="btn primary" data-approve="${j.id}">Approve estimate</button><button class="btn" data-query="${j.id}">Query</button></div>`
+      : `<div class="note warn small">Sent to Wates for approval${needsApproval(j) ? '' : '. Approval not required under current rule; can dispatch now'}.</div>`;
+  const variance = act && approvedAmt != null && act.total > approvedAmt ? `<div class="note warn small">Actual valuation is ${gbp(act.total - approvedAmt)} over the approved estimate. Flagged to Wates.</div>` : '';
+  const showVal = !W || j.status === 'complete';
+  return `<div class="page-head"><div><button class="btn sm" data-view="${W ? 'w-jobs' : 'jobs'}">← All jobs</button>
+    <div class="row" style="margin-top:12px"><h1 class="mono">${j.id}</h1>${pri(j.priority)}${chip(j.status, W ? WSTATUS : STATUS)}</div>
+    <p class="sub">${esc(j.desc)}</p></div></div>
+  ${exc.length ? `<div class="panel-b" style="padding:0">${exc.map(e => exceptionCard(e, W)).join('')}</div>` : ''}
+  <div class="grid split">
+    <div class="grid" style="align-content:start">
+      <div class="panel"><div class="panel-h"><h2>Instruction</h2><span class="small muted">via ${esc(j.source)}</span></div><div class="panel-b"><dl class="kv">
+        <dt>Wates job no.</dt><dd class="mono">${esc(j.wRef)}</dd>
+        <dt>Contract</dt><dd>${esc(k.client)} · ${esc(k.name)}</dd>
+        <dt>Site</dt><dd>${esc(s.name)}, ${esc(s.area)} <span class="chip">Zone ${s.zone}</span></dd>
+        <dt>Location</dt><dd>${esc(j.loc || '—')}</dd>
+        <dt>Trade</dt><dd>${esc(j.trade === 'service' ? `Specialist service: ${j.svcCat}` : RATES[j.trade].label)}${j.assist ? ` + ${esc(RATES[j.assist.trade].short)} assist` : ''}</dd>
+        <dt>Rate band</dt><dd>${esc(BANDS[j.band])}</dd>
+        <dt>Received</dt><dd>${fmtDT(j.received)}${j.priority === 'Emergency' ? ` · attend by ${fmtDT(new Date(new Date(j.received).getTime() + 12 * 36e5).toISOString())}` : ''}</dd>
+        ${j.window ? `<dt>Appointment</dt><dd>${esc(j.window)}</dd>` : ''}
+        <dt>NTE</dt><dd>${gbp(j.nte)}</dd>
+        ${j.parent ? `<dt>Return visit of</dt><dd><a href="#" data-open="${j.parent}" class="mono">${j.parent}</a></dd>` : ''}
+        <dt>Site access</dt><dd class="small">${esc(s.access)}</dd>
+        <dt>Asbestos</dt><dd class="small">${esc(s.asbestos)}</dd>
+      </dl></div></div>
+      ${v ? `<div class="panel"><div class="panel-h"><h2>Visit report</h2><span class="chip ${v.outcome === 'complete' ? 'ok' : 'warn'}">${esc(OUTCOME[v.outcome])}</span></div><div class="panel-b">
+        <dl class="kv"><dt>Engineer</dt><dd>${W ? 'Compass MEP engineer' : esc(j.engineer)}</dd>
+        <dt>Arrived</dt><dd>${fmtDT(v.arrive)} <span class="small muted mono">GPS ${esc(v.gps)}</span></dd><dt>Departed</dt><dd>${fmtDT(v.depart)}</dd><dt>Time on site</dt><dd>${hrs(v.hours)}</dd>
+        ${v.outcome === 'noaccess' ? `<dt>Calls to site contact</dt><dd>${v.calls}</dd><dt>Within window</dt><dd>${v.withinWindow ? 'Yes' : '<b>No: charge held</b>'}</dd>` : ''}
+        ${v.outcomeDetail ? `<dt>Detail</dt><dd>${esc(v.outcomeDetail)}</dd>` : ''}</dl>
+        ${Object.keys(v.checklist || {}).length ? `<div class="small"><span class="eyebrow">Arrival safety checks</span><div>${Object.entries(SAFETY).map(([key, l]) => `${v.checklist[key] ? '✓' : '✗'} ${esc(l)}`).join('<br>')}</div></div>` : ''}
+        <div><span class="eyebrow">Work carried out</span><p>${esc(v.notes)}</p></div>
+        ${photoGrid(v.before, v.outcome === 'noaccess' ? 'Evidence' : 'Before')}${photoGrid(v.after, 'After')}
+        ${v.materials?.length ? `<div><span class="eyebrow">Materials used</span><div class="small">${v.materials.map(m => `${esc(m.desc)}${W ? '' : ` · ${gbp(Number(m.cost))} cost`}`).join('<br>')}</div></div>` : ''}
+        ${v.signedBy ? `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:10px"><div><span class="eyebrow">Signed off on site</span><div>${esc(v.signedBy)}</div></div>${v.signature ? `<img src="${v.signature}" alt="Signature" style="height:48px">` : `<span class="signed">${esc(v.signedBy.split(' ')[0])}</span>`}</div>` : ''}
+        <p class="small muted">Arrival and departure times are final unless queried within 14 days (clause 13)${v.depart ? `, by ${fmtD(new Date(new Date(v.depart).getTime() + 14 * 864e5).toISOString())}` : ''}.</p>
+        ${!W && j.status === 'review' ? `<div class="row end"><button class="btn primary" data-act="approveReport">Approve report &amp; issue valuation</button></div>` : ''}
+      </div></div>` : ''}
+      <div class="panel"><div class="panel-h"><h2>Activity</h2></div><div class="panel-b"><ul class="tl">${(j.log || []).slice().reverse().filter(l => !W || l[1] !== 'Helpdesk' || true).map(([at, who, t]) => `<li><time>${fmtDT(at)}</time><div><b>${esc(W && !['Wates','System','Helpdesk','Rishi Rao'].includes(who) ? 'Compass engineer' : who)}</b> · ${esc(W ? t.replace(/ to [A-Z][^.(]*?(Ltd|Heating|Services|Security)[^.]*/,' to Compass engineer') : t)}</div></li>`).join('')}</ul></div></div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="panel"><div class="panel-h"><h2>Estimate</h2><span class="small muted">From the rate card</span></div><div class="panel-b">${valTable(est, {totalLabel:'Estimate (excl. VAT)'})}${approval}</div></div>
+      ${dispatch}
+      ${act && showVal ? `<div class="panel"><div class="panel-h"><h2>Valuation</h2>${j.status === 'complete' ? '<span class="chip ok">Issued to Wates</span>' : '<span class="chip info">Draft</span>'}</div><div class="panel-b">${valTable(act, {totalLabel:'Valuation (excl. VAT)'})}${variance}
+        ${v.outcome === 'noaccess' && !v.withinWindow ? '<div class="note crit small">Engineer arrived outside the agreed window. Not charged automatically.</div>' : ''}
+        <p class="small muted">Invoice reference: ${esc(j.wRef)} / ${esc(j.approved?.po || 'order no. pending')}</p></div></div>` : ''}
+      ${W && act && j.status !== 'complete' ? `<div class="panel"><div class="panel-b"><p class="small muted">The valuation appears here once Compass has checked the visit report.</p></div></div>` : ''}
+      ${cc ? `<div class="panel"><div class="panel-h"><h2>Contractor cost &amp; margin</h2><span class="small muted">Compass only</span></div><div class="panel-b">
+        <table class="val"><tbody>${cc.lines.map(([l, a]) => `<tr><td>${esc(l)}</td><td class="num mono">${gbp(a)}</td></tr>`).join('')}
+        <tr class="total"><td>Payable to ${esc(cc.c.name)}</td><td class="num mono">${gbp(cc.gross)}</td></tr>
+        <tr><td class="calc">CIS deduction (${esc(CIS[cc.c.cis])} on labour ${gbp(cc.labour)})</td><td class="num mono">${gbp(-cc.cis)}</td></tr>
+        <tr><td class="calc">Net payment to contractor</td><td class="num mono">${gbp(cc.net)}</td></tr></tbody></table>
+        <div class="note ${act.total - cc.gross > 0 ? 'ok' : 'crit'} small">Margin on this job: <b>${gbp(act.total - cc.gross)}</b> (${act.total ? Math.round((act.total - cc.gross) / act.total * 100) : 0}%)</div>
+        ${j.status === 'complete' ? `<p class="small muted">Self-billed invoice raised: see Self-billing &amp; CIS.</p>` : '<p class="small muted">A self-billed invoice is raised when you approve the report.</p>'}
+      </div></div>` : ''}
+    </div>
+  </div>`;
+};
+
+/* ----- Log order ----- */
+function orderForm(prefix, wates){
+  const sites = S.sites;
+  return `<form id="orderForm" class="grid split" autocomplete="off">
+  <div class="panel"><div class="panel-h"><h2>Instruction details</h2></div><div class="panel-b">
+    <div class="grid g2">
+      ${wates ? '' : `<div class="field"><label for="o-source">Received by</label><select id="o-source"><option>Email</option><option>Phone</option></select></div>`}
+      <div class="field"><label for="o-wref">Wates job number</label><input type="text" id="o-wref" value="WTS-55${142 + S.seq.job - 1049}"></div>
+      <div class="field"><label for="o-site">Site</label><select id="o-site">${S.contracts.map(c => `<optgroup label="${esc(c.client + ' · ' + c.name)}">${sites.filter(s => s.contract === c.id).map(s => `<option value="${s.id}">${esc(s.name)} (Zone ${s.zone})</option>`).join('')}</optgroup>`).join('')}</select></div>
+      <div class="field"><label for="o-loc">Location on site / free-text address</label><input type="text" id="o-loc" placeholder="e.g. Plant room, level B2, via loading bay"></div>
+      <div class="field"><label for="o-pri">Priority</label><select id="o-pri">${PRIORITIES.map(p => `<option ${p === 'Routine' ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+      <div class="field"><label for="o-band">When will the work happen?</label><select id="o-band">${Object.entries(BANDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="o-trade">Trade</label><select id="o-trade">${Object.entries(RATES).map(([k, r]) => `<option value="${k}">${r.label}</option>`).join('')}</select></div>
+      <div class="field" id="f-cat" hidden><label for="o-cat">Specialist category</label><select id="o-cat">${SERVICE_CATS.map(c => `<option>${c}</option>`).join('')}</select></div>
+      <div class="field" id="f-hours"><label for="o-hours">Estimated hours on site</label><input type="number" id="o-hours" value="1.5" min="0" step="0.5"></div>
+      <div class="field" id="f-mat"><label for="o-mat">Estimated materials (cost, £)</label><input type="number" id="o-mat" value="50" min="0" step="5"></div>
+      <div class="field" id="f-spec" hidden><label for="o-spec">Specialist quotation (cost, £)</label><input type="number" id="o-spec" value="600" min="0" step="10"></div>
+      <div class="field"><label for="o-nte">Not-to-exceed (£)</label><input type="number" id="o-nte" value="400" min="0" step="50"></div>
+    </div>
+    <div class="field"><label for="o-desc">Description of the problem</label><textarea id="o-desc" placeholder="What has been reported, and anything the engineer should know"></textarea></div>
+  </div></div>
+  <div class="grid" style="align-content:start">
+    <div class="panel"><div class="panel-h"><h2>Live estimate</h2><span class="small muted">Rate card, 11 Nov 2026</span></div><div class="panel-b" id="estPanel"></div></div>
+    ${wates ? `<div class="panel"><div class="panel-b"><div class="field"><label for="o-po">Wates order number</label><input type="text" id="o-po" placeholder="PO-…"></div><label class="check"><input type="checkbox" id="o-approve" checked><span>Approve this estimate now, so Compass can book an engineer straight away</span></label></div></div>` : ''}
+    <button class="btn primary block" type="submit">${wates ? 'Send order to Compass' : 'Log order'}</button>
+  </div></form>`;
+}
+VIEWS.new = () => `<div class="page-head"><div><h1>Log an order</h1><p class="sub">Every instruction is recorded here, whether it came by email or phone. The estimate updates as you type. Emergencies go straight to dispatch; other jobs go to Wates for approval (per the current rule).</p></div></div>${orderForm('o', false)}`;
+function readOrder(){
+  const g = id => document.getElementById(id);
+  const trade = g('o-trade').value;
+  const j = { contract: site(g('o-site').value).contract, site:g('o-site').value, priority:g('o-pri').value, band:g('o-band').value, trade,
+    est:{ hours:Number(g('o-hours').value) || 0, materials:Number(g('o-mat').value) || 0 }, nte:Number(g('o-nte').value) || 0,
+    loc:g('o-loc').value, desc:g('o-desc').value || 'No description given.', wRef:g('o-wref').value };
+  if (trade === 'service'){ j.svcCat = g('o-cat').value; j.specialist = { cost:Number(g('o-spec').value) || 0, labourPct:.6, ref:'Pending' }; }
+  return j;
+}
+function updateEstimate(){
+  const g = id => document.getElementById(id); if (!g('estPanel')) return;
+  const svc = g('o-trade').value === 'service';
+  g('f-cat').hidden = !svc; g('f-spec').hidden = !svc; g('f-hours').hidden = svc; g('f-mat').hidden = svc;
+  const j = readOrder(), v = valuation(j), s = site(j.site);
+  const warn = [];
+  if (j.trade === 'lift' && j.band !== 'normal') warn.push('Lift out-of-hours rates are TBC in the schedule.');
+  if (v.total > j.nte && j.nte) warn.push(`Estimate exceeds the NTE of ${gbp(j.nte)}.`);
+  if (!svc && j.est.materials > 1000) warn.push('Materials over £1,000 need a Wates order before purchase.');
+  if (s.zone === 'C') warn.push('Zone C: travel to be quoted.');
+  g('estPanel').innerHTML = valTable(v, {totalLabel:'Estimate (excl. VAT)'}) + warn.map(w => `<div class="note warn small">${esc(w)}</div>`).join('') +
+    `<p class="small muted">${needsApproval(j) ? 'Needs Wates approval before dispatch.' : 'Can be dispatched immediately; estimate sent to Wates at the same time.'}</p>`;
+}
+function submitOrder(wates){
+  const j = readOrder(), id = 'CMP-' + S.seq.job++;
+  Object.assign(j, { id, source: wates ? 'Wates portal' : document.getElementById('o-source').value, received: nowISO(), approved:null, contractor:null, engineer:null, log:[] });
+  log(j, wates ? 'Wates' : 'Helpdesk', wates ? 'Order raised by Paul Coffey in the Wates portal.' : `Order logged from ${j.source.toLowerCase()}.`);
+  if (wates && document.getElementById('o-approve').checked){
+    const po = document.getElementById('o-po').value || 'PO-' + (771470 + S.seq.job);
+    j.approved = { by:'Paul Coffey (Wates)', at:nowISO(), po, amount:valuation(j).total }; j.status = 'approved'; log(j, 'Wates', `Estimate approved. ${po}.`);
+  } else if (!needsApproval(j)){
+    j.status = 'approved'; log(j, 'System', 'Approval not needed before dispatch under current rule. Estimate sent to Wates.');
+  } else { j.status = 'awaiting'; log(j, 'System', 'Estimate sent to Wates for approval (portal + email).'); }
+  S.jobs.unshift(j); save();
+  toast(`${id} logged. ${j.status === 'awaiting' ? 'Estimate sent to Wates.' : 'Ready to dispatch.'}`);
+  go(wates ? 'w-jobs' : 'job', wates ? null : id);
+}
+
+/* ----- Contractors ----- */
+VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Compliance is checked before every dispatch. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks dispatch.</p></div></div>
+  ${S.contractors.map(c => { const s = contractorState(c);
+    return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · ${c.type === 'spec' ? esc(c.cats.join(', ')) : c.trades.map(t => RATES[t].short).join(', ')}</div></div>
+    ${s.state === 'crit' ? '<span class="chip crit">Blocked from dispatch</span>' : s.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">Compliant</span>'}</div>
+    <div class="panel-b"><div class="grid g3">
+      <div><span class="eyebrow">Commercial</span><dl class="kv small" style="margin-top:6px">
+        ${c.rates ? `<dt>Rates</dt><dd class="mono">${gbp(c.rates.normal)} / ${gbp(c.rates.ooh)} / ${gbp(c.rates.sun)}</dd><dt>Call-out</dt><dd class="mono">${gbp(c.rates.callout)}</dd>` : `<dt>Pricing</dt><dd>${c.type === 'dlo' ? 'Internal' : 'Quote per job'}</dd>`}
+        <dt>CIS</dt><dd>${esc(CIS[c.cis])}</dd><dt>VAT</dt><dd>${c.vat ? 'Registered' : 'Not registered'}</dd>
+        ${c.sba ? `<dt>Self-billing</dt><dd>Agreement to ${fmtD(c.sba.exp)} ${compStatus(c.sba.exp) !== 'ok' ? `<span class="chip ${compStatus(c.sba.exp)}">${compStatus(c.sba.exp) === 'crit' ? 'Expired' : 'Renew'}</span>` : ''}</dd>` : ''}
+      </dl></div>
+      <div><span class="eyebrow">Company documents</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">${c.compliance.map(i => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><span>${esc(i.item)}${i.block ? '' : ''}</span><span class="chip ${compStatus(i.exp)}">${fmtD(i.exp)}</span></div>`).join('')}</div></div>
+      <div><span class="eyebrow">Engineers</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:8px">${c.engineers.map(e => `<div><b>${esc(e.name)}</b><div class="row" style="gap:4px;margin-top:3px">${[['CSCS', e.cscs], ['Asbestos', e.asb], ['DBS', e.dbs]].map(([l, d]) => `<span class="chip ${compStatus(d)}" title="${fmtD(d)}">${l} ${fmtD(d)}</span>`).join('')}</div></div>`).join('')}</div></div>
+    </div></div></div>`; }).join('')}`;
+
+/* ----- Sites ----- */
+VIEWS.sites = () => `<div class="page-head"><div><h1>Site register</h1><p class="sub">Each site is set up once. Orders pick up its zone, access notes and asbestos information automatically, and every job builds the site's history.</p></div></div>
+  ${S.contracts.map(c => `<div class="panel"><div class="panel-h"><div><h2>${esc(c.client)} · ${esc(c.name)}</h2><div class="small muted">${esc(c.note)}</div></div></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Site</th><th>Zone</th><th class="hide-sm">Type</th><th>Access & asbestos</th><th class="num">Jobs</th></tr></thead><tbody>
+  ${S.sites.filter(s => s.contract === c.id).map(s => `<tr><td><b>${esc(s.name)}</b><div class="small muted">${esc(s.area)} ${esc(s.postcode)}<br>${esc(s.contact)}</div></td><td><span class="chip">Zone ${s.zone}</span>${s.zone === 'B' ? '<div class="small muted">+£75/visit</div>' : ''}</td><td class="hide-sm">${esc(s.type)}</td><td class="small">${esc(s.access)}<div class="muted">${esc(s.asbestos)}</div>${s.notes ? `<div class="muted"><i>${esc(s.notes)}</i></div>` : ''}</td><td class="num mono">${S.jobs.filter(j => j.site === s.id).length}</td></tr>`).join('')}
+  </tbody></table></div></div>`).join('')}`;
+
+/* ----- Quote register (inspection fees) ----- */
+function quoteRows(wates){
+  const st = S.settings;
+  return `<div class="tbl-wrap"><table><thead><tr><th>Quote</th><th>Site & works</th><th>Raised from</th><th class="num">Value</th><th class="num">Inspection fee</th><th>Status</th></tr></thead><tbody>
+  ${S.quotes.map(q => { const age = daysBetween(q.inspected, DEMO_TODAY), lapsed = q.fee && q.status === 'awaiting' && age > st.inspectionCreditDays;
+    return `<tr><td class="mono"><b>${q.id}</b><div class="small muted">${fmtD(q.inspected)}</div></td><td>${esc(site(q.site).name)}<div class="small muted">${esc(q.desc)}</div></td><td class="small">${esc(q.from)}</td><td class="num mono">${gbp(q.value)}</td>
+    <td class="num mono">${q.fee ? gbp(q.fee) : '—'}<div class="small muted">${!q.fee ? 'None (call-out)' : q.status === 'ordered' ? 'Credited in full' : lapsed ? 'Due at next review' : `Held: ${st.inspectionCreditDays - age} days left`}</div></td>
+    <td>${q.status === 'ordered' ? '<span class="chip ok">Ordered</span>' : wates ? `<button class="btn sm primary" data-orderq="${q.id}">Approve quote</button>` : `<span class="chip warn">Awaiting order · ${age} days</span>`}</td></tr>`; }).join('')}
+  </tbody></table></div>`;
+}
+VIEWS.quotes = () => {
+  const st = S.settings, aw = S.quotes.filter(q => q.status === 'awaiting'), held = aw.filter(q => q.fee);
+  const conv = Math.round(S.quotes.filter(q => q.status === 'ordered').length / S.quotes.length * 100);
+  return `<div class="page-head"><div><h1>Quote register</h1><p class="sub">Inspection fees are not invoiced when a quote is raised. They are held against the quote, credited in full if it is ordered, and reviewed with Wates every ${st.inspectionReviewMonths} months for quotes that never turned into orders. No fee applies when the quote comes from a call-out.</p></div></div>
+  <div class="grid g3">
+    <div class="panel stat"><span class="eyebrow">Quotes awaiting an order</span><span class="v">${aw.length}</span><span class="small muted">${gbp(aw.reduce((a, q) => a + q.value, 0))} of work</span></div>
+    <div class="panel stat warn"><span class="eyebrow">Inspection fees held</span><span class="v">${gbp(held.reduce((a, q) => a + q.fee, 0))}</span><span class="small muted">Credit window ${st.inspectionCreditDays} days</span></div>
+    <div class="panel stat"><span class="eyebrow">Conversion rate</span><span class="v">${conv}%</span><span class="small muted">Evidence for the 6-monthly review</span></div>
+  </div><div class="panel">${quoteRows(false)}</div>`;
+};
+
+/* ----- Self-billing & CIS ----- */
+VIEWS.selfbill = () => {
+  const byC = {};
+  S.selfbills.forEach(b => { const x = byC[b.contractor] ||= { gross:0, labour:0, cis:0 }; x.gross += b.labour + b.materials; x.labour += b.labour; x.cis += b.cis; });
+  return `<div class="page-head"><div><h1>Self-billing &amp; CIS</h1><p class="sub">When a subcontractor's report is approved, a self-billed invoice is raised on their behalf at their agreed rates. CIS is deducted from labour only. Each contractor has its own sequential numbering, under a signed self-billing agreement.</p></div></div>
+  <div class="panel"><div class="panel-h"><h2>Self-billed invoices</h2></div><div class="tbl-wrap"><table><thead><tr><th>Invoice</th><th>Contractor</th><th>Job</th><th class="num">Labour</th><th class="num">Materials</th><th class="num">CIS</th><th class="num">Net payable</th><th class="hide-sm">VAT</th></tr></thead><tbody>
+  ${S.selfbills.slice().reverse().map(b => `<tr><td class="mono"><b>${b.id}</b><div class="small muted">${fmtD(b.date)}</div><div class="small muted">SELF-BILLED INVOICE</div></td><td>${esc(contractor(b.contractor).name)}</td><td class="mono">${b.job}</td><td class="num mono">${gbp(b.labour)}</td><td class="num mono">${gbp(b.materials)}</td><td class="num mono">${gbp(-b.cis)}</td><td class="num mono"><b>${gbp(b.labour + b.materials - b.cis)}</b></td><td class="small hide-sm">${esc(b.vatNote)}</td></tr>`).join('')}
+  </tbody></table></div></div>
+  <div class="panel"><div class="panel-h"><h2>CIS summary: November 2026</h2><span class="small muted">For your accountant's monthly CIS300 return</span></div><div class="tbl-wrap"><table><thead><tr><th>Subcontractor</th><th>Status</th><th class="num">Gross paid</th><th class="num">Labour</th><th class="num">CIS deducted</th></tr></thead><tbody>
+  ${Object.entries(byC).map(([id, x]) => { const c = contractor(id); return `<tr><td>${esc(c.name)}</td><td>${esc(CIS[c.cis])}</td><td class="num mono">${gbp(x.gross)}</td><td class="num mono">${gbp(x.labour)}</td><td class="num mono">${gbp(x.cis)}</td></tr>`; }).join('')}
+  </tbody></table></div></div>
+  <div class="note small">VAT treatment on subcontractor invoices (domestic reverse charge for construction services) to be confirmed with your accountant before go-live.</div>`;
+};
+
+/* ----- Settings ----- */
+function policyText(){ const st = S.settings; return st.approvalPolicy === 'all' ? 'every job needs Wates approval before dispatch' : st.approvalPolicy === 'except_emergency' ? 'every job except emergencies needs Wates approval before dispatch' : `jobs estimated over ${gbp(st.approvalThreshold)} need Wates approval before dispatch`; }
+VIEWS.settings = () => { const st = S.settings;
+  const sel = (id, val, opts) => `<select id="${id}" data-setting="${id}">${opts.map(([v, l]) => `<option value="${v}" ${String(val) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  const num = (id, val, step) => `<input type="number" id="${id}" data-setting="${id}" value="${val}" step="${step || 1}" min="0">`;
+  const rule = (title, tag, desc, ctrl) => `<div class="grid g2" style="align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)"><div><div class="row"><b>${title}</b>${tag ? `<span class="tag">${tag}</span>` : ''}</div><p class="small muted">${desc}</p></div><div>${ctrl}</div></div>`;
+  return `<div class="page-head"><div><h1>Rules &amp; settings</h1><p class="sub">Terms still being agreed with Wates are settings, not code. Change one here and every estimate and valuation updates straight away.</p></div></div>
+  <div class="panel"><div class="panel-h"><h2>Call-outs</h2></div><div class="panel-b" style="gap:0">
+    ${rule('Return visits (e.g. to fit parts)', 'Agreed in principle 18 Nov', 'Leon: follow-up after a make-safe is planned works, so no call-out. Proposal clause 8 to be updated to match.', sel('returnVisitCallout', st.returnVisitCallout, [['false','No call-out on return visits'],['true','Charge call-out on return visits']]))}
+    ${rule('Second trade on the same visit', 'Under discussion', 'E.g. a lift engineer plus an electrician for isolation. Compass to come back to Wates.', sel('multiTrade', st.multiTrade, [['per_trade','Call-out per trade'],['single','One call-out per visit']]))}
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2>Approvals</h2></div><div class="panel-b" style="gap:0">
+    ${rule('When Wates must approve before dispatch', 'Proposed', 'Emergencies go immediately to protect the 12-hour response; the estimate is sent at the same time.', sel('approvalPolicy', st.approvalPolicy, [['except_emergency','All jobs except emergencies'],['all','Every job'],['threshold','Only above a value']]))}
+    ${rule('Approval threshold (£)', '', 'Used when approval is required only above a value.', num('approvalThreshold', st.approvalThreshold, 50))}
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2>Inspection &amp; quote visits</h2></div><div class="panel-b" style="gap:0">
+    ${rule('Inspection fee (£)', '', 'Held against the quote, not invoiced when the quote is raised.', num('inspectionFee', st.inspectionFee, 10))}
+    ${rule('Credit window (days)', 'Leon offered to extend from 90', 'Fee credited in full if the work is ordered within this period.', num('inspectionCreditDays', st.inspectionCreditDays, 30))}
+    ${rule('Review unconverted quotes every (months)', 'Proposed by Leon', 'Fees for quotes never ordered are raised by agreement at review.', num('inspectionReviewMonths', st.inspectionReviewMonths))}
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2>Markups</h2></div><div class="panel-b" style="gap:0">
+    ${rule('Materials, plant & waste (%)', '', 'Applies only to materials Compass buys for its own direct work.', num('materialsMarkup', st.materialsMarkup, .5))}
+    ${rule('Specialist management fee (%)', '', "On the specialist's whole price (their labour and materials). Never doubled up with the materials markup.", num('specialistFee', st.specialistFee, .5))}
+    ${rule('Specialist minimum fee (£)', '', 'Per instruction.', num('specialistMin', st.specialistMin, 5))}
+  </div></div>`;
+};
+
+/* ============================== Wates views ============================== */
+VIEWS['w-home'] = () => {
+  const mine = S.jobs, aw = mine.filter(j => j.status === 'awaiting'), exc = S.exceptions.filter(e => e.status === 'open');
+  const live = mine.filter(j => ['approved','dispatched','onsite'].includes(j.status));
+  const done = mine.filter(j => j.status === 'complete');
+  return `<div class="page-head"><div><span class="eyebrow">Wates · client portal</span><h1>Good afternoon, Paul</h1><p class="sub">Your orders with Compass MEP across Castle Point and the South East corporate estate.</p></div><button class="btn primary" data-view="w-new">+ Raise an order</button></div>
+  <div class="grid g4">
+    <div class="panel stat warn"><span class="eyebrow">Estimates to approve</span><span class="v">${aw.length}</span><span class="small muted">${gbp(aw.reduce((a, j) => a + valuation(j).total, 0))}</span></div>
+    <div class="panel stat crit"><span class="eyebrow">Decisions needed</span><span class="v">${exc.length}</span><span class="small muted">No access, further works</span></div>
+    <div class="panel stat"><span class="eyebrow">In progress</span><span class="v">${live.length}</span><span class="small muted">Booked or on site</span></div>
+    <div class="panel stat"><span class="eyebrow">Completed & valued</span><span class="v">${done.length}</span><span class="small muted">${gbp(done.reduce((a, j) => a + valuation(j, 'actual').total, 0))}</span></div>
+  </div>
+  ${exc.length ? `<div class="panel"><div class="panel-h"><h2>Decisions needed</h2></div><div class="panel-b">${exc.map(e => exceptionCard(e, true)).join('')}</div></div>` : ''}
+  <div class="panel"><div class="panel-h"><h2>Estimates waiting for you</h2><button class="btn sm" data-view="w-approvals">Go to approvals</button></div>${jobRows(aw, {wates:true})}</div>`;
+};
+VIEWS['w-approvals'] = () => {
+  const aw = S.jobs.filter(j => j.status === 'awaiting'), exc = S.exceptions.filter(e => e.status === 'open');
+  return `<div class="page-head"><div><h1>Approvals</h1><p class="sub">Each estimate is built from the agreed schedule of rates, so every line can be checked against it. Approve with your order number and Compass books the engineer.</p></div></div>
+  ${aw.map(j => { const s = site(j.site), v = valuation(j); return `<div class="panel"><div class="panel-h"><div><div class="row"><b class="mono">${j.id}</b>${pri(j.priority)}<span class="small muted mono">${esc(j.wRef)}</span></div><div class="small muted">${esc(s.name)} · Zone ${s.zone} · ${esc(j.trade === 'service' ? j.svcCat : RATES[j.trade].short)}</div></div><button class="btn sm" data-open="${j.id}">Details</button></div>
+    <div class="panel-b"><div class="grid g2"><div><p>${esc(j.desc)}</p><p class="small muted" style="margin-top:6px">${esc(j.loc)}</p></div><div>${valTable(v, {totalLabel:'Estimate (excl. VAT)'})}</div></div>
+    <div class="row end"><div class="field" style="width:200px"><label for="po-${j.id}">Wates order number</label><input type="text" id="po-${j.id}" placeholder="PO-…"></div><button class="btn" data-query="${j.id}" style="align-self:flex-end">Query</button><button class="btn primary" data-approve="${j.id}" style="align-self:flex-end">Approve estimate</button></div></div></div>`; }).join('') || '<div class="panel"><div class="empty">No estimates waiting.</div></div>'}
+  ${exc.length ? `<div class="panel"><div class="panel-h"><h2>Decisions needed</h2></div><div class="panel-b">${exc.map(e => exceptionCard(e, true)).join('')}</div></div>` : ''}`;
+};
+VIEWS['w-jobs'] = () => `<div class="page-head"><div><h1>All jobs</h1><p class="sub">Live status, visit reports with timestamped photos, and valuations once checked.</p></div><button class="btn primary" data-view="w-new">+ Raise an order</button></div>
+  <div class="panel">${jobRows(S.jobs.slice().sort((a, b) => b.received.localeCompare(a.received)), {wates:true})}</div>`;
+VIEWS['w-new'] = () => `<div class="page-head"><div><h1>Raise an order</h1><p class="sub">You can still email or phone the Compass helpdesk. Orders raised here get an instant estimate from the agreed rates.</p></div></div>${orderForm('o', true)}`;
+VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="sub">Quotes from Compass, with any inspection fee held against them. Fees are credited in full when the work is ordered.</p></div></div><div class="panel">${quoteRows(true)}</div>`;
+
+/* ============================== Actions ============================== */
+function wire(){
+  const app = document.getElementById('app');
+  app.onclick = e => {
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq]'); if (!t) return;
+    if (t.tagName === 'A') e.preventDefault();
+    if (t.dataset.view) return go(t.dataset.view);
+    if (t.dataset.open) return go('job', t.dataset.open);
+    if (t.dataset.filter){ ui.jobFilter = t.dataset.filter; return render(); }
+    if (t.dataset.approve){
+      const j = job(t.dataset.approve), po = (document.getElementById('po-' + j.id)?.value || '').trim() || 'PO-' + (771480 + Math.floor(Math.random() * 90));
+      j.approved = { by:'Paul Coffey (Wates)', at:nowISO(), po, amount:valuation(j).total }; j.status = 'approved';
+      log(j, 'Wates', `Estimate approved by Paul Coffey. ${po}.`); save(); toast(`${j.id} approved (${po}). Compass has been notified.`); return render();
+    }
+    if (t.dataset.query){ const j = job(t.dataset.query); log(j, 'Wates', 'Estimate queried by Paul Coffey. Compass to respond.'); save(); toast(`Query sent to Compass on ${j.id}.`); return render(); }
+    if (t.dataset.decide){
+      const ex = S.exceptions.find(x => x.id === t.dataset.decide), j = job(ex.job);
+      ex.status = 'closed'; ex.decision = { text:t.dataset.text, by:'Paul Coffey (Wates)', at:nowISO() };
+      log(j, 'Wates', `Decision on ${ex.title.toLowerCase()}: ${t.dataset.text}.`);
+      if (ex.type === 'further' && t.dataset.text === 'Approve quote'){ const q = S.quotes.find(q => ex.detail.includes(q.id)); if (q){ q.status = 'ordered'; q.ordered = nowISO(); } }
+      if (ex.type === 'noaccess' && t.dataset.text === 'Rebook visit'){ j.status = 'review'; }
+      if (ex.type === 'noaccess' && t.dataset.text === 'Cancel order'){ j.status = 'review'; }
+      if (['asbestos'].includes(ex.type)) j.status = 'review';
+      if (ex.type === 'over' && j.status === 'hold') j.status = 'review';
+      save(); toast('Decision recorded and sent to Compass.'); return render();
+    }
+    if (t.dataset.orderq){ const q = S.quotes.find(q => q.id === t.dataset.orderq); q.status = 'ordered'; q.ordered = nowISO(); save(); toast(`${q.id} ordered.${q.fee ? ` Inspection fee ${gbp(q.fee)} credited.` : ''}`); return render(); }
+    const act = t.dataset.act;
+    if (act === 'reset'){ S = seed(); save(); ui.eng = { who:'Dan Okafor', jobId:null, step:'list', d:null }; toast('Demo data reset.'); return go(ui.role === 'compass' ? 'dashboard' : 'w-home'); }
+    if (act === 'dispatch'){
+      const j = job(ui.jobId), [cid, eng] = document.getElementById('dispatchTo').value.split('|');
+      j.contractor = cid; j.engineer = eng; j.window = document.getElementById('window').value || j.window; j.status = 'dispatched';
+      if (j.trade === 'service' && j.specialist) j.specialist.contractor = cid;
+      log(j, 'Helpdesk', `Dispatched to ${eng} (${contractor(cid).name}). Compliance checked.${j.window ? ' Appointment ' + j.window + '.' : ''}`);
+      save(); toast(`${j.id} dispatched to ${eng}. Job sent to their app.`); return render();
+    }
+    if (act === 'approveReport'){
+      const j = job(ui.jobId); j.status = 'complete';
+      if (j.approved) j.approved.amount ??= valuation(j).total;
+      log(j, 'Rishi Rao', `Report approved. Valuation ${gbp(valuation(j, 'actual').total)} issued to Wates.`);
+      const cc = contractorCost(j);
+      if (cc){ const c = cc.c, code = c.name.replace(/[^A-Z]/g, '').slice(0, 3).padEnd(3, 'X'), id = `SB-${code}-${String(c.nextSB++).padStart(4, '0')}`;
+        S.selfbills.push({ id, contractor:c.id, job:j.id, date:nowISO(), labour:cc.labour, materials:cc.materials, cis:cc.cis, vatNote: c.vat ? 'Reverse charge' : 'Not VAT registered' });
+        log(j, 'System', `Self-billed invoice ${id} raised for ${c.name} (${gbp(cc.net)} net of CIS).`); }
+      save(); toast(`${j.id} complete. Valuation visible to Wates.`); return render();
+    }
+  };
+  app.onchange = e => {
+    const t = e.target;
+    if (t.dataset.setting){ const k = t.dataset.setting, st = S.settings; st[k] = t.type === 'number' ? Number(t.value) : t.value === 'true' ? true : t.value === 'false' ? false : t.value;
+      if (k === 'inspectionFee') S.quotes.forEach(q => { if (q.fee) q.fee = st.inspectionFee; });
+      save(); toast('Rule updated. Estimates recalculated.'); }
+  };
+  const f = document.getElementById('orderForm');
+  if (f){ f.oninput = updateEstimate; f.onchange = updateEstimate; f.onsubmit = e => { e.preventDefault(); submitOrder(ui.role === 'wates'); }; updateEstimate(); }
+}
+document.querySelector('.roles').onclick = e => { const b = e.target.closest('[data-role]'); if (!b) return; ui.role = b.dataset.role; ui.view = ui.role === 'compass' ? 'dashboard' : 'w-home'; render(); };
+
+/* ============================== Engineer app ============================== */
+const SAFETY = { signin:'Signed in with site contact / reception', asbestos:'Asbestos register checked for the work area', rams:'RAMS reviewed and briefed', permit:'Permits and isolations in place where needed', safe:'Work area made safe for the public' };
+const ENG_STEPS = [['arrive','Arrive'],['safety','Safety'],['before','Before'],['work','Work'],['outcome','Outcome'],['after','After'],['signoff','Sign-off'],['checkout','Submit']];
+function viewEngineer(){
+  const E = ui.eng, people = S.contractors.flatMap(c => c.engineers.filter(() => c.id === 'K1' || c.id === 'K2' || c.id === 'K3').map(e => [e.name, c]));
+  const head = (t, sub) => `<div class="phone-h"><span class="small" style="opacity:.75">${sub}</span><h2>${t}</h2></div>`;
+  let body;
+  if (E.step === 'list' || !E.jobId){
+    const mine = S.jobs.filter(j => j.engineer === E.who && ['dispatched','onsite'].includes(j.status));
+    body = head(`My jobs`, `Compass MEP field app · ${esc(E.who)}`) + `<div class="phone-b">
+      <div class="field"><label for="engWho">Signed in as (demo)</label><select id="engWho">${people.map(([n, c]) => `<option ${n === E.who ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+      ${mine.length ? mine.map(j => { const s = site(j.site); return `<button class="jobcard" data-ejob="${j.id}"><div class="row" style="justify-content:space-between;width:100%"><b class="mono">${j.id}</b>${pri(j.priority)}</div><b>${esc(s.name)}</b><span class="small muted">${esc(j.loc)}</span><span class="small">${esc(j.desc)}</span><span class="small muted">${esc(j.window || '')}</span></button>`; }).join('')
+        : `<div class="empty">No jobs dispatched to ${esc(E.who)}.<br><span class="small">Dispatch one from the Compass helpdesk view.</span></div>`}
+      <p class="small muted">Engineers see only their own jobs. Customer prices and margins are never shown in the app.</p></div>`;
+  } else {
+    const j = job(E.jobId), s = site(j.site), d = E.d, idx = ENG_STEPS.findIndex(x => x[0] === E.step);
+    const steps = `<div class="steps">${ENG_STEPS.map(([k, l], i) => `<span class="${i < idx ? 'done' : i === idx ? 'now' : ''}">${l}</span>`).join('')}</div>`;
+    const back = `<button class="btn sm" data-estep="list">← Jobs</button>`;
+    const stop = `<button class="btn sm danger" data-asb="1">Stop: suspected asbestos</button>`;
+    let inner = '';
+    if (E.step === 'arrive') inner = `<dl class="kv small"><dt>Site</dt><dd>${esc(s.name)}</dd><dt>Location</dt><dd>${esc(j.loc)}</dd><dt>Window</dt><dd>${esc(j.window || '—')}</dd><dt>Contact</dt><dd>${esc(s.contact)}<br><span class="mono">${esc(s.phone)}</span></dd><dt>Access</dt><dd>${esc(s.access)}</dd><dt>Asbestos</dt><dd>${esc(s.asbestos)}</dd></dl>
+      <div class="note small">${esc(j.desc)}</div>
+      <button class="btn primary block" data-checkin="1">Check in on site</button><p class="small muted">Records your arrival time and GPS location. The Wates job number and order number are attached automatically.</p>`;
+    if (E.step === 'safety') inner = `<div class="note ok small">Checked in ${fmtT(d.arrive)} · GPS ${esc(d.gps)}</div><p class="small">Confirm before starting work:</p>
+      ${Object.entries(SAFETY).map(([k, l]) => `<label class="check ${d.checklist[k] ? 'on' : ''}"><input type="checkbox" data-chk="${k}" ${d.checklist[k] ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}
+      <button class="btn primary block" data-estep="before" ${Object.keys(SAFETY).every(k => d.checklist[k]) ? '' : 'disabled'}>Start work</button>
+      <div class="row" style="justify-content:space-between"><button class="btn sm" data-noaccess="1">No access to site</button>${stop}</div>`;
+    if (E.step === 'noaccess') inner = `<div class="note crit small">No access. The minimum charge applies only if you arrived within the agreed window (${esc(j.window || 'n/a')}). Record the evidence below.</div>
+      ${photoPicker('before', 'Photo of the locked entrance / site', 'noaccess')}
+      <div class="field"><label for="calls">Calls made to site contact</label><input type="number" id="calls" min="0" value="${d.calls ?? 2}"></div>
+      <label class="check ${d.withinWindow ? 'on' : ''}"><input type="checkbox" id="inwin" ${d.withinWindow ? 'checked' : ''}><span>I arrived within the agreed appointment window</span></label>
+      <div class="field"><label for="nanotes">Notes</label><textarea id="nanotes" placeholder="e.g. Building locked, waited 30 minutes">${esc(d.notes || '')}</textarea></div>
+      <button class="btn primary block" data-submitna="1" ${d.before.length ? '' : 'disabled'}>Submit no-access report</button>`;
+    if (E.step === 'before') inner = `${photoPicker('before', 'Before photo', 'before')}<button class="btn primary block" data-estep="work" ${d.before.length ? '' : 'disabled'}>Next: record work</button><p class="small muted">At least one before photo is required. Each photo is stamped with time and GPS.</p>${stop}`;
+    if (E.step === 'work') inner = `<div class="field"><label for="wnotes">Work carried out</label><textarea id="wnotes" placeholder="What you found and what you did">${esc(d.notes || '')}</textarea></div>
+      <span class="eyebrow">Materials used</span>
+      ${d.materials.map((m, i) => `<div class="row small" style="justify-content:space-between"><span>${esc(m.desc)}</span><span class="mono">${gbp(m.cost)} <button class="btn sm" data-rmmat="${i}">×</button></span></div>`).join('') || '<p class="small muted">None added.</p>'}
+      <div class="grid g2"><div class="field"><label for="mdesc">Item</label><input type="text" id="mdesc" placeholder="e.g. 15mm isolation valve"></div><div class="field"><label for="mcost">Cost (£)</label><input type="number" id="mcost" min="0" step="0.01"></div></div>
+      <button class="btn sm" data-addmat="1">+ Add material</button>
+      <div class="field"><label for="wexp">Parking / congestion / ULEZ (£)</label><input type="number" id="wexp" min="0" step="0.5" value="${d.expenses || 0}"></div>
+      <button class="btn primary block" data-estep="outcome">Next: outcome</button>${stop}`;
+    if (E.step === 'outcome') inner = `<p class="small">How did the visit end?</p>
+      ${[['complete','Work completed'],['further','Further works needed (quote required)'],['parts','Parts required: return visit'],['asbestos','Suspected asbestos: stopped']].map(([k, l]) => `<label class="check ${d.outcome === k ? 'on' : ''}"><input type="radio" name="oc" value="${k}" ${d.outcome === k ? 'checked' : ''}><span>${l}</span></label>`).join('')}
+      ${d.outcome && d.outcome !== 'complete' ? `<div class="field"><label for="odet">${d.outcome === 'further' ? 'Describe the further works' : d.outcome === 'parts' ? 'Parts needed' : 'What did you find?'}</label><textarea id="odet">${esc(d.outcomeDetail || '')}</textarea></div>` : ''}
+      ${d.outcome === 'further' ? `<div class="field"><label for="oval">Rough value of further works (£, for the quote)</label><input type="number" id="oval" min="0" step="50" value="${d.furtherValue || 800}"></div>` : ''}
+      <button class="btn primary block" data-estep="${d.outcome === 'asbestos' ? 'checkout' : 'after'}" ${d.outcome ? '' : 'disabled'}>Next</button>`;
+    if (E.step === 'after') inner = `${photoPicker('after', 'After photo', 'after')}<button class="btn primary block" data-estep="signoff" ${d.after.length ? '' : 'disabled'}>Next: site sign-off</button>`;
+    if (E.step === 'signoff') inner = `<div class="field"><label for="sname">Site contact name</label><input type="text" id="sname" value="${esc(d.signedBy || '')}" placeholder="Name and role"></div>
+      <div class="field"><label>Signature</label><canvas id="sig" class="sig" width="760" height="280" aria-label="Signature pad"></canvas><button class="btn sm" data-clrsig="1" style="align-self:flex-start">Clear</button></div>
+      <button class="btn primary block" data-signoff="1">Confirm sign-off</button><button class="btn sm" data-estep="checkout">Site contact not available</button>`;
+    if (E.step === 'checkout') inner = `<div class="note small">Checked in at ${fmtT(d.arrive)}. Checking out records your departure time.</div>
+      <div class="field"><label for="demoHrs">Time on site (demo override, hours)</label><input type="number" id="demoHrs" min="0.25" step="0.25" value="${d.demoHours || 1.75}"></div>
+      <dl class="kv small"><dt>Outcome</dt><dd>${esc(OUTCOME[d.outcome] || '—')}</dd><dt>Photos</dt><dd>${d.before.length} before · ${d.after.length} after</dd><dt>Materials</dt><dd>${d.materials.length}</dd><dt>Signed by</dt><dd>${esc(d.signedBy || 'Not signed')}</dd></dl>
+      <button class="btn primary block" data-checkout="1">Check out &amp; submit report</button>`;
+    body = head(`${esc(s.name)}`, `<span class="mono">${j.id}</span> · ${esc(j.priority)}`) + `<div class="phone-b"><div class="row" style="justify-content:space-between">${back}</div>${steps}${inner}</div>`;
+  }
+  return `<div class="page-head"><div><h1>Engineer app</h1><p class="sub">What engineers and subcontractors use on their phones. Try it: check in to CMP-1045, complete the safety checks, add photos (upload your own or use a sample), choose an outcome and submit. Then switch to the helpdesk or Wates view to see the report arrive.</p></div></div><div class="phone">${body}</div>`;
+}
+function photoPicker(kind, label, stampKind){
+  const d = ui.eng.d, arr = d[kind];
+  return `<span class="eyebrow">${label}s</span>${arr.length ? `<div class="photos">${arr.map(p => `<figure class="photo" style="margin:0"><img src="${photoSrc(p)}" alt="${esc(p.label)}"><figcaption>${fmtT(p.ts)}</figcaption></figure>`).join('')}</div>` : ''}
+    <div class="row"><label class="btn sm" for="file-${kind}">Take / upload photo</label><input type="file" id="file-${kind}" accept="image/*" capture="environment" data-file="${kind}" data-stamp="${stampKind}" hidden><button class="btn sm" data-sample="${kind}" data-stamp="${stampKind}">Use sample photo</button></div>`;
+}
+function wireEngineer(){
+  const app = document.getElementById('app'), E = ui.eng;
+  const persistInputs = () => { const g = id => document.getElementById(id); const d = E.d; if (!d) return;
+    if (g('wnotes')) d.notes = g('wnotes').value; if (g('wexp')) d.expenses = Number(g('wexp').value) || 0;
+    if (g('odet')) d.outcomeDetail = g('odet').value; if (g('oval')) d.furtherValue = Number(g('oval').value) || 0;
+    if (g('sname')) d.signedBy = g('sname').value; if (g('demoHrs')) d.demoHours = Number(g('demoHrs').value) || 1;
+    if (g('calls')) d.calls = Number(g('calls').value) || 0; if (g('inwin')) d.withinWindow = g('inwin').checked; if (g('nanotes')) d.notes = g('nanotes').value; };
+  const rer = () => { render(); };
+  app.onclick = e => {
+    const t = e.target.closest('button,[data-ejob]'); if (!t) return; persistInputs();
+    const ds = t.dataset, j = E.jobId && job(E.jobId);
+    if (ds.ejob){ const jj = job(ds.ejob); E.jobId = jj.id; E.d = { arrive:null, gps:null, checklist:{}, before:[], after:[], materials:[], expenses:0, outcome:null, signedBy:'', signature:null };
+      E.step = jj.status === 'onsite' ? 'safety' : 'arrive'; if (jj.status === 'onsite' && jj.visitDraft) E.d = jj.visitDraft; return rer(); }
+    if (ds.estep){ if (ds.estep === 'list'){ E.step = 'list'; E.jobId = null; } else E.step = ds.estep; return rer(); }
+    if (ds.checkin){ const s = site(j.site), [la, lo] = s.gps.split(',').map(Number);
+      E.d.arrive = nowISO(); E.d.gps = `${(la + (Math.random() - .5) / 5000).toFixed(4)}, ${(lo + (Math.random() - .5) / 5000).toFixed(4)}`;
+      j.status = 'onsite'; log(j, j.engineer, `Checked in on site (GPS ${E.d.gps}, within 50 m of site).`); save(); E.step = 'safety'; return rer(); }
+    if (ds.noaccess){ E.step = 'noaccess'; E.d.withinWindow ??= true; return rer(); }
+    if (ds.asb){ E.d.outcome = 'asbestos'; E.step = 'outcome'; return rer(); }
+    if (ds.sample){ const k = ds.sample, stamp = ds.stamp; E.d[k].push({ ...samplePhotoRef(stamp === 'noaccess' ? 'Locked entrance' : k === 'before' ? 'Before work' : 'After work', nowISO(), E.d.gps || site(j.site).gps, stamp, k === 'before' ? 200 : 150), sample:true }); return rer(); }
+    if (ds.addmat){ const desc = document.getElementById('mdesc').value.trim(), cost = Number(document.getElementById('mcost').value); if (!desc || !(cost >= 0)) return toast('Enter an item and its cost.'); E.d.materials.push({ desc, cost }); return rer(); }
+    if (ds.rmmat){ E.d.materials.splice(Number(ds.rmmat), 1); return rer(); }
+    if (ds.clrsig){ const c = document.getElementById('sig'); c.getContext('2d').clearRect(0, 0, c.width, c.height); c.dataset.inked = ''; return; }
+    if (ds.signoff){ const c = document.getElementById('sig'); if (!E.d.signedBy) return toast('Enter the site contact’s name.'); if (c.dataset.inked) E.d.signature = c.toDataURL('image/png'); E.step = 'checkout'; return rer(); }
+    if (ds.submitna){ E.d.outcome = 'noaccess'; return submitVisit(j); }
+    if (ds.checkout) return submitVisit(j);
+  };
+  app.onchange = e => { const t = e.target;
+    if (t.id === 'engWho'){ E.who = t.value; return rer(); }
+    if (t.dataset.chk){ E.d.checklist[t.dataset.chk] = t.checked; return rer(); }
+    if (t.name === 'oc'){ persistInputs(); E.d.outcome = t.value; return rer(); }
+    if (t.id === 'inwin'){ E.d.withinWindow = t.checked; t.closest('.check').classList.toggle('on', t.checked); }
+    if (t.dataset.file && t.files[0]){ const k = t.dataset.file, j = job(E.jobId); persistInputs();
+      stampPhoto(t.files[0], k === 'before' ? 'Before work' : 'After work', t.dataset.stamp, E.d.gps || site(j.site).gps, p => { E.d[k].push(p); rer(); }); }
+  };
+  const c = document.getElementById('sig');
+  if (c){ const x = c.getContext('2d'); x.lineWidth = 4; x.lineCap = 'round'; x.strokeStyle = getComputedStyle(document.body).color; let drawing = false;
+    const pos = ev => { const r = c.getBoundingClientRect(); return [(ev.clientX - r.left) * c.width / r.width, (ev.clientY - r.top) * c.height / r.height]; };
+    c.onpointerdown = ev => { drawing = true; c.setPointerCapture(ev.pointerId); x.beginPath(); x.moveTo(...pos(ev)); };
+    c.onpointermove = ev => { if (!drawing) return; x.lineTo(...pos(ev)); x.stroke(); c.dataset.inked = '1'; };
+    c.onpointerup = () => drawing = false; }
+}
+function submitVisit(j){
+  const E = ui.eng, d = E.d, depart = new Date(), hours = d.outcome === 'noaccess' ? 0.5 : (d.demoHours || 1.75);
+  j.visit = { arrive:d.arrive, depart:depart.toISOString(), hours, gps:d.gps, checklist:d.checklist, before:d.before, after:d.after, notes:d.notes || '', materials:d.materials, expenses:d.expenses || 0,
+    outcome:d.outcome || 'complete', outcomeDetail:d.outcomeDetail || '', signedBy:d.signedBy, signature:d.signature, calls:d.calls, withinWindow:d.withinWindow };
+  j.status = 'review';
+  log(j, j.engineer, `Checked out. Report submitted: ${OUTCOME[j.visit.outcome].toLowerCase()}.`);
+  const s = site(j.site), exc = (type, title, detail, charge, ask, actions) => { S.exceptions.unshift({ id:'E-0' + S.seq.exc++, job:j.id, type, at:nowISO(), status:'open', title, detail, charge, ask, actions }); log(j, 'System', `Exception raised: ${title}. Wates notified by email and portal.`); };
+  const v = j.visit;
+  if (v.outcome === 'noaccess'){ j.status = 'hold';
+    exc('noaccess', `No access at ${s.name}`, `Engineer arrived ${fmtT(v.arrive)}${j.window ? ` (window ${j.window})` : ''}. ${v.calls} call(s) to site contact. ${v.notes}`.trim(),
+      v.withinWindow ? 'Minimum charge applies (clause 7): arrival was within the agreed window.' : 'Arrived outside the agreed window: not charged automatically.', 'Rebook the visit, or cancel the order?', ['Rebook visit','Cancel order']); }
+  if (v.outcome === 'further'){ const qid = 'Q-' + S.seq.quote++;
+    S.quotes.push({ id:qid, site:j.site, desc:v.outcomeDetail || 'Further works', inspected:nowISO(), fee:0, value:d.furtherValue || 800, status:'awaiting', from:`Call-out ${j.id}` });
+    exc('further', `Further works found at ${s.name}`, `${v.outcomeDetail || 'Further works required.'} Quoted as ${qid} (${gbp(d.furtherValue || 800)}). No inspection fee: found during a call-out.`, 'Further works need an order before they proceed (clause 16).', `Approve quote ${qid}?`, ['Approve quote','Query quote']); }
+  if (v.outcome === 'parts'){ const id = 'CMP-' + S.seq.job++;
+    const rv = { id, wRef:j.wRef, parent:j.id, contract:j.contract, site:j.site, priority:'Planned', trade:j.trade, band:'normal', source:'Return visit', received:nowISO(), loc:j.loc, nte:j.nte,
+      desc:`Return visit: ${v.outcomeDetail || 'fit parts on order'}.`, est:{ hours:1.5, materials:80 }, approved:null, contractor:null, engineer:null, status:'awaiting', log:[] };
+    log(rv, 'System', `Created from ${j.id} (parts required). ${S.settings.returnVisitCallout ? '' : 'No call-out: booked as planned works.'}`);
+    if (!needsApproval(rv)) rv.status = 'approved'; S.jobs.unshift(rv);
+    exc('parts', `Parts on order: return visit ${id}`, `${(v.outcomeDetail || 'Parts required').replace(/\.?\s*$/, '.')} Return visit ${id} created and sent for approval.`, S.settings.returnVisitCallout ? 'Return visit charged as a new attendance.' : 'No call-out on the return visit.', 'Acknowledge?', ['Acknowledge']); }
+  if (v.outcome === 'asbestos'){ j.status = 'hold';
+    exc('asbestos', `Suspected asbestos at ${s.name}`, `Work stopped. ${v.outcomeDetail || ''} Area left safe. Asbestos survey required before work continues.`, 'Time on site up to this point is charged (clause 18).', 'Arrange an asbestos survey through the Compass supply chain?', ['Arrange survey','Wates to arrange']); }
+  const est = j.approved?.amount ?? valuation(j, 'estimate').total, act = valuation(j, 'actual').total;
+  if (j.approved && act > est && v.outcome !== 'noaccess') exc('over', `Valuation over approved estimate on ${j.id}`, `Actual ${gbp(act)} against approved ${gbp(est)} (+${gbp(act - est)}). ${v.notes ? 'Engineer notes: ' + v.notes : ''}`, 'Needs Wates acceptance before invoicing.', 'Accept the revised valuation?', ['Accept','Query']);
+  save(); toast(`Report for ${j.id} submitted. Compass and Wates notified.`);
+  E.step = 'list'; E.jobId = null; E.d = null; render();
+}
+
+render();
+</script>
