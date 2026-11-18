@@ -181,6 +181,7 @@ textarea{min-height:84px;resize:vertical}
   <nav class="roles" aria-label="View as">
     <button data-role="compass">Compass helpdesk</button>
     <button data-role="wates">Wates portal</button>
+    <button data-role="partner">Supply chain partner</button>
     <button data-role="engineer">Engineer app</button>
   </nav>
 </header>
@@ -221,7 +222,7 @@ function seed(){
   const S = {};
   S.settings = {
     returnVisitCallout:false, multiTrade:'per_trade', approvalPolicy:'except_emergency', approvalThreshold:500,
-    inspectionFee:120, inspectionCreditDays:180, inspectionReviewMonths:6,
+    inspectionFee:120, inspectionCreditDays:180, inspectionReviewMonths:6, offerHours:4, offerMinsEmergency:30,
     materialsMarkup:15, specialistFee:12.5, specialistMin:50
   };
   S.contracts = [
@@ -237,22 +238,25 @@ function seed(){
   ];
   const ok = (y) => y; // readability
   S.contractors = [
-    { id:'K1', name:'Compass MEP (direct)', type:'dlo', trades:['building','specialist'], rates:null, cis:'na', vat:true,
+    { id:'K1', name:'Compass MEP (direct)', type:'dlo', trades:['building','specialist'], zones:['A','B','C'], rates:null, cis:'na', vat:true,
       compliance:[{item:'Public liability insurance',exp:'2027-06-30',block:true},{item:"Employer's liability insurance",exp:'2027-06-30',block:true},{item:'SSIP: CHAS',exp:'2027-03-14'},{item:'Company RAMS library',exp:'2027-01-31'}],
       engineers:[{name:'Dan Okafor',trade:'building',cscs:'2028-02-01',asb:'2027-05-10',dbs:'2027-09-01'},{name:'Priya Shah',trade:'specialist',cscs:'2027-11-20',asb:'2027-04-02',dbs:'2027-08-15'}] },
-    { id:'K2', name:'Brightline Fire & Security Ltd', type:'sub', trades:['specialist'], rates:{normal:52,ooh:75,sun:100,callout:30}, cis:'gross', vat:true, sba:{signed:'2026-02-01',exp:'2027-02-01'}, nextSB:7,
+    { id:'K2', name:'Brightline Fire & Security Ltd', type:'sub', trades:['specialist'], zones:['A','B'], maxValue:2500, rates:{normal:52,ooh:75,sun:100,callout:30}, cis:'gross', vat:true, sba:{signed:'2026-02-01',exp:'2027-02-01'}, nextSB:7,
       compliance:[{item:'Public liability insurance (£10m)',exp:'2027-04-30',block:true},{item:"Employer's liability insurance",exp:'2027-04-30',block:true},{item:'BAFE SP203-1',exp:'2027-08-31',block:true},{item:'SSIP: SafeContractor',exp:'2027-01-15'},{item:'RAMS: fire alarm servicing',exp:'2027-03-01'},{item:'Self-billing agreement',exp:'2027-02-01'}],
       engineers:[{name:'Sam Reid',trade:'specialist',cscs:'2027-10-11',asb:'2027-06-19',dbs:'2027-02-03'}] },
-    { id:'K3', name:'K. Mensah t/a Eastway Plumbing & Heating', type:'sub', trades:['building'], rates:{normal:42,ooh:60,sun:80,callout:25}, cis:'net20', vat:false, sba:{signed:'2026-05-12',exp:'2027-05-12'}, nextSB:4,
+    { id:'K7', name:'Sentinel Security Systems Ltd', type:'sub', trades:['specialist'], zones:['A'], maxValue:2000, rates:{normal:55,ooh:80,sun:105,callout:35}, cis:'gross', vat:true, sba:{signed:'2026-06-01',exp:'2027-06-01'}, nextSB:1,
+      compliance:[{item:'Public liability insurance (£5m)',exp:'2027-05-31',block:true},{item:"Employer's liability insurance",exp:'2027-05-31',block:true},{item:'NSI Gold',exp:'2027-09-30',block:true},{item:'SSIP: CHAS',exp:'2027-04-15'},{item:'Self-billing agreement',exp:'2027-06-01'}],
+      engineers:[{name:'Tom Hughes',trade:'specialist',cscs:'2027-12-01',asb:'2027-03-03',dbs:'2027-08-08'}] },
+    { id:'K3', name:'K. Mensah t/a Eastway Plumbing & Heating', type:'sub', trades:['building'], zones:['A'], maxValue:1500, rates:{normal:42,ooh:60,sun:80,callout:25}, cis:'net20', vat:false, sba:{signed:'2026-05-12',exp:'2027-05-12'}, nextSB:4,
       compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-30',block:true},{item:"Employer's liability insurance",exp:'2027-05-01',block:true},{item:'Gas Safe registration',exp:'2027-07-31',block:true},{item:'SSIP: Constructionline Gold',exp:'2027-02-20'},{item:'RAMS: plumbing & heating',exp:'2027-05-12'},{item:'Self-billing agreement',exp:'2027-05-12'}],
       engineers:[{name:'Kwame Mensah',trade:'building',cscs:'2027-03-30',asb:'2026-12-08',dbs:'2027-07-21'}] },
-    { id:'K4', name:'Apex Lift Services Ltd', type:'sub', trades:['lift'], rates:{normal:140,ooh:190,sun:240,callout:40}, cis:'gross', vat:true, sba:{signed:'2026-03-01',exp:'2027-03-01'}, nextSB:3,
+    { id:'K4', name:'Apex Lift Services Ltd', type:'sub', trades:['lift'], zones:['A','B'], maxValue:5000, rates:{normal:140,ooh:190,sun:240,callout:40}, cis:'gross', vat:true, sba:{signed:'2026-03-01',exp:'2027-03-01'}, nextSB:3,
       compliance:[{item:'Public liability insurance (£10m)',exp:'2027-09-30',block:true},{item:"Employer's liability insurance",exp:'2027-09-30',block:true},{item:'LEIA membership',exp:'2027-12-31',block:true},{item:'SSIP: CHAS',exp:'2027-05-01'},{item:'Self-billing agreement',exp:'2027-03-01'}],
       engineers:[{name:'Lee Turner',trade:'lift',cscs:'2027-08-08',asb:'2027-01-12',dbs:'2027-06-06'}] },
-    { id:'K5', name:'AquaSure Water Hygiene Ltd', type:'spec', trades:['service'], cats:['Water hygiene','Swimming pools'], rates:null, cis:'na', vat:true, sba:{signed:'2026-04-10',exp:'2027-04-10'}, nextSB:2,
+    { id:'K5', name:'AquaSure Water Hygiene Ltd', type:'spec', trades:['service'], zones:['A','B','C'], maxValue:0, cats:['Water hygiene','Swimming pools'], rates:null, cis:'na', vat:true, sba:{signed:'2026-04-10',exp:'2027-04-10'}, nextSB:2,
       compliance:[{item:'Public liability insurance (£5m)',exp:'2027-04-10',block:true},{item:"Employer's liability insurance",exp:'2027-04-10',block:true},{item:'Legionella Control Association',exp:'2027-06-30',block:true},{item:'SSIP: SafeContractor',exp:'2027-03-03'},{item:'Self-billing agreement',exp:'2027-04-10'}],
       engineers:[{name:'Ruth Allen',trade:'service',cscs:'2027-09-09',asb:'2027-02-02',dbs:'2027-05-05'}] },
-    { id:'K6', name:'Northgate Asbestos Surveys Ltd', type:'spec', trades:['service'], cats:['Asbestos'], rates:null, cis:'gross', vat:true, sba:{signed:'2025-11-01',exp:'2026-11-01'}, nextSB:1,
+    { id:'K6', name:'Northgate Asbestos Surveys Ltd', type:'spec', trades:['service'], zones:['A','B'], maxValue:0, cats:['Asbestos'], rates:null, cis:'gross', vat:true, sba:{signed:'2025-11-01',exp:'2026-11-01'}, nextSB:1,
       compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-09',block:true},{item:"Employer's liability insurance",exp:'2027-01-31',block:true},{item:'UKAS accreditation',exp:'2027-04-30',block:true},{item:'Self-billing agreement',exp:'2026-11-01'}],
       engineers:[{name:'Mark Chen',trade:'service',cscs:'2027-01-01',asb:'2027-01-01',dbs:'2026-10-30'}] }
   ];
@@ -333,6 +337,13 @@ function seed(){
       contractor:'K2', engineer:'Sam Reid', status:'dispatched', window:'Today, 13:00–16:00',
       log:[['2026-11-18T09:40','Helpdesk','Order logged from Wates email.'],['2026-11-18T10:10','Wates','Estimate approved. PO-771466.'],['2026-11-18T10:20','Helpdesk','Dispatched to Brightline Fire & Security (Sam Reid).']] }
   ];
+  S.jobs.push({ id:'CMP-1049', wRef:'WTS-55141', contract:'C1', site:'S3', priority:'Routine', trade:'building', band:'normal', source:'Email',
+      received:'2026-11-18T11:05', loc:'Pool plant room, floor gully by balance tank', nte:350,
+      desc:'Floor gully in pool plant room blocked, standing water around balance tank.',
+      est:{hours:2, materials:30}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-18T11:20', po:'PO-771471', amount:null},
+      contractor:null, engineer:null, status:'offered', window:'19 Nov, 08:00–12:00',
+      offers:[{ contractor:'K3', at:'2026-11-18T11:30', deadline:'2026-11-18T15:30', status:'offered', mode:'single' }],
+      log:[['2026-11-18T11:05','Helpdesk','Order logged from Wates email.'],['2026-11-18T11:20','Wates','Estimate approved. PO-771471.'],['2026-11-18T11:30','Helpdesk','Offered to K. Mensah t/a Eastway Plumbing & Heating. Respond by 18 Nov, 15:30.']] });
   S.exceptions = [
     { id:'E-031', job:'CMP-1042', type:'noaccess', at:'2026-11-17T09:51', status:'open',
       title:'No access at Paddocks Community Centre',
@@ -353,16 +364,16 @@ function seed(){
     { id:'SB-BRI-0006', contractor:'K2', job:'CMP-1031', date:'2026-11-06', labour:182.00, materials:44.20, cis:0, vatNote:'Reverse charge' },
     { id:'SB-EAS-0003', contractor:'K3', job:'CMP-1035', date:'2026-11-10', labour:109.00, materials:22.80, cis:21.80, vatNote:'Not VAT registered' }
   ];
-  S.seq = { job:1049, exc:32, quote:210 };
+  S.seq = { job:1050, exc:32, quote:210 };
   return S;
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v1';
+const KEY = 'compass-portal-demo-v2';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
-const ui = { role:'compass', view:'dashboard', jobId:null, jobFilter:'all', eng:{ who:'Dan Okafor', jobId:null, step:'list', d:null } };
+const ui = { role:'compass', view:'dashboard', jobId:null, jobFilter:'all', partner:'K3', eng:{ who:'Dan Okafor', jobId:null, step:'list', d:null } };
 
 const site = id => S.sites.find(s => s.id === id);
 const contractor = id => S.contractors.find(c => c.id === id);
@@ -453,10 +464,10 @@ function contractorState(c){
 
 /* ============================== Labels ============================== */
 const STATUS = {
-  awaiting:['Awaiting Wates approval','warn'], approved:['Approved: ready to dispatch','info'], dispatched:['Dispatched','acc'],
+  awaiting:['Awaiting Wates approval','warn'], approved:['Approved: ready to dispatch','info'], offered:['Offered to partner','acc'], dispatched:['Dispatched','acc'],
   onsite:['Engineer on site','acc'], review:['Report submitted','info'], hold:['On hold','crit'], complete:['Complete & valued','ok'], cancelled:['Cancelled','']
 };
-const WSTATUS = { ...STATUS, review:['Report being checked','info'], approved:['Approved: booking engineer','info'] };
+const WSTATUS = { ...STATUS, review:['Report being checked','info'], approved:['Approved: booking engineer','info'], offered:['Approved: booking engineer','info'] };
 const chip = (st, map=STATUS) => `<span class="chip ${map[st]?.[1] || ''}">${esc(map[st]?.[0] || st)}</span>`;
 const pri = p => `<span class="pri ${esc(p)}">${esc(p)}</span>`;
 const OUTCOME = { complete:'Work completed', further:'Further works required', parts:'Parts required: return visit', noaccess:'No access', asbestos:'Suspected asbestos: work stopped' };
@@ -505,7 +516,7 @@ function jobRows(list, opts={}){
     return `<tr class="click" data-open="${j.id}"><td><b class="mono">${j.id}</b><div class="small muted mono">${esc(j.wRef)}</div></td>
     <td>${esc(s.name)}<div class="small muted">${esc(contract(j.contract).name)} · Zone ${s.zone}</div></td><td>${pri(j.priority)}</td>
     <td class="hide-sm">${esc(j.trade === 'service' ? j.svcCat : RATES[j.trade].short)}</td>
-    ${w ? '' : `<td class="hide-sm">${c ? esc(c.type === 'dlo' ? (j.engineer || 'Compass') : c.name) : '<span class="muted">Not assigned</span>'}</td>`}
+    ${w ? '' : `<td class="hide-sm">${c ? esc(c.type === 'dlo' ? (j.engineer || 'Compass') : c.name) : j.status === 'offered' ? `<span class="muted">Offer out to ${(j.offers || []).filter(o => o.status === 'offered').length}</span>` : '<span class="muted">Not assigned</span>'}</td>`}
     <td>${chip(j.status, w ? WSTATUS : STATUS)}${ex ? ` <span class="chip crit">${ex} alert${ex > 1 ? 's' : ''}</span>` : ''}</td><td class="num mono">${j.visit?.outcome === 'noaccess' || j.trade !== 'lift' || RATES.lift[j.band] != null ? gbp(v.total) : '—'}</td></tr>`; }).join('')}
   </tbody></table></div>`;
 }
@@ -528,13 +539,18 @@ function render(){
   if (ui.role === 'engineer'){ app.innerHTML = `<main><div class="wrap">${viewEngineer()}</div></main>`; wireEngineer(); return; }
   const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['selfbill','Self-billing & CIS'],['settings','Rules & settings']];
   const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes']];
-  const nav = ui.role === 'compass' ? navC : navW;
-  const who = ui.role === 'compass' ? '<b>Rishi Rao</b><div class="small muted">Admin · Compass MEP</div>' : '<b>Paul Coffey</b><div class="small muted">Wates · Castle Point & SE contracts</div>';
+  const P = contractor(ui.partner);
+  const navP = [['p-offers','Job offers', S.jobs.filter(j => (j.offers || []).some(o => o.contractor === P.id && o.status === 'offered')).length, true],['p-jobs','My jobs'],['p-docs','Compliance documents', contractorState(P).state !== 'ok' ? '!' : 0, true],['p-inv','Self-billed invoices']];
+  const nav = ui.role === 'compass' ? navC : ui.role === 'partner' ? navP : navW;
+  const who = ui.role === 'compass' ? '<b>Rishi Rao</b><div class="small muted">Admin · Compass MEP</div>'
+    : ui.role === 'partner' ? `<label class="small muted" for="partnerWho">Signed in as (demo)</label><select id="partnerWho" style="margin-top:4px">${S.contractors.filter(c => c.type !== 'dlo').map(c => `<option value="${c.id}" ${c.id === P.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>`
+    : '<b>Paul Coffey</b><div class="small muted">Wates · Castle Point & SE contracts</div>';
   const cur = ui.view === 'job' ? (ui.role === 'compass' ? 'jobs' : 'w-jobs') : ui.view;
+  if (ui.role === 'partner' && !ui.view.startsWith('p-')) ui.view = 'p-offers';
   app.innerHTML = `<div class="shell"><nav class="nav" aria-label="Sections"><div class="who">${who}</div>
     ${nav.map(([v, l, n, hot]) => `<button data-view="${v}" ${cur === v ? 'aria-current="page"' : ''}><span>${l}</span>${n ? `<span class="count ${hot ? 'hot' : ''}">${n}</span>` : ''}</button>`).join('')}
     <div class="foot"><button class="btn sm block" data-act="reset">Reset demo data</button></div></nav>
-    <main><div class="wrap">${(VIEWS[ui.view] || VIEWS.dashboard)()}</div></main></div>`;
+    <main><div class="wrap">${(VIEWS[ui.role === 'partner' && !ui.view.startsWith('p-') ? 'p-offers' : ui.view] || VIEWS.dashboard)()}</div></main></div>`;
   wire();
 }
 function go(view, jobId){ ui.view = view; if (jobId) ui.jobId = jobId; render(); window.scrollTo(0, 0); }
@@ -595,19 +611,7 @@ VIEWS.job = () => {
   const approvedAmt = j.approved ? (j.approved.amount ?? est.total) : null;
   // Dispatch block (Compass only)
   let dispatch = '';
-  if (!W && ['approved','awaiting'].includes(j.status)){
-    const wait = j.status === 'awaiting' && needsApproval(j);
-    const opts = S.contractors.filter(c => c.trades.includes(j.trade) || (j.trade === 'service' && c.type === 'spec'));
-    dispatch = `<div class="panel"><div class="panel-h"><h2>Dispatch</h2>${wait ? '<span class="chip warn">Locked until Wates approves</span>' : ''}</div><div class="panel-b">
-      ${wait ? `<p class="small muted">Rule: ${esc(policyText())}. Change it under Rules &amp; settings.</p>` : ''}
-      <div class="field"><label for="dispatchTo">Contractor / engineer</label><select id="dispatchTo" ${wait ? 'disabled' : ''}>
-      ${opts.flatMap(c => { const st = contractorState(c); return c.engineers.filter(e => e.trade === j.trade || j.trade === 'service' || c.type !== 'dlo').map(e => `<option value="${c.id}|${esc(e.name)}" ${st.blocked.length ? 'disabled' : ''}>${esc(c.type === 'dlo' ? `${e.name} (Compass direct)` : `${c.name}: ${e.name}`)}${st.blocked.length ? ' (blocked: ' + esc(st.blocked[0].item) + ' expired)' : st.state === 'warn' ? ' (compliance expiring)' : ''}</option>`); }).join('')}
-      </select></div>
-      <div class="field"><label for="window">Appointment window</label><input type="text" id="window" value="${esc(j.window || '')}" placeholder="e.g. 20 Nov, 08:00–10:00" ${wait ? 'disabled' : ''}></div>
-      <div class="row end"><button class="btn primary" data-act="dispatch" ${wait ? 'disabled' : ''}>Dispatch &amp; notify engineer</button></div>
-      <p class="small muted">Blocked contractors can't be selected. Insurance or a key accreditation has expired.</p>
-    </div></div>`;
-  }
+  if (!W && ['approved','awaiting','offered'].includes(j.status)) dispatch = dispatchPanel(j, j.status === 'awaiting' && needsApproval(j));
   const approval = j.approved
     ? `<div class="note ok small">Approved by <b>${esc(j.approved.by)}</b>, ${fmtDT(j.approved.at)} · Order no. <b class="mono">${esc(j.approved.po)}</b> · ${gbp(approvedAmt)}</div>`
     : W && j.status === 'awaiting'
@@ -648,7 +652,7 @@ VIEWS.job = () => {
         <p class="small muted">Arrival and departure times are final unless queried within 14 days (clause 13)${v.depart ? `, by ${fmtD(new Date(new Date(v.depart).getTime() + 14 * 864e5).toISOString())}` : ''}.</p>
         ${!W && j.status === 'review' ? `<div class="row end"><button class="btn primary" data-act="approveReport">Approve report &amp; issue valuation</button></div>` : ''}
       </div></div>` : ''}
-      <div class="panel"><div class="panel-h"><h2>Activity</h2></div><div class="panel-b"><ul class="tl">${(j.log || []).slice().reverse().filter(l => !W || l[1] !== 'Helpdesk' || true).map(([at, who, t]) => `<li><time>${fmtDT(at)}</time><div><b>${esc(W && !['Wates','System','Helpdesk','Rishi Rao'].includes(who) ? 'Compass engineer' : who)}</b> · ${esc(W ? t.replace(/ to [A-Z][^.(]*?(Ltd|Heating|Services|Security)[^.]*/,' to Compass engineer') : t)}</div></li>`).join('')}</ul></div></div>
+      <div class="panel"><div class="panel-h"><h2>Activity</h2></div><div class="panel-b"><ul class="tl">${(j.log || []).slice().reverse().filter(l => !W || l[1] !== 'Helpdesk' || true).map(([at, who, t]) => `<li><time>${fmtDT(at)}</time><div><b>${esc(W && !['Wates','System','Helpdesk','Rishi Rao'].includes(who) ? 'Compass MEP' : who)}</b> · ${esc(W ? forWates(t) : t)}</div></li>`).join('')}</ul></div></div>
     </div>
     <div class="grid" style="align-content:start">
       <div class="panel"><div class="panel-h"><h2>Estimate</h2><span class="small muted">From the rate card</span></div><div class="panel-b">${valTable(est, {totalLabel:'Estimate (excl. VAT)'})}${approval}</div></div>
@@ -737,7 +741,7 @@ function submitOrder(wates){
 /* ----- Contractors ----- */
 VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Compliance is checked before every dispatch. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks dispatch.</p></div></div>
   ${S.contractors.map(c => { const s = contractorState(c);
-    return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · ${c.type === 'spec' ? esc(c.cats.join(', ')) : c.trades.map(t => RATES[t].short).join(', ')}</div></div>
+    return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · ${c.type === 'spec' ? esc(c.cats.join(', ')) : c.trades.map(t => RATES[t].short).join(', ')} · Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</div></div>
     ${s.state === 'crit' ? '<span class="chip crit">Blocked from dispatch</span>' : s.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">Compliant</span>'}</div>
     <div class="panel-b"><div class="grid g3">
       <div><span class="eyebrow">Commercial</span><dl class="kv small" style="margin-top:6px">
@@ -747,7 +751,7 @@ VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors<
       </dl></div>
       <div><span class="eyebrow">Company documents</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">${c.compliance.map(i => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><span>${esc(i.item)}${i.block ? '' : ''}</span><span class="chip ${compStatus(i.exp)}">${fmtD(i.exp)}</span></div>`).join('')}</div></div>
       <div><span class="eyebrow">Engineers</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:8px">${c.engineers.map(e => `<div><b>${esc(e.name)}</b><div class="row" style="gap:4px;margin-top:3px">${[['CSCS', e.cscs], ['Asbestos', e.asb], ['DBS', e.dbs]].map(([l, d]) => `<span class="chip ${compStatus(d)}" title="${fmtD(d)}">${l} ${fmtD(d)}</span>`).join('')}</div></div>`).join('')}</div></div>
-    </div></div></div>`; }).join('')}`;
+    </div>${(c.pending || []).length ? `<div class="note warn small">${c.pending.map((p, i) => `<div class="row" style="justify-content:space-between">Renewal uploaded by partner: <b>${esc(p.item)}</b> (${esc(p.file)}) <button class="btn sm primary" data-approvedoc="${c.id}|${i}">Approve</button></div>`).join('')}</div>` : ''}</div></div>`; }).join('')}`;
 
 /* ----- Sites ----- */
 VIEWS.sites = () => `<div class="page-head"><div><h1>Site register</h1><p class="sub">Each site is set up once. Orders pick up its zone, access notes and asbestos information automatically, and every job builds the site's history.</p></div></div>
@@ -806,6 +810,10 @@ VIEWS.settings = () => { const st = S.settings;
     ${rule('When Wates must approve before dispatch', 'Proposed', 'Emergencies go immediately to protect the 12-hour response; the estimate is sent at the same time.', sel('approvalPolicy', st.approvalPolicy, [['except_emergency','All jobs except emergencies'],['all','Every job'],['threshold','Only above a value']]))}
     ${rule('Approval threshold (£)', '', 'Used when approval is required only above a value.', num('approvalThreshold', st.approvalThreshold, 50))}
   </div></div>
+  <div class="panel"><div class="panel-h"><h2>Offering jobs to partners</h2></div><div class="panel-b" style="gap:0">
+    ${rule('Reply deadline: planned, urgent, routine (hours)', '', 'Offered to one partner at a time. Declined or missed jobs move to the next partner.', num('offerHours', st.offerHours, 1))}
+    ${rule('Reply deadline: emergency (minutes)', '', 'Offered to every eligible partner at once. First to accept gets the job.', num('offerMinsEmergency', st.offerMinsEmergency, 5))}
+  </div></div>
   <div class="panel"><div class="panel-h"><h2>Inspection &amp; quote visits</h2></div><div class="panel-b" style="gap:0">
     ${rule('Inspection fee (£)', '', 'Held against the quote, not invoiced when the quote is raised.', num('inspectionFee', st.inspectionFee, 10))}
     ${rule('Credit window (days)', 'Leon offered to extend from 90', 'Fee credited in full if the work is ordered within this period.', num('inspectionCreditDays', st.inspectionCreditDays, 30))}
@@ -850,7 +858,7 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
@@ -874,14 +882,19 @@ function wire(){
     }
     if (t.dataset.orderq){ const q = S.quotes.find(q => q.id === t.dataset.orderq); q.status = 'ordered'; q.ordered = nowISO(); save(); toast(`${q.id} ordered.${q.fee ? ` Inspection fee ${gbp(q.fee)} credited.` : ''}`); return render(); }
     const act = t.dataset.act;
-    if (act === 'reset'){ S = seed(); save(); ui.eng = { who:'Dan Okafor', jobId:null, step:'list', d:null }; toast('Demo data reset.'); return go(ui.role === 'compass' ? 'dashboard' : 'w-home'); }
-    if (act === 'dispatch'){
-      const j = job(ui.jobId), [cid, eng] = document.getElementById('dispatchTo').value.split('|');
-      j.contractor = cid; j.engineer = eng; j.window = document.getElementById('window').value || j.window; j.status = 'dispatched';
-      if (j.trade === 'service' && j.specialist) j.specialist.contractor = cid;
-      log(j, 'Helpdesk', `Dispatched to ${eng} (${contractor(cid).name}). Compliance checked.${j.window ? ' Appointment ' + j.window + '.' : ''}`);
-      save(); toast(`${j.id} dispatched to ${eng}. Job sent to their app.`); return render();
-    }
+    if (act === 'reset'){ S = seed(); save(); ui.eng = { who:'Dan Okafor', jobId:null, step:'list', d:null }; toast('Demo data reset.'); return go(ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'); }
+    const winVal = () => { const w = document.getElementById('window'); return w && w.value ? w.value : null; };
+    if (act === 'offer'){ const j = job(ui.jobId); j.window = winVal() || j.window; offerJob(j); save(); toast(j.priority === 'Emergency' ? `${j.id} offered to all eligible partners. First to accept gets it.` : `${j.id} offered. Partner notified by email and portal.`); return render(); }
+    if (act === 'assignDlo'){ const j = job(ui.jobId), eng = document.getElementById('dloEng').value; j.window = winVal() || j.window;
+      (j.offers || []).forEach(o => { if (o.status === 'offered') o.status = 'withdrawn'; });
+      j.contractor = 'K1'; j.engineer = eng; j.status = 'dispatched'; log(j, 'Helpdesk', `Assigned to ${eng} (Compass direct).${j.window ? ' Appointment ' + j.window + '.' : ''}`); save(); toast(`${j.id} sent to ${eng}'s app.`); return render(); }
+    if (t.dataset.expire){ const j = job(ui.jobId), o = j.offers[Number(t.dataset.expire)]; o.status = 'expired'; log(j, 'System', `${contractor(o.contractor).name} did not respond by the deadline.`); nextOffer(j); save(); toast('Offer expired. Moved on.'); return render(); }
+    if (t.dataset.accept){ const j = job(t.dataset.accept), eng = document.getElementById('eng-' + j.id).value; acceptOffer(j, ui.partner, eng); save(); toast(`Accepted ${j.id}. ${eng} will see it in the engineer app.`); return render(); }
+    if (t.dataset.decline){ const j = job(t.dataset.decline), reason = document.getElementById('why-' + j.id).value; declineOffer(j, ui.partner, reason); save(); toast(`Declined ${j.id}. Compass has been told.`); return render(); }
+    if (t.dataset.engapp){ ui.role = 'engineer'; ui.eng = { who:t.dataset.engapp, jobId:null, step:'list', d:null }; render(); window.scrollTo(0, 0); return; }
+    if (t.dataset.approvedoc){ const [cid, i] = t.dataset.approvedoc.split('|'), c = contractor(cid), pd = c.pending.splice(Number(i), 1)[0];
+      const item = c.compliance.find(x => x.item === pd.item); if (item) item.exp = '2027-11-30';
+      save(); toast(`${pd.item} approved for ${c.name}. Valid to 30 Nov 2027.`); return render(); }
     if (act === 'approveReport'){
       const j = job(ui.jobId); j.status = 'complete';
       if (j.approved) j.approved.amount ??= valuation(j).total;
@@ -895,6 +908,8 @@ function wire(){
   };
   app.onchange = e => {
     const t = e.target;
+    if (t.id === 'partnerWho'){ ui.partner = t.value; return render(); }
+    if (t.dataset.upload && t.files[0]){ const c = contractor(ui.partner); (c.pending ||= []).push({ item:t.dataset.upload, file:t.files[0].name, at:nowISO() }); save(); toast('Uploaded. Compass will check it before it counts.'); return render(); }
     if (t.dataset.setting){ const k = t.dataset.setting, st = S.settings; st[k] = t.type === 'number' ? Number(t.value) : t.value === 'true' ? true : t.value === 'false' ? false : t.value;
       if (k === 'inspectionFee') S.quotes.forEach(q => { if (q.fee) q.fee = st.inspectionFee; });
       save(); toast('Rule updated. Estimates recalculated.'); }
@@ -902,13 +917,119 @@ function wire(){
   const f = document.getElementById('orderForm');
   if (f){ f.oninput = updateEstimate; f.onchange = updateEstimate; f.onsubmit = e => { e.preventDefault(); submitOrder(ui.role === 'wates'); }; updateEstimate(); }
 }
-document.querySelector('.roles').onclick = e => { const b = e.target.closest('[data-role]'); if (!b) return; ui.role = b.dataset.role; ui.view = ui.role === 'compass' ? 'dashboard' : 'w-home'; render(); };
+document.querySelector('.roles').onclick = e => { const b = e.target.closest('[data-role]'); if (!b) return; ui.role = b.dataset.role; ui.view = ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'; render(); };
+
+
+/* ============================== Supply chain offers ============================== */
+function forWates(t){
+  S.contractors.forEach(c => { if (c.type !== 'dlo') [c.name, c.name.replace(/ Ltd$/, ''), c.name.replace(/^.* t\/a /, '')].forEach(n => { t = t.split(n).join('Compass supply chain'); }); c.engineers.forEach(e => { t = t.split(e.name).join('engineer'); }); });
+  return t.replace(/Offered to Compass supply chain[^.]*\.( Respond by [^.]*\.)?/, 'Booking engineer.').replace(/Emergency offered to \d+ eligible partners? at once\./, 'Booking engineer.');
+}
+function partnerEligibility(j){
+  const s = site(j.site), val = valuation(j).total, offers = j.offers || [];
+  return S.contractors.filter(c => c.type !== 'dlo').map(c => {
+    const st = contractorState(c), prev = offers.find(o => o.contractor === c.id);
+    const tradeOk = j.trade === 'service' ? c.type === 'spec' && (c.cats || []).includes(j.svcCat) : c.trades.includes(j.trade);
+    let why = '';
+    if (!tradeOk) why = j.trade === 'service' ? `Doesn't cover ${j.svcCat.toLowerCase()}` : `Doesn't cover ${RATES[j.trade].short.toLowerCase()}`;
+    else if (!c.zones.includes(s.zone)) why = `Doesn't cover Zone ${s.zone}`;
+    else if (st.blocked.length) why = `Blocked: ${st.blocked[0].item} expired`;
+    else if (c.maxValue && val > c.maxValue) why = `Over their job limit of ${gbp(c.maxValue)}`;
+    else if (prev) why = prev.status === 'declined' ? 'Declined this job' : prev.status === 'expired' ? 'Missed the deadline' : prev.status === 'offered' ? 'Offer live' : 'Already offered';
+    const open = S.jobs.filter(x => x.contractor === c.id && ['dispatched','onsite'].includes(x.status)).length;
+    return { c, ok:!why, why, open };
+  }).sort((a, b) => (b.ok - a.ok) || a.open - b.open || a.c.name.localeCompare(b.c.name));
+}
+function offerJob(j){
+  const ok = partnerEligibility(j).filter(x => x.ok); if (!ok.length) return false;
+  const broadcast = j.priority === 'Emergency', st = S.settings;
+  const deadline = new Date(Date.now() + (broadcast ? st.offerMinsEmergency * 6e4 : st.offerHours * 36e5)).toISOString();
+  const targets = broadcast ? ok : [ok[0]];
+  (j.offers ||= []).push(...targets.map(x => ({ contractor:x.c.id, at:nowISO(), deadline, status:'offered', mode:broadcast ? 'broadcast' : 'single' })));
+  j.status = 'offered';
+  log(j, 'Helpdesk', broadcast ? `Emergency offered to ${targets.length} eligible partner${targets.length === 1 ? '' : 's'} at once.` : `Offered to ${targets[0].c.name}. Respond by ${fmtDT(deadline)}.`);
+  return true;
+}
+function nextOffer(j){
+  if ((j.offers || []).some(o => o.status === 'offered')) return;
+  if (!offerJob(j)){ j.status = 'approved'; log(j, 'System', 'No eligible partner left. Back with the helpdesk to assign.'); }
+}
+function acceptOffer(j, cid, eng){
+  j.offers.forEach(o => { if (o.status === 'offered') o.status = o.contractor === cid ? 'accepted' : 'withdrawn'; });
+  j.contractor = cid; j.engineer = eng; j.status = 'dispatched';
+  if (j.trade === 'service'){ j.specialist ||= {}; j.specialist.contractor = cid; }
+  log(j, contractor(cid).name, `Accepted the job. ${eng} will attend${j.window ? ', ' + j.window : ''}.`);
+}
+function declineOffer(j, cid, reason){
+  const o = j.offers.find(o => o.contractor === cid && o.status === 'offered'); o.status = 'declined'; o.reason = reason;
+  log(j, contractor(cid).name, `Declined the job: ${reason.toLowerCase()}.`);
+  nextOffer(j);
+}
+const OFFER = { offered:['Waiting for reply','warn'], accepted:['Accepted','ok'], declined:['Declined','crit'], expired:['Missed deadline','crit'], withdrawn:['Withdrawn','info'] };
+function dispatchPanel(j, wait){
+  const el = partnerEligibility(j), ok = el.filter(x => x.ok), no = el.filter(x => !x.ok && x.why !== 'Offer live');
+  const offers = j.offers || [], live = offers.some(o => o.status === 'offered'), lock = wait ? 'disabled' : '';
+  const broadcast = j.priority === 'Emergency', st = S.settings;
+  const dloEng = j.trade === 'service' ? [] : contractor('K1').engineers.filter(e => e.trade === j.trade);
+  let h = `<div class="panel"><div class="panel-h"><h2>Dispatch</h2>${wait ? '<span class="chip warn">Locked until Wates approves</span>' : live ? '<span class="chip acc">Offer out</span>' : ''}</div><div class="panel-b">`;
+  if (wait) h += `<p class="small muted">Rule: ${esc(policyText())}. Change it under Rules &amp; settings.</p>`;
+  h += `<div class="field"><label for="window">Appointment window</label><input type="text" id="window" value="${esc(j.window || '')}" placeholder="e.g. 20 Nov, 08:00–10:00" ${lock}></div>`;
+  if (offers.length) h += `<div><span class="eyebrow">Offers so far</span><ul class="tl">${offers.map((o, i) => `<li><time>${fmtDT(o.at)}</time><div><b>${esc(contractor(o.contractor).name)}</b> <span class="chip ${OFFER[o.status][1]}">${OFFER[o.status][0]}</span>${o.reason ? `<div class="small muted">${esc(o.reason)}</div>` : ''}${o.status === 'offered' ? `<div class="row small muted">Reply by ${fmtDT(o.deadline)} <button class="btn sm" data-expire="${i}">Deadline passed (demo)</button></div>` : ''}</div></li>`).join('')}</ul></div>`;
+  if (!live){
+    h += `<span class="eyebrow">Offer to supply chain partners</span>`;
+    if (ok.length) h += `<p class="small muted">${broadcast ? `Emergency: offered to all ${ok.length} eligible partner${ok.length > 1 ? 's' : ''} at once. First to accept gets the job. Reply within ${st.offerMinsEmergency} minutes.` : `Offered to one partner at a time, in this order. If they decline or miss the ${st.offerHours}-hour deadline, it moves to the next.`}</p>
+      <ol class="small" style="margin:0;padding-left:18px">${ok.map(x => `<li>${esc(x.c.name)} <span class="muted">· ${x.open} live job${x.open === 1 ? '' : 's'}</span></li>`).join('')}</ol>
+      <button class="btn primary" data-act="offer" ${lock}>${broadcast ? `Offer to all ${ok.length} now` : `Offer to ${esc(ok[0].c.name)}`}</button>`;
+    else h += `<div class="note warn small">No eligible partner for this job. Assign a Compass engineer, or see why partners were excluded.</div>`;
+  }
+  if (no.length) h += `<details class="small"><summary class="muted" style="cursor:pointer">Not eligible (${no.length})</summary><div style="display:flex;flex-direction:column;gap:3px;margin-top:6px">${no.map(x => `<div>${esc(x.c.name)}: <span class="muted">${esc(x.why)}</span></div>`).join('')}</div></details>`;
+  if (dloEng.length) h += `<div class="field" style="border-top:1px solid var(--line);padding-top:12px"><label for="dloEng">Or send to a Compass engineer directly</label><div class="row" style="flex-wrap:nowrap"><select id="dloEng" ${lock}>${dloEng.map(e => `<option>${esc(e.name)}</option>`).join('')}</select><button class="btn" data-act="assignDlo" ${lock}>Assign</button></div></div>`;
+  return h + '</div></div>';
+}
+
+/* ============================== Partner portal ============================== */
+VIEWS['p-offers'] = () => {
+  const c = contractor(ui.partner), st = contractorState(c);
+  const mine = S.jobs.filter(j => (j.offers || []).some(o => o.contractor === c.id && o.status === 'offered'));
+  const past = S.jobs.flatMap(j => (j.offers || []).filter(o => o.contractor === c.id && o.status !== 'offered').map(o => [j, o]));
+  const reasons = ['Not available in that window','No capacity this week','Outside our scope','Other'];
+  return `<div class="page-head"><div><span class="eyebrow">Compass MEP supply chain portal</span><h1>Job offers</h1><p class="sub">Jobs offered to ${esc(c.name)} because they match your trades, coverage and job limit. Accept to book it in, or decline so it can go to someone else.</p></div></div>
+  ${st.state !== 'ok' ? `<div class="note ${st.blocked.length ? 'crit' : 'warn'} small">${st.blocked.length ? 'You are not receiving offers: ' + esc(st.blocked[0].item) + ' has expired.' : 'A document expires soon.'} <a href="#" data-view="p-docs">Update compliance documents</a></div>` : ''}
+  ${mine.length ? mine.map(j => { const s = site(j.site), o = j.offers.find(o => o.contractor === c.id && o.status === 'offered');
+    return `<div class="panel"><div class="panel-h"><div><div class="row"><b class="mono">${j.id}</b>${pri(j.priority)}${o.mode === 'broadcast' ? '<span class="chip warn">Sent to several partners: first to accept</span>' : ''}</div><div class="small muted">${esc(s.name)}, ${esc(s.area)} · Zone ${s.zone}</div></div><span class="small">Reply by <b>${fmtDT(o.deadline)}</b></span></div>
+    <div class="panel-b"><div class="grid g2"><div><p>${esc(j.desc)}</p><dl class="kv small" style="margin-top:8px"><dt>Location</dt><dd>${esc(j.loc)}</dd><dt>Window</dt><dd>${esc(j.window || 'To agree')}</dd><dt>Access</dt><dd>${esc(s.access)}</dd><dt>Asbestos</dt><dd>${esc(s.asbestos)}</dd></dl></div>
+      <div><span class="eyebrow">Your terms</span><dl class="kv small" style="margin-top:6px">${c.rates ? `<dt>Call-out</dt><dd class="mono">${gbp(j.parent && !S.settings.returnVisitCallout ? 0 : c.rates.callout)}</dd><dt>Your rate</dt><dd class="mono">${gbp(c.rates[j.band] || c.rates.normal)}/h (${BANDS[j.band].toLowerCase()})</dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : `<dt>Pricing</dt><dd>Your agreed quotation${j.specialist?.ref ? ' ' + esc(j.specialist.ref) : ''}</dd>`}
+        <dt>Payment</dt><dd>Self-billed by Compass · ${esc(CIS[c.cis])}</dd></dl></div></div>
+      <div class="grid g2" style="align-items:end"><div class="field"><label for="eng-${j.id}">Engineer attending</label><select id="eng-${j.id}">${c.engineers.map(e => `<option>${esc(e.name)}</option>`).join('')}</select></div><button class="btn primary" data-accept="${j.id}">Accept job</button></div>
+      <div class="grid g2" style="align-items:end"><div class="field"><label for="why-${j.id}">Reason for declining</label><select id="why-${j.id}">${reasons.map(r => `<option>${r}</option>`).join('')}</select></div><button class="btn" data-decline="${j.id}">Decline</button></div>
+    </div></div>`; }).join('') : `<div class="panel"><div class="empty">No offers waiting. New offers also arrive by email.</div></div>`}
+  ${past.length ? `<div class="panel"><div class="panel-h"><h2>Earlier offers</h2></div><div class="tbl-wrap"><table><thead><tr><th>Job</th><th>Site</th><th>Offered</th><th>Outcome</th></tr></thead><tbody>${past.map(([j, o]) => `<tr><td class="mono">${j.id}</td><td>${esc(site(j.site).name)}</td><td>${fmtDT(o.at)}</td><td><span class="chip ${OFFER[o.status][1]}">${o.status === 'withdrawn' ? 'Taken by another partner' : OFFER[o.status][0]}</span></td></tr>`).join('')}</tbody></table></div></div>` : ''}`;
+};
+VIEWS['p-jobs'] = () => {
+  const c = contractor(ui.partner), list = S.jobs.filter(j => j.contractor === c.id || j.specialist?.contractor === c.id);
+  return `<div class="page-head"><div><h1>My jobs</h1><p class="sub">Jobs you have accepted. Your engineers complete the visit report in the engineer app.</p></div></div>
+  <div class="panel">${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Job</th><th>Site</th><th>Engineer</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody>${list.map(j => `<tr><td><b class="mono">${j.id}</b><div class="small muted">${esc(j.desc.slice(0, 60))}${j.desc.length > 60 ? '…' : ''}</div></td><td>${esc(site(j.site).name)}</td><td>${esc(j.engineer || '—')}</td><td class="small">${esc(j.window || '—')}</td><td>${chip(j.status)}</td><td>${['dispatched','onsite'].includes(j.status) ? `<button class="btn sm" data-engapp="${esc(j.engineer)}">Open engineer app</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No jobs yet.</div>'}</div>`;
+};
+VIEWS['p-docs'] = () => {
+  const c = contractor(ui.partner), st = contractorState(c), pend = c.pending || [];
+  const row = (item, exp, key) => { const p = pend.find(x => x.item === item); return `<tr><td>${esc(item)}</td><td><span class="chip ${compStatus(exp)}">${compStatus(exp) === 'crit' ? 'Expired' : 'Expires'} ${fmtD(exp)}</span></td><td>${p ? `<span class="chip info">Uploaded ${esc(p.file)}: Compass checking</span>` : `<label class="btn sm" for="up-${key}">Upload renewal</label><input type="file" id="up-${key}" data-upload="${esc(item)}" hidden>`}</td></tr>`; };
+  return `<div class="page-head"><div><h1>Compliance documents</h1><p class="sub">Keep these current to keep receiving offers. Expired insurance or a key accreditation pauses offers until Compass approves the renewal.</p></div>${st.blocked.length ? '<span class="chip crit">Offers paused</span>' : st.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">All current</span>'}</div>
+  <div class="panel"><div class="panel-h"><h2>Company</h2><span class="small muted">Coverage: Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</span></div><div class="tbl-wrap"><table><tbody>${c.compliance.map((i, n) => row(i.item, i.exp, 'c' + n)).join('')}</tbody></table></div></div>
+  <div class="panel"><div class="panel-h"><h2>Engineers</h2></div><div class="tbl-wrap"><table><tbody>${c.engineers.flatMap((e, n) => [[`${e.name}: CSCS`, e.cscs], [`${e.name}: asbestos awareness`, e.asb], [`${e.name}: DBS`, e.dbs]].map(([l, d], m) => row(l, d, `e${n}${m}`))).join('')}</tbody></table></div></div>`;
+};
+VIEWS['p-inv'] = () => {
+  const c = contractor(ui.partner), list = S.selfbills.filter(b => b.contractor === c.id);
+  const tot = list.reduce((a, b) => ({ g:a.g + b.labour + b.materials, cis:a.cis + b.cis }), { g:0, cis:0 });
+  return `<div class="page-head"><div><h1>Self-billed invoices</h1><p class="sub">Compass raises your invoice when your visit report is approved, at your agreed rates. ${c.sba ? `Self-billing agreement valid to ${fmtD(c.sba.exp)}.` : ''} CIS: ${esc(CIS[c.cis])}.</p></div></div>
+  <div class="grid g3"><div class="panel stat"><span class="eyebrow">Invoiced</span><span class="v">${gbp(tot.g)}</span></div><div class="panel stat"><span class="eyebrow">CIS deducted</span><span class="v">${gbp(tot.cis)}</span></div><div class="panel stat"><span class="eyebrow">Net paid</span><span class="v">${gbp(tot.g - tot.cis)}</span></div></div>
+  <div class="panel">${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Invoice</th><th>Job</th><th class="num">Labour</th><th class="num">Materials</th><th class="num">CIS</th><th class="num">Net</th></tr></thead><tbody>${list.slice().reverse().map(b => `<tr><td class="mono"><b>${b.id}</b><div class="small muted">${fmtD(b.date)}</div></td><td class="mono">${b.job}</td><td class="num mono">${gbp(b.labour)}</td><td class="num mono">${gbp(b.materials)}</td><td class="num mono">${gbp(-b.cis)}</td><td class="num mono"><b>${gbp(b.labour + b.materials - b.cis)}</b></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No invoices yet.</div>'}</div>`;
+};
 
 /* ============================== Engineer app ============================== */
 const SAFETY = { signin:'Signed in with site contact / reception', asbestos:'Asbestos register checked for the work area', rams:'RAMS reviewed and briefed', permit:'Permits and isolations in place where needed', safe:'Work area made safe for the public' };
 const ENG_STEPS = [['arrive','Arrive'],['safety','Safety'],['before','Before'],['work','Work'],['outcome','Outcome'],['after','After'],['signoff','Sign-off'],['checkout','Submit']];
 function viewEngineer(){
-  const E = ui.eng, people = S.contractors.flatMap(c => c.engineers.filter(() => c.id === 'K1' || c.id === 'K2' || c.id === 'K3').map(e => [e.name, c]));
+  const E = ui.eng, people = S.contractors.flatMap(c => c.engineers.map(e => [e.name, c]));
   const head = (t, sub) => `<div class="phone-h"><span class="small" style="opacity:.75">${sub}</span><h2>${t}</h2></div>`;
   let body;
   if (E.step === 'list' || !E.jobId){
