@@ -147,6 +147,7 @@ textarea{min-height:84px;resize:vertical}
 .photo figcaption{font-size:11.5px;padding:5px 8px;color:var(--muted)}
 
 /* Timeline */
+td select{min-width:150px;width:auto}
 .tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .tl li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .tl li:last-child{border-bottom:0}
@@ -280,6 +281,21 @@ function seed(){
       engineers:[{name:'Mark Chen',trade:'service',cscs:'2027-01-01',asb:'2027-01-01',dbs:'2026-10-30'}] }
   ];
   S.clients = [{ id:'CL1', name:'Wates', afpDay:25, dueDays:7, finalDays:30, portalCertify:true }];
+  const U = (name, email, org, role, status, last) => ({ id:'U' + Math.random().toString(36).slice(2, 8), name, email, org, role, status, last, twofa: status === 'active' ? 'Authenticator app' : null });
+  S.users = [
+    U('Rishi Rao', 'rishi.rao@compass-mep.example', 'compass', 'Admin', 'active', '2026-11-19T08:10'),
+    U('Leon Palma', 'leon.palma@compass-mep.example', 'compass', 'Admin', 'active', '2026-11-18T17:42'),
+    U('Amira Khan', 'helpdesk@compass-mep.example', 'compass', 'Helpdesk', 'active', '2026-11-19T07:55'),
+    U('Finance team', 'accounts@compass-mep.example', 'compass', 'Finance', 'invited', null),
+    U('Paul Coffey', 'paul.coffey@wates.example', 'CL1', 'Client admin', 'active', '2026-11-18T12:30'),
+    U('Kahlan Hayes', 'kahlan.hayes@wates.example', 'CL1', 'Approver', 'active', '2026-11-17T10:05'),
+    U('Dave Brooks', 'dave@brightline.example', 'K2', 'Partner manager', 'active', '2026-11-18T09:12'),
+    U('Kwame Mensah', 'kwame@eastway.example', 'K3', 'Partner manager', 'active', '2026-11-18T19:40'),
+    U('Helen Shaw', 'helen@apexlifts.example', 'K4', 'Partner manager', 'active', '2026-11-16T14:22'),
+    U('Ruth Allen', 'ruth@aquasure.example', 'K5', 'Partner manager', 'active', '2026-11-12T11:00'),
+    U('Mark Chen', 'mark@northgate.example', 'K6', 'Partner manager', 'disabled', '2026-10-02T09:30'),
+    U('Sarah Hughes', 'sarah@sentinel.example', 'K7', 'Partner manager', 'invited', null)
+  ];
   S.certReq = { 'Gas (Gas Safe)':'Gas Safe', 'HVAC & air conditioning (F-Gas)':'F-Gas', 'Electrical installation & repair':'NICEIC', 'EICR testing':'NICEIC', 'Asbestos removal (licensed)':'HSE asbestos licence', 'Fire alarm':'BAFE', 'Water hygiene / legionella':'Legionella Control Association', 'Passenger lifts':'LEIA', 'Platform & stair lifts':'LEIA', 'Intruder alarm':'NSI', 'CCTV':'NSI', 'Access control':'NSI', 'Asbestos surveys':'UKAS' };
   S.competencies = [
     { group:'Mechanical', items:['Plumbing & heating','Gas (Gas Safe)','Commercial boilers','HVAC & air conditioning (F-Gas)','Ventilation & extract','Pumps & pressurisation','Pool plant & filtration','Refrigeration'] },
@@ -409,7 +425,7 @@ function seed(){
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v6';
+const KEY = 'compass-portal-demo-v7';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
 let needHistory = !S.history;
@@ -623,8 +639,8 @@ function render(){
   document.querySelectorAll('.roles button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === ui.role));
   const app = document.getElementById('app');
   if (ui.role === 'engineer'){ app.innerHTML = `<main><div class="wrap">${viewEngineer()}</div></main>`; wireEngineer(); return; }
-  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['afp','Applications for payment'],...(S.settings.presenting ? [] : [['profit','Profitability'],['selfbill','Self-billing & CIS']]),['settings','Rules & settings']];
-  const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes'],['w-afp','Applications for payment', S.applications.filter(a => a.status === 'submitted').length, true]];
+  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['afp','Applications for payment'],['users','Users & access', S.users.filter(u => u.status === 'invited').length],...(S.settings.presenting ? [] : [['profit','Profitability'],['selfbill','Self-billing & CIS']]),['settings','Rules & settings']];
+  const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes'],['w-afp','Applications for payment', S.applications.filter(a => a.status === 'submitted').length, true],['w-users','Users']];
   const P = contractor(ui.partner);
   const navP = [['p-offers','Job offers', S.jobs.filter(j => (j.offers || []).some(o => o.contractor === P.id && o.status === 'offered')).length, true],['p-jobs','My jobs'],['p-team','My team'],['p-docs','Compliance documents', contractorState(P).state !== 'ok' ? '!' : 0, true],['p-inv','Payments & invoices']];
   const nav = ui.role === 'compass' ? navC : ui.role === 'partner' ? navP : navW;
@@ -998,7 +1014,7 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid],[data-suspend]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid],[data-suspend],[data-uorg],[data-uact]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
@@ -1033,6 +1049,19 @@ function wire(){
     if (t.dataset.decline){ const j = job(t.dataset.decline), reason = document.getElementById('why-' + j.id).value; declineOffer(j, ui.partner, reason); save(); toast(`Declined ${j.id}. Compass has been told.`); return render(); }
     if (t.dataset.engapp){ ui.role = 'engineer'; ui.eng = { who:t.dataset.engapp, jobId:null, step:'list', d:null }; render(); window.scrollTo(0, 0); return; }
     if (act === 'addCon'){ ui.addCon = true; return render(); }
+    if (t.dataset.uorg){ ui.uorg = t.dataset.uorg; return render(); }
+    if (t.dataset.uact){ const [a, id] = t.dataset.uact.split('|'), u = S.users.find(x => x.id === id);
+      if (a === 'disable'){ if (u.role === 'Admin' && S.users.filter(x => x.role === 'Admin' && x.status === 'active').length < 2) return toast('Keep at least one active Admin.'); u.status = 'disabled'; toast(`${u.name} deactivated. They are logged out and can't log in.`); }
+      if (a === 'enable'){ u.status = 'active'; toast(`${u.name} can log in again.`); }
+      if (a === 'resend') toast(`Invite sent again to ${u.email}.`);
+      if (a === 'reset2fa'){ u.twofa = null; toast(`${u.name} will set up two-step login again next time they log in.`); }
+      save(); return render(); }
+    if (act === 'addUser'){ const v = id => document.getElementById(id).value.trim(), name = v('nu-name'), email = v('nu-email'), org = v('nu-org'), role = v('nu-role');
+      if (!name || !/^\S+@\S+\.\S+$/.test(email)) return toast('Enter a name and a valid email address.');
+      if (S.users.some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('Someone with that email already has access.');
+      S.users.push({ id:'U' + Date.now().toString(36), name, email, org, role, status:'invited', last:null, twofa:null });
+      ui.uorg = orgOf(org).type === 'compass' ? 'compass' : orgOf(org).type === 'client' ? 'clients' : 'partners';
+      save(); toast(`Invite sent to ${email} as ${role}.`); return render(); }
     if (act === 'addTeam'){ const c = contractor(ui.partner), v = id => document.getElementById(id).value.trim(), name = v('tm-name'), email = v('tm-email');
       if (!name || !/^\S+@\S+\.\S+$/.test(email)) return toast('Enter a name and a valid email address.');
       c.engineers.push({ name, role:v('tm-role'), email, mobile:v('tm-mobile'), trade:c.trades[0], cscs:null, asb:null, dbs:null, invited:nowISO() });
@@ -1086,6 +1115,8 @@ function wire(){
   };
   app.onchange = e => {
     const t = e.target;
+    if (t.id === 'nu-org'){ const r = document.getElementById('nu-role'); r.innerHTML = ROLES[orgOf(t.value).type].map(([x]) => `<option>${x}</option>`).join(''); return; }
+    if (t.dataset.urole){ const u = S.users.find(x => x.id === t.dataset.urole); if (u.role === 'Admin' && t.value !== 'Admin' && S.users.filter(x => x.role === 'Admin' && x.status === 'active').length < 2){ t.value = 'Admin'; return toast('Keep at least one active Admin.'); } u.role = t.value; save(); toast(`${u.name} is now ${u.role}.`); return render(); }
     if (t.id === 'partnerWho'){ ui.partner = t.value; return render(); }
     if (t.id === 'presenting'){ S.settings.presenting = t.checked; save(); toast(t.checked ? 'Presenting: partner rates, costs and margins hidden.' : 'Rates and margins visible again.'); if (t.checked && ui.view === 'selfbill') ui.view = 'dashboard'; return render(); }
     if (t.dataset.upload && t.files[0]){ const c = contractor(ui.partner); (c.pending ||= []).push({ item:t.dataset.upload, file:t.files[0].name, at:nowISO() }); save(); toast('Uploaded. Compass will check it before it counts.'); return render(); }
@@ -1362,6 +1393,49 @@ function partnerPeriods(c){
   const g = {}; S.selfbills.filter(b => b.contractor === c.id).forEach(b => { const e = afpEnd(b.date), x = g[e] ||= { n:0, g:0, cis:0 }; x.n++; x.g += b.labour + b.materials; x.cis += b.cis; });
   return Object.entries(g).sort((a, b) => b[0].localeCompare(a[0])).map(([e, x]) => { const pay = addDays(e, S.settings.pPayDays), open = e >= isoDate(DEMO_TODAY); return { e, ...x, pay, status: open ? ['Open: closes ' + fmtD(e), 'info'] : pay < isoDate(DEMO_TODAY) ? ['Paid', 'ok'] : ['Scheduled for ' + fmtD(pay), 'warn'] }; });
 }
+
+
+/* ============================== Users & access ============================== */
+const ROLES = {
+  compass:[['Admin','Everything, including users, settings, rates and finance'],['Helpdesk','Log orders, offer and assign jobs, check reports. No finance, settings or users'],['Finance','Applications for payment, self-billing, CIS and profitability. Read-only on jobs']],
+  client:[['Client admin','Approve estimates, record decisions, add and remove their own users'],['Approver','Approve estimates and decide on exceptions'],['Viewer','See jobs, reports and valuations only']],
+  partner:[['Partner manager','Accept offers, manage their team and documents, see their payments']]
+};
+function orgs(){ return [{ id:'compass', name:'Compass MEP', type:'compass' }, ...S.clients.map(c => ({ id:c.id, name:c.name, type:'client' })), ...S.contractors.filter(c => c.type !== 'dlo').map(c => ({ id:c.id, name:c.name, type:'partner' }))]; }
+const orgOf = id => orgs().find(o => o.id === id) || { name:'—', type:'compass' };
+const USTAT = { active:['Active','ok'], invited:['Invite sent','warn'], disabled:['Deactivated','crit'] };
+function usersTable(list, canManage){
+  return `<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Organisation</th><th>Role</th><th>Two-step login</th><th>Last login</th><th>Status</th>${canManage ? '<th></th>' : ''}</tr></thead><tbody>${list.map(u => { const o = orgOf(u.org), me = u.name === (ui.role === 'wates' ? 'Paul Coffey' : 'Rishi Rao');
+    return `<tr><td><b>${esc(u.name)}</b>${me ? ' <span class="small muted">(you)</span>' : ''}<div class="small muted">${esc(u.email)}</div></td><td class="small">${esc(o.name)}</td>
+    <td>${u.managedBy ? esc(u.role) : canManage && !me ? `<select data-urole="${u.id}" aria-label="Role for ${esc(u.name)}">${ROLES[o.type].map(([r]) => `<option ${r === u.role ? 'selected' : ''}>${r}</option>`).join('')}</select>` : esc(u.role)}</td>
+    <td class="small">${u.twofa ? '✓ ' + esc(u.twofa) : '<span class="muted">Not set up yet</span>'}</td><td class="small">${u.last ? fmtDT(u.last) : '—'}</td><td><span class="chip ${USTAT[u.status][1]}">${USTAT[u.status][0]}</span></td>
+    ${canManage ? `<td style="white-space:nowrap">${u.managedBy ? `<span class="small muted">Managed by ${esc(u.managedBy)}</span>` : me ? '' : u.status === 'invited' ? `<button class="btn sm" data-uact="resend|${u.id}">Resend invite</button>` : u.status === 'active' ? `<button class="btn sm" data-uact="reset2fa|${u.id}">Reset two-step</button> <button class="btn sm danger" data-uact="disable|${u.id}">Deactivate</button>` : `<button class="btn sm" data-uact="enable|${u.id}">Reactivate</button>`}</td>` : ''}</tr>`; }).join('')}</tbody></table></div>`;
+}
+function addUserForm(orgList){
+  const first = orgList[0];
+  return `<div class="panel"><div class="panel-h"><h2>Add a user</h2><span class="small muted">They get an email invite and set up their own password and two-step login</span></div><div class="panel-b">
+    <div class="grid g2"><div class="field"><label for="nu-name">Full name</label><input type="text" id="nu-name"></div><div class="field"><label for="nu-email">Email</label><input type="text" id="nu-email" placeholder="name@company.co.uk"></div>
+    ${orgList.length > 1 ? `<div class="field"><label for="nu-org">Organisation</label><select id="nu-org">${orgList.map(o => `<option value="${o.id}">${esc(o.name)}${o.type === 'partner' ? ' (partner)' : o.type === 'client' ? ' (client)' : ''}</option>`).join('')}</select></div>` : `<input type="hidden" id="nu-org" value="${first.id}">`}
+    <div class="field"><label for="nu-role">Role</label><select id="nu-role">${ROLES[first.type].map(([r]) => `<option>${r}</option>`).join('')}</select></div></div>
+    <div class="row end"><button class="btn primary" data-act="addUser">Add and send invite</button></div></div></div>`;
+}
+function rolesPanel(types){
+  return `<div class="panel"><div class="panel-h"><h2>What each role can do</h2></div><div class="panel-b"><dl class="kv small">${types.flatMap(t => ROLES[t].map(([r, d]) => `<dt>${r}</dt><dd>${d}</dd>`)).join('')}${types.includes('partner') ? '<dt>Site engineer</dt><dd>Engineer app only: their own jobs, visit reports and photos. Added by their partner manager.</dd>' : ''}</dl></div></div>`;
+}
+VIEWS.users = () => {
+  const f = ui.uorg || 'compass', staff = S.contractors.filter(c => c.type !== 'dlo').flatMap(c => c.engineers.map(e => ({ id:'E-' + e.name, name:e.name, email:e.email || '—', org:c.id, role:'Site engineer', status:e.invited ? 'invited' : 'active', last:null, twofa:e.invited ? null : 'Authenticator app', managedBy:'partner' })));
+  const dlo = contractor('K1').engineers.map(e => ({ id:'E-' + e.name, name:e.name, email:e.email || '—', org:'compass', role:'Compass engineer', status:'active', last:null, twofa:'Authenticator app', managedBy:'Compass (Contractors page)' }));
+  const groups = { compass:['Compass MEP', [...S.users.filter(u => u.org === 'compass'), ...dlo]], clients:['Clients', S.users.filter(u => orgOf(u.org).type === 'client')], partners:['Supply chain partners', [...S.users.filter(u => orgOf(u.org).type === 'partner'), ...staff].sort((a, b) => orgOf(a.org).name.localeCompare(orgOf(b.org).name))] };
+  const all = [...S.users];
+  return `<div class="page-head"><div><h1>Users &amp; access</h1><p class="sub">Everyone who can log in, across Compass, clients and partners. Each person has their own login with two-step verification, and sees only what their role allows. Client admins can add their own users; partner managers add their own site staff.</p></div></div>
+  <div class="grid g4"><div class="panel stat"><span class="eyebrow">Active users</span><span class="v">${all.filter(u => u.status === 'active').length + staff.filter(u => u.status === 'active').length + dlo.length}</span></div><div class="panel stat warn"><span class="eyebrow">Invites pending</span><span class="v">${all.filter(u => u.status === 'invited').length + staff.filter(u => u.status === 'invited').length}</span></div><div class="panel stat"><span class="eyebrow">Organisations</span><span class="v">${orgs().length}</span></div><div class="panel stat"><span class="eyebrow">Deactivated</span><span class="v">${all.filter(u => u.status === 'disabled').length}</span></div></div>
+  <div class="seg">${Object.entries(groups).map(([k, [l, list]]) => `<button class="btn sm ${f === k ? 'primary' : ''}" data-uorg="${k}">${l} (${list.length})</button>`).join('')}</div>
+  <div class="panel">${usersTable(groups[f][1], true)}</div>
+  ${addUserForm(orgs())}
+  ${rolesPanel(['compass','client','partner'])}`;
+};
+VIEWS['w-users'] = () => `<div class="page-head"><div><h1>Users</h1><p class="sub">People at ${esc(client().name)} who can use this portal. As client admin you can add colleagues, change their role or remove their access. Compass sees this list too.</p></div></div>
+  <div class="panel">${usersTable(S.users.filter(u => u.org === 'CL1'), true)}</div>${addUserForm([{ id:'CL1', name:client().name, type:'client' }])}${rolesPanel(['client'])}`;
 
 /* ============================== Engineer app ============================== */
 const SAFETY = { signin:'Signed in with site contact / reception', asbestos:'Asbestos register checked for the work area', rams:'RAMS reviewed and briefed', permit:'Permits and isolations in place where needed', safe:'Work area made safe for the public' };
