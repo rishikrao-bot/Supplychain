@@ -25,3 +25,10 @@ Pricing follows the Wates Schedule of Rates (11 Nov 2026). Terms still under dis
 - `site/compassmep/portal/`: the live portal (placeholder until the real system is deployed).
 - `site/compassmep/demo/`: the demo, built from `prototype/index.html` with a permanent DEMO banner. Rebuild with `scripts/build-site.sh`, which also creates `site/compassmep-upload.zip` for cPanel.
 - `site/jobsavvy/`: holding page for jobsavvy.co.uk.
+
+## Bran store concept (bran.jobsavvy.co.uk)
+
+- `site/bran/`: a single-page concept storefront using Distileriile Bran's catalogue (80 products, prices in lei, their images). Browse by range or type, search, sort, product quick view, a basket saved in the browser, and an 18+ age check.
+- It is a **demo only**: a permanent banner and the footer say it is not the official shop, and checkout ends on a "no order was placed" screen. It collects no payment or personal details.
+- `site/bran-upload.zip`: upload and extract into the subdomain's document root in cPanel.
+- `scripts/bran-fetch-assets.py`: refreshes the images and `products.js` from the shop's public product feed.

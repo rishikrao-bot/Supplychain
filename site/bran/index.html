@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>DEMO · Bran Store Concept</title>
+<meta name="description" content="Concept storefront demo. Not the official Distileriile Bran shop; no orders or payments are taken.">
+<link rel="icon" href="img/logo-brown.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5EEE1; --paper-2:#EDE2CF; --card:#FBF7EF; --ink:#2B1D14; --muted:#6E5B4C;
+  --brown:#7A4A24; --brown-2:#5C3518; --gold:#B8862B; --gold-soft:#E6CC93;
+  --night:#17101A; --night-2:#241826; --blood:#8E1B23; --line:#DCCDB4;
+  --demo:#B86A00;
+  --serif:"Cormorant Garamond",Georgia,serif; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:14px; --shadow:0 10px 30px -12px rgba(43,29,20,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+[hidden]{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left,0px))}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.1;margin:0}
+.eyebrow{font:600 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+
+/* demo banner */
+.demo{background:var(--demo);color:#fff;font:600 12.5px/1.4 var(--sans);padding:8px 16px;display:flex;gap:10px;align-items:center;justify-content:center;text-align:center}
+.demo b{letter-spacing:.16em}
+
+/* header */
+.sticky{position:sticky;top:0;z-index:50}
+header.top{background:rgba(245,238,225,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+section{scroll-margin-top:96px}
+.top .wrap{display:flex;align-items:center;gap:24px;height:72px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{height:52px;width:auto}
+.brand span{font:700 20px/1 var(--serif);letter-spacing:.06em;color:var(--brown)}
+nav.main{display:flex;gap:22px;margin-left:auto}
+nav.main a{text-decoration:none;font-weight:500;font-size:14px;color:var(--muted)}
+nav.main a:hover{color:var(--brown)}
+.cart-btn{display:flex;align-items:center;gap:8px;border:1px solid var(--brown);background:transparent;border-radius:999px;padding:8px 16px;font-weight:600;color:var(--brown)}
+.cart-btn:hover{background:var(--brown);color:var(--paper)}
+.cart-btn .n{background:var(--blood);color:#fff;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:12px;padding:0 6px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 80% 20%,#FFF6DF 0%,var(--paper) 55%)}
+.hero .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;padding-top:64px;padding-bottom:72px;position:relative;z-index:1}
+.hero h1{font-size:clamp(40px,6vw,74px);color:var(--brown-2);margin:14px 0 18px}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero p{font-size:17px;color:var(--muted);max-width:30em;margin:0 0 28px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:13px 24px;font-weight:600;text-decoration:none;transition:transform .15s,background .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--brown);color:var(--paper)}
+.btn.primary:hover{background:var(--brown-2)}
+.btn.ghost{border:1px solid var(--brown);color:var(--brown);background:transparent}
+.btn.ghost:hover{background:rgba(122,74,36,.08)}
+.hero-art{position:relative;aspect-ratio:1;max-width:520px;justify-self:center;width:100%}
+.hero-art .sun{position:absolute;inset:0;width:100%;opacity:.95;animation:spin 120s linear infinite}
+.hero-art .bottle{position:absolute;bottom:2%;width:46%;filter:drop-shadow(0 24px 30px rgba(60,30,10,.35))}
+.hero-art .b1{left:8%;transform:rotate(-6deg)}
+.hero-art .b2{right:6%;width:42%}
+.hero-art .b3{left:31%;width:40%;bottom:-2%;z-index:2}
+.hero .birds{position:absolute;right:-60px;top:20px;width:360px;opacity:.18;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.hero-art .sun{animation:none}}
+.ornament{height:34px;background:url(img/ornament.webp) center/auto 100% repeat-x;opacity:.5;margin:0}
+
+/* strip */
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-block:1px solid var(--line)}
+.facts div{background:var(--paper);padding:22px 16px;text-align:center}
+.facts strong{display:block;font:600 28px/1 var(--serif);color:var(--brown)}
+.facts span{font-size:13px;color:var(--muted)}
+
+/* collections */
+section{padding:80px 0}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(32px,4vw,46px);color:var(--brown-2);margin-top:10px}
+.collections{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.coll{position:relative;border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:18px 16px 16px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:250px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.coll:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.coll img{height:150px;width:100%;object-fit:contain;margin:auto 0 6px}
+.coll h3{font-size:22px;color:var(--brown-2)}
+.coll small{color:var(--muted);font-size:12.5px}
+.coll.dark{background:linear-gradient(160deg,var(--night-2),var(--night));border-color:#3a2a3a}
+.coll.dark h3{color:#F0D9DC}
+.coll.dark small{color:#BBA5AE}
+
+/* shop */
+#shop{background:var(--paper-2);border-top:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.chip[aria-pressed=true]{background:var(--brown);border-color:var(--brown);color:var(--paper)}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.controls input,.controls select{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;color:var(--ink);min-width:0}
+.controls input{width:220px}
+.result-count{font-size:13px;color:var(--muted);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card .pic{position:relative;background:radial-gradient(70% 60% at 50% 60%,#fff 0%,var(--card) 70%);aspect-ratio:1;border:0;padding:18px;display:block;width:100%}
+.card .pic img{width:100%;height:100%;object-fit:contain;transition:transform .35s}
+.card:hover .pic img{transform:scale(1.04)}
+.tag{position:absolute;top:12px;left:12px;font:600 10.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;background:var(--night);color:#F0D9DC;padding:6px 8px;border-radius:6px}
+.tag.gold{background:var(--gold);color:#fff}
+.card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+.card .coll-name{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.card h3{font-size:20px;color:var(--ink);line-height:1.15}
+.card .meta{font-size:13px;color:var(--muted)}
+.card .buy{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:12px}
+.price{font:600 22px/1 var(--serif);color:var(--brown-2)}
+.price small{font:500 12px var(--sans);color:var(--muted);margin-left:3px}
+.add{border:0;background:var(--brown);color:var(--paper);border-radius:999px;padding:9px 14px;font-weight:600;font-size:13px}
+.add:hover{background:var(--brown-2)}
+.add.done{background:#2F6B3A}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+
+/* story */
+.story{background:linear-gradient(180deg,var(--night) 0%,var(--night-2) 100%);color:#EADBD3;position:relative;overflow:hidden}
+.story .wrap{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;position:relative;z-index:1}
+.story h2{font-size:clamp(32px,4vw,48px);color:#F5E6D6;margin:10px 0 18px}
+.story p{color:#C8B5AC;max-width:34em}
+.story .still{filter:invert(1) sepia(.4) brightness(1.05);opacity:.75}
+.story .moon{position:absolute;right:-80px;top:-80px;width:340px;opacity:.22}
+.story .bats{position:absolute;left:-40px;bottom:-20px;width:420px;opacity:.12;filter:invert(1)}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+.pillars div{border:1px solid #3d2c3d;border-radius:12px;padding:14px}
+.pillars strong{display:block;font:600 19px var(--serif);color:var(--gold-soft)}
+.pillars span{font-size:13px;color:#B9A49C}
+
+/* footer */
+footer{background:var(--paper-2);border-top:1px solid var(--line);padding:40px 0 calc(40px + env(safe-area-inset-bottom,0px));font-size:13.5px;color:var(--muted)}
+footer .wrap{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start}
+footer img{height:70px;width:auto}
+footer p{margin:0 0 8px}
+
+/* drawer + modals */
+.scrim{position:fixed;inset:0;background:rgba(23,16,26,.55);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:var(--paper);z-index:90;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;visibility:hidden}
+.drawer.on{transform:none;visibility:visible;box-shadow:-20px 0 40px -20px rgba(0,0,0,.4)}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.drawer h2{font-size:28px;color:var(--brown-2)}
+.x{border:0;background:transparent;font-size:26px;line-height:1;width:40px;height:40px;border-radius:50%}
+.x:hover{background:var(--paper-2)}
+.lines{flex:1;overflow:auto;padding:8px 20px}
+.line{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+.line img{width:64px;height:64px;object-fit:contain;background:var(--card);border-radius:10px;padding:4px}
+.line h4{margin:0 0 4px;font:600 16px/1.2 var(--serif)}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px}
+.qty button{border:0;background:transparent;width:30px;height:28px;font-size:16px}
+.qty span{min-width:22px;text-align:center;font-size:13px;font-weight:600}
+.line .lp{font:600 17px var(--serif);text-align:right}
+.line .rm{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:4px 0 0}
+.drawer footer{padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper-2);display:block}
+.totals{display:flex;justify-content:space-between;font-size:15px;margin-bottom:4px}
+.totals.big{font:600 24px var(--serif);color:var(--brown-2);margin:8px 0 14px}
+.drawer .btn{width:100%;justify-content:center}
+.cart-empty{text-align:center;padding:60px 10px;color:var(--muted)}
+
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .2s}
+.modal.on{pointer-events:auto;opacity:1}
+.modal .box{background:var(--paper);border-radius:18px;max-width:880px;width:100%;max-height:calc(100dvh - 32px);overflow:auto;position:relative;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.modal .x{position:absolute;top:10px;right:10px;z-index:2}
+.pv{display:grid;grid-template-columns:1fr 1fr}
+.pv .pic{background:radial-gradient(70% 60% at 50% 55%,#fff 0%,var(--card) 70%);padding:32px;display:grid;place-items:center}
+.pv .pic img{max-height:440px;object-fit:contain}
+.pv .info{padding:36px 30px 30px;display:flex;flex-direction:column;gap:12px}
+.pv h2{font-size:34px;color:var(--brown-2)}
+.pv .orig{font-size:13px;color:var(--muted);font-style:italic}
+.pv dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:6px 0;font-size:14px}
+.pv dt{color:var(--muted)}
+.pv dd{margin:0;font-weight:500}
+.pv .desc{color:var(--muted);font-size:14.5px}
+.pv .row{display:flex;gap:12px;align-items:center;margin-top:auto;padding-top:10px}
+.pv .qty button{width:38px;height:40px}
+.pv .qty span{min-width:30px;font-size:15px}
+
+.age .box,.done .box{max-width:460px;text-align:center;padding:40px 32px 32px}
+.age img{height:120px;width:auto;margin:0 auto 14px}
+.age h2,.done h2{font-size:32px;color:var(--brown-2);margin-bottom:10px}
+.age p,.done p{color:var(--muted);margin:0 0 20px}
+.age .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.done .seal{width:72px;height:72px;border-radius:50%;background:var(--demo);color:#fff;display:grid;place-items:center;margin:0 auto 16px;font:700 13px var(--sans);letter-spacing:.14em}
+.done ul{list-style:none;padding:0;margin:0 0 18px;text-align:left;border-top:1px solid var(--line)}
+.done li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,120px);background:var(--night);color:#F2E4DA;padding:12px 18px;border-radius:12px;z-index:110;font-size:14px;transition:transform .25s;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.toast.on{transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  nav.main{display:none}
+  .top .wrap{justify-content:space-between}
+  .hero .wrap,.story .wrap{grid-template-columns:1fr}
+  .hero .wrap{padding-top:36px;gap:20px}
+  .hero-art{max-width:380px}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .pv{grid-template-columns:1fr}
+  .pv .pic img{max-height:300px}
+  .controls input{width:100%}
+  .controls{width:100%}
+  .controls>*{flex:1}
+  footer .wrap{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  section{padding:56px 0}
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .card .body{padding:10px 12px 12px}
+  .card h3{font-size:17px}
+  .card .buy{flex-direction:column;align-items:stretch;gap:8px}
+  .add{padding:9px}
+  .brand span{display:none}
+  .pillars{grid-template-columns:1fr}
+  .demo{font-size:11.5px}
+  section{scroll-margin-top:110px}
+  .controls input{flex-basis:100%}
+  .demo .long{display:none}
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-inline:16px}
+  .chip{flex:0 0 auto}
+}
+</style>
+</head>
+<body>
+
+<div class="sticky">
+<div class="demo" role="note"><span><b>DEMO</b> · Concept storefront. Not the official Distileriile Bran shop<span class="long"> and not affiliated with it</span>. No orders or payments are taken.</span></div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Back to top"><img src="img/logo-brown.webp" alt="Distileriile Bran logo"><span>DISTILERIILE BRAN</span></a>
+    <nav class="main" aria-label="Main">
+      <a href="#collections">Collections</a>
+      <a href="#shop">Shop</a>
+      <a href="#story">Our story</a>
+    </nav>
+    <button class="cart-btn" id="openCart" aria-label="Open basket">Basket <span class="n" id="cartCount">0</span></button>
+  </div>
+</header>
+</div>
+
+<main id="top">
+  <div class="hero">
+    <img class="birds" src="img/birds.webp" alt="">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Transylvania · since 1969</div>
+        <h1>The art of Romanian spirits, <em>born of legend.</em></h1>
+        <p>Pălincă, țuică and sweet fruit liqueurs, distilled at the foot of the Carpathians the slow way, with copper stills and fruit from Transylvanian orchards.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn primary" href="#shop">Shop the collection</a>
+          <a class="btn ghost" href="#collections">Browse ranges</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <img class="sun" src="img/sun.webp" alt="">
+        <img class="bottle b1" src="img/p6782.webp" alt="">
+        <img class="bottle b2" src="img/p10695.webp" alt="">
+        <img class="bottle b3" src="img/p6739.webp" alt="">
+      </div>
+    </div>
+  </div>
+  <div class="ornament" aria-hidden="true"></div>
+
+  <div class="facts">
+    <div><strong>1969</strong><span>Year the house was founded</span></div>
+    <div><strong id="factCount">80</strong><span>Spirits, wines &amp; gifts</span></div>
+    <div><strong>10</strong><span>Signature ranges</span></div>
+    <div><strong>Up to 50%</strong><span>Double-distilled pălincă</span></div>
+  </div>
+
+  <section id="collections">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><div class="eyebrow">The ranges</div><h2>Find your legend</h2></div>
+        <a class="btn ghost" href="#shop" data-coll="">View all</a>
+      </div>
+      <div class="collections" id="collGrid"></div>
+    </div>
+  </section>
+
+  <section id="shop">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><div class="eyebrow">Shop</div><h2>The cellar</h2></div>
+      </div>
+      <div class="toolbar">
+        <div class="chips" id="chips" role="group" aria-label="Filter by type"></div>
+        <div class="controls">
+          <input id="q" type="search" placeholder="Search plum, gin, gift…" aria-label="Search products">
+          <select id="coll" aria-label="Range"></select>
+          <select id="sort" aria-label="Sort">
+            <option value="feat">Featured</option>
+            <option value="low">Price: low to high</option>
+            <option value="high">Price: high to low</option>
+            <option value="abv">Strongest first</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </div>
+      </div>
+      <p class="result-count" id="resultCount"></p>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>Nothing matches that. Try clearing the filters.</div>
+    </div>
+  </section>
+
+  <section class="story" id="story">
+    <img class="moon" src="img/moon.webp" alt="">
+    <img class="bats" src="img/bats.webp" alt="">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Our story</div>
+        <h2>Copper, fruit and patience.</h2>
+        <p>For more than half a century the distillery has turned the orchards of Transylvania into spirits: plums, apricots, quinces, pears and apples, fermented whole and distilled in copper stills. The Vampire’s ranges carry the castle’s legends into liqueurs, gin and vodka, and the newest creations pair sour cherry and blueberry liqueurs with fine chocolate.</p>
+        <div class="pillars">
+          <div><strong>Orchard fruit</strong><span>Whole fruit from the region, nothing artificial.</span></div>
+          <div><strong>Copper stills</strong><span>Slow, double distillation for a clean finish.</span></div>
+          <div><strong>Transylvanian lore</strong><span>Every range tells a story from the castle.</span></div>
+        </div>
+      </div>
+      <img class="still" src="img/still.webp" alt="Line drawing of a copper still in an orchard">
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="img/logo-brown.webp" alt="Distileriile Bran logo">
+    <div>
+      <p><strong>Concept demo.</strong> This page shows how an online shop could look and work. It is not the official Distileriile Bran shop and is not affiliated with or endorsed by it. Checkout is disabled: nothing is ordered, charged or sent.</p>
+      <p>Product names, prices (in Romanian lei) and images are taken from distileriilebran.ro for demonstration and remain the property of their owners.</p>
+      <p>Please drink responsibly. Sale of alcohol to under-18s is prohibited.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- basket -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Basket" aria-hidden="true">
+  <header><h2>Your basket</h2><button class="x" data-close aria-label="Close basket">×</button></header>
+  <div class="lines" id="lines"></div>
+  <footer>
+    <div class="totals"><span>Items</span><span id="itemsCount">0</span></div>
+    <div class="totals"><span>Delivery</span><span>Calculated at checkout</span></div>
+    <div class="totals big"><span>Subtotal</span><span id="subtotal">0.00 lei</span></div>
+    <button class="btn primary" id="checkout">Checkout (demo)</button>
+  </footer>
+</aside>
+
+<!-- product view -->
+<div class="modal" id="pv" role="dialog" aria-modal="true" aria-label="Product details">
+  <div class="box"><button class="x" data-close aria-label="Close">×</button><div class="pv" id="pvBody"></div></div>
+</div>
+
+<!-- demo checkout -->
+<div class="modal done" id="done" role="dialog" aria-modal="true" aria-label="Demo checkout">
+  <div class="box">
+    <div class="seal">DEMO</div>
+    <h2>That’s the whole flow</h2>
+    <p>In a live shop this is where delivery and payment would happen. This is a demo, so no order was placed and nothing was charged.</p>
+    <ul id="doneList"></ul>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn ghost" data-close>Keep browsing</button>
+      <button class="btn primary" id="clearCart">Empty basket</button>
+    </div>
+  </div>
+</div>
+
+<!-- age gate -->
+<div class="modal age" id="age" role="dialog" aria-modal="true" aria-label="Age check">
+  <div class="box">
+    <img src="img/logo-brown.webp" alt="">
+    <h2>Are you 18 or over?</h2>
+    <p>This demo shows alcoholic drinks. Please confirm you are of legal drinking age.</p>
+    <div class="btns">
+      <button class="btn primary" id="ageYes">Yes, I’m 18+</button>
+      <a class="btn ghost" href="https://www.drinkaware.co.uk/">No</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="products.js"></script>
+<script>
+(() => {
+  const P = window.PRODUCTS || [];
+  const byId = new Map(P.map(p => [p.id, p]));
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  const lei = n => n.toFixed(2) + ' lei';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const TYPES = [
+    ['all', 'All'], ['Pălincă & Țuică', 'Pălincă & Țuică'], ['Liqueur', 'Liqueurs'],
+    ['spirits', 'Gin & Vodka'], ['Wine', 'Wine'], ['Chocolate', 'Chocolate'], ['gifts', 'Gifts & Miniatures']
+  ];
+  const COLL_INFO = {
+    'Distileriile Bran': ['Signature pălincă, țuică and liqueurs', false],
+    'Casa Pălincii': ['Traditional house distillates', false],
+    'Vampire’s Heart': ['Heart-shaped bottles, 250 ml', true],
+    'Vampire’s Fears': ['Bold liqueurs and pălincă, 500 ml', true],
+    'Vampire’s Tears': ['Miniatures and gift sets', true],
+    'Vampire’s Prince': ['Gin and vodka, 700 ml', true],
+    'Bransylvania': ['Wines from Transylvania', true],
+    'Vampire’s Nightlife': ['Sweet red wine', true],
+    'Vampire’s Seduction': ['Fruit sangria', true],
+    'The Witch': ['Liqueur-filled chocolate pralines', true],
+    'Fangtastic': ['Chocolate pralines for the young', true],
+  };
+  const COLLS = [...new Set(P.map(p => p.collection))];
+
+  const state = { type: 'all', coll: '', q: '', sort: 'feat' };
+  let cart = store.get('bran-cart', {});
+  for (const id of Object.keys(cart)) if (!byId.has(+id)) delete cart[id];
+
+  // collections
+  $('#factCount').textContent = P.length;
+  $('#collGrid').innerHTML = COLLS.map(c => {
+    const items = P.filter(p => p.collection === c);
+    const hero = items.find(p => !p.gift) || items[0];
+    const [blurb, dark] = COLL_INFO[c] || ['', false];
+    return `<button class="coll${dark ? ' dark' : ''}" data-coll="${esc(c)}">
+      <img src="${hero.img}" alt="" loading="lazy">
+      <h3>${esc(c)}</h3><small>${esc(blurb)} · ${items.length} item${items.length > 1 ? 's' : ''}</small></button>`;
+  }).join('');
+
+  // filters
+  $('#chips').innerHTML = TYPES.map(([k, l]) => `<button class="chip" data-type="${esc(k)}" aria-pressed="${k === 'all'}">${l}</button>`).join('');
+  $('#coll').innerHTML = '<option value="">All ranges</option>' + COLLS.map(c => `<option>${esc(c)}</option>`).join('');
+
+  function matches(p) {
+    const t = state.type;
+    if (t === 'gifts' && !p.gift) return false;
+    if (t === 'spirits' && !['Gin', 'Vodka'].includes(p.type)) return false;
+    if (!['all', 'gifts', 'spirits'].includes(t) && p.type !== t) return false;
+    if (state.coll && p.collection !== state.coll) return false;
+    if (state.q) {
+      const hay = (p.name + ' ' + p.original + ' ' + p.collection + ' ' + p.type).toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const q = state.q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
+    }
+    return true;
+  }
+  const sorters = {
+    feat: null,
+    low: (a, b) => a.price - b.price,
+    high: (a, b) => b.price - a.price,
+    abv: (a, b) => (b.abv || 0) - (a.abv || 0),
+    name: (a, b) => a.name.localeCompare(b.name),
+  };
+  const meta = p => [p.ml ? (p.ml >= 1000 ? p.ml / 1000 + ' l' : p.ml + ' ml') : '', p.abv ? p.abv + '% vol' : '', p.type === 'Gift Set' ? 'Gift set' : ''].filter(Boolean).join(' · ');
+
+  function render() {
+    let list = P.filter(matches);
+    if (sorters[state.sort]) list = [...list].sort(sorters[state.sort]);
+    $('#grid').innerHTML = list.map(p => `
+      <article class="card">
+        <button class="pic" data-view="${p.id}" aria-label="View ${esc(p.name)}">
+          ${p.name.includes('Limited') ? '<span class="tag gold">Limited</span>' : ''}
+          <img src="${p.img}" alt="${esc(p.name)}" loading="lazy">
+        </button>
+        <div class="body">
+          <div class="coll-name">${esc(p.collection)}</div>
+          <h3>${esc(p.name)}</h3>
+          <div class="meta">${esc(meta(p))}</div>
+          <div class="buy"><span class="price">${p.price.toFixed(2)}<small>lei</small></span>
+            <button class="add" data-add="${p.id}">Add to basket</button></div>
+        </div>
+      </article>`).join('');
+    $('#empty').hidden = list.length > 0;
+    $('#resultCount').textContent = `${list.length} of ${P.length} products`;
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.type === state.type));
+    $('#coll').value = state.coll;
+  }
+
+  // cart
+  function saveCart() { store.set('bran-cart', cart); renderCart(); }
+  function add(id, n = 1) {
+    cart[id] = (cart[id] || 0) + n;
+    saveCart();
+    toast(`Added ${byId.get(id).name}`);
+  }
+  function renderCart() {
+    const ids = Object.keys(cart).map(Number);
+    const count = ids.reduce((s, id) => s + cart[id], 0);
+    const total = ids.reduce((s, id) => s + cart[id] * byId.get(id).price, 0);
+    $('#cartCount').textContent = count;
+    $('#itemsCount').textContent = count;
+    $('#subtotal').textContent = lei(total);
+    $('#checkout').disabled = !count;
+    $('#lines').innerHTML = ids.length ? ids.map(id => {
+      const p = byId.get(id);
+      return `<div class="line"><img src="${p.img}" alt="">
+        <div><h4>${esc(p.name)}</h4>
+          <div class="qty"><button data-dec="${id}" aria-label="One fewer">−</button><span>${cart[id]}</span><button data-inc="${id}" aria-label="One more">+</button></div>
+          <div><button class="rm" data-rm="${id}">Remove</button></div></div>
+        <div class="lp">${lei(p.price * cart[id])}</div></div>`;
+    }).join('') : '<div class="cart-empty">Your basket is empty.<br>Something from the cellar?</div>';
+  }
+
+  // overlays
+  let lastFocus = null;
+  function open(el) {
+    lastFocus = document.activeElement;
+    el.classList.add('on'); el.setAttribute('aria-hidden', 'false');
+    if (el.id === 'drawer') $('#scrim').classList.add('on');
+    if (el.classList.contains('modal')) el.style.background = 'rgba(23,16,26,.55)';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => (el.querySelector('[data-close], button') || el).focus(), 50);
+  }
+  function close(el) {
+    el.classList.remove('on'); el.setAttribute('aria-hidden', 'true');
+    if (el.id === 'drawer') $('#scrim').classList.remove('on');
+    if (!document.querySelector('.modal.on, .drawer.on')) document.body.style.overflow = '';
+    lastFocus && lastFocus.focus && lastFocus.focus();
+  }
+  function view(id) {
+    const p = byId.get(id);
+    let q = 1;
+    const desc = {
+      'Pălincă & Țuică': 'A clear fruit brandy, double-distilled in copper from whole Transylvanian fruit. Serve slightly chilled in a small țoi glass.',
+      'Liqueur': 'A sweet fruit liqueur made from macerated orchard and forest fruit. Lovely neat, over ice, or poured over dessert.',
+      'Gin': 'A juniper-led gin with the house’s Transylvanian character. Built for a long tonic.',
+      'Vodka': 'A clean, smooth vodka, filtered for a soft finish. Serve ice-cold.',
+      'Wine': 'A wine from the Bransylvania and Vampire’s ranges, made for long evenings.',
+      'Chocolate': 'Handmade pralines by chocolatier Liviu Fagi, filled with a smooth cream.',
+      'Gift Set': 'A boxed selection of miniatures, ready to give.',
+    }[p.type] || '';
+    $('#pvBody').innerHTML = `
+      <div class="pic"><img src="${p.img}" alt="${esc(p.name)}"></div>
+      <div class="info">
+        <div class="eyebrow">${esc(p.collection)}</div>
+        <h2>${esc(p.name)}</h2>
+        <div class="orig">${esc(p.original)}</div>
+        <div class="price" style="font-size:30px">${p.price.toFixed(2)}<small>lei</small></div>
+        <p class="desc">${desc}</p>
+        <dl>
+          <dt>Type</dt><dd>${esc(p.type)}</dd>
+          ${p.ml ? `<dt>Size</dt><dd>${p.ml} ml</dd>` : ''}
+          ${p.abv ? `<dt>Strength</dt><dd>${p.abv}% alc/vol</dd>` : ''}
+          <dt>Range</dt><dd>${esc(p.collection)}</dd>
+        </dl>
+        <div class="row">
+          <div class="qty"><button id="pvDec" aria-label="One fewer">−</button><span id="pvQ">1</span><button id="pvInc" aria-label="One more">+</button></div>
+          <button class="btn primary" id="pvAdd" style="flex:1;justify-content:center">Add to basket</button>
+        </div>
+      </div>`;
+    $('#pvDec').onclick = () => { q = Math.max(1, q - 1); $('#pvQ').textContent = q; };
+    $('#pvInc').onclick = () => { q = Math.min(24, q + 1); $('#pvQ').textContent = q; };
+    $('#pvAdd').onclick = () => { add(id, q); close($('#pv')); };
+    open($('#pv'));
+  }
+
+  let tt;
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 1800);
+  }
+
+  // events
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button, a');
+    if (!t) { if (e.target.classList.contains('modal') && e.target.id !== 'age') close(e.target); return; }
+    const d = t.dataset;
+    if (d.add) {
+      add(+d.add);
+      t.classList.add('done'); t.textContent = 'Added ✓';
+      setTimeout(() => { t.classList.remove('done'); t.textContent = 'Add to basket'; }, 1200);
+    } else if (d.view) view(+d.view);
+    else if (d.type) { state.type = d.type; render(); }
+    else if ('coll' in d) { state.coll = d.coll; state.type = 'all'; render(); document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); if (t.tagName === 'A') e.preventDefault(); }
+    else if (d.inc) { cart[d.inc]++; saveCart(); }
+    else if (d.dec) { if (--cart[d.dec] <= 0) delete cart[d.dec]; saveCart(); }
+    else if (d.rm) { delete cart[d.rm]; saveCart(); }
+    else if ('close' in d) close(t.closest('.modal, .drawer'));
+  });
+  $('#scrim').onclick = () => close($('#drawer'));
+  $('#openCart').onclick = () => open($('#drawer'));
+  $('#q').addEventListener('input', e => { state.q = e.target.value.trim(); render(); });
+  $('#coll').onchange = e => { state.coll = e.target.value; render(); };
+  $('#sort').onchange = e => { state.sort = e.target.value; render(); };
+  $('#checkout').onclick = () => {
+    const ids = Object.keys(cart).map(Number);
+    $('#doneList').innerHTML = ids.map(id => `<li><span>${cart[id]} × ${esc(byId.get(id).name)}</span><span>${lei(cart[id] * byId.get(id).price)}</span></li>`).join('')
+      + `<li><strong>Subtotal</strong><strong>${$('#subtotal').textContent}</strong></li>`;
+    close($('#drawer')); open($('#done'));
+  };
+  $('#clearCart').onclick = () => { cart = {}; saveCart(); close($('#done')); toast('Basket emptied'); };
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const top = [...document.querySelectorAll('.modal.on, .drawer.on')].filter(x => x.id !== 'age').pop();
+    if (top) close(top);
+  });
+
+  // age gate
+  if (!store.get('bran-18', false)) open($('#age'));
+  $('#ageYes').onclick = () => { store.set('bran-18', true); close($('#age')); };
+
+  render(); renderCart();
+})();
+</script>
+</body>
+</html>
