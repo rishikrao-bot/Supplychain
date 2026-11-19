@@ -374,12 +374,14 @@ function seed(){
       contractor:null, engineer:null, status:'offered', window:'19 Nov, 08:00–12:00',
       offers:[{ contractor:'K3', at:'2026-11-18T11:30', deadline:'2026-11-18T15:30', status:'offered', mode:'single' }],
       log:[['2026-11-18T11:05','Helpdesk','Order logged from Wates email.'],['2026-11-18T11:20','Wates','Estimate approved. PO-771471.'],['2026-11-18T11:30','Helpdesk','Offered to K. Mensah t/a Eastway Plumbing & Heating. Respond by 18 Nov, 15:30.']] });
-  const CC = { K1:['Plumbing & heating','Electrical installation & repair','Emergency lighting',"Builder's work",'Fire alarm','BMS / controls'],
+  const CC = { K1:['Plumbing & heating','Electrical installation & repair','Emergency lighting',"Builder's work",'BMS / controls'],
     K2:['Fire alarm','Smoke ventilation','Emergency lighting','Access control','Intruder alarm'],
     K3:['Plumbing & heating','Gas (Gas Safe)','Commercial boilers','Drainage',"Builder's work"],
     K4:['Passenger lifts','Platform & stair lifts'], K5:['Water hygiene / legionella','Pool plant & filtration'], K6:['Asbestos surveys'],
     K7:['Fire alarm','CCTV','Access control','Intruder alarm','IT / data'] };
   S.contractors.forEach(c => c.comps = CC[c.id] || []);
+  const SC = { K2:[90,94,92,95,88], K3:[62,78,85,80,72], K4:[74,70,55,60,58], K5:[95,96,98,100,90], K6:[58,65,70,80,60], K7:[84,88,90,92,86] };
+  S.contractors.forEach(c => { if (SC[c.id]) c.stats = SC[c.id]; });
   const JC = { 'CMP-1041':'Plumbing & heating','CMP-1047':'Plumbing & heating','CMP-1040':'Passenger lifts','CMP-1042':'Plumbing & heating','CMP-1043':'Fire alarm','CMP-1044':'Water hygiene / legionella','CMP-1045':'Plumbing & heating','CMP-1046':'Emergency lighting','CMP-1048':'Access control','CMP-1049':'Drainage' };
   S.jobs.forEach(j => j.comp = JC[j.id]);
   S.exceptions = [
@@ -407,7 +409,7 @@ function seed(){
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v4';
+const KEY = 'compass-portal-demo-v6';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
 let needHistory = !S.history;
@@ -866,12 +868,13 @@ function submitOrder(wates){
 }
 
 /* ----- Contractors ----- */
-VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Jobs are offered only to partners who hold the competency the job needs, cover its zone and are compliant. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks offers.</p></div>${ui.addCon ? '' : '<button class="btn primary" data-act="addCon">+ Add contractor</button>'}</div>
+VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Jobs are offered only to partners who hold the competency the job needs, cover its zone and are compliant, highest score first. Partners earn up to 5 points per completed job: report, timekeeping, success, no repeat visit and time on site. Scores are visible to Compass only. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks offers.</p></div>${ui.addCon ? '' : '<button class="btn primary" data-act="addCon">+ Add contractor</button>'}</div>
   ${ui.addCon ? addContractorForm() : ''}
   ${S.contractors.map(c => { const s = contractorState(c);
     return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</div></div>
+    ${c.type !== 'dlo' && !S.settings.presenting ? (() => { const p = partnerScore(c); return `<span class="chip ${p.band[1]}" title="${p.isNew ? 'No completed jobs yet' : p.earned + ' of ' + p.possible + ' points in the last 3 months'}">${p.isNew ? 'New partner' : `Score ${p.score} · ${p.band[0]}`}</span> `; })() : ''}${c.suspended ? '<span class="chip crit">Suspended</span>' : ''}
     ${s.state === 'crit' ? '<span class="chip crit">Blocked from dispatch</span>' : s.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">Compliant</span>'}</div>
-    <div class="panel-b">${compBlock(c)}<div class="grid g3" style="border-top:1px solid var(--line);padding-top:12px">
+    <div class="panel-b">${c.type !== 'dlo' && !S.settings.presenting ? (() => { const p = partnerScore(c); return `<div class="row" style="justify-content:space-between"><div class="row small" style="gap:14px">${p.isNew ? '<span class="muted">New partner: earns up to 5 points per completed job</span>' : `<span><b class="mono">${p.earned}/${p.possible}</b> <span class="muted">points · ${p.jobs} jobs, last 3 months</span></span>` + p.parts.map(x => `<span><span class="muted">${x[0]}</span> <b class="mono">${x[1]}</b></span>`).join('')}</div><button class="btn sm ${c.suspended ? '' : 'danger'}" data-suspend="${c.id}">${c.suspended ? 'Lift suspension' : 'Suspend'}</button></div>`; })() : ''}${compBlock(c)}<div class="grid g3" style="border-top:1px solid var(--line);padding-top:12px">
       <div><span class="eyebrow">Commercial</span><dl class="kv small" style="margin-top:6px">
         ${S.settings.presenting ? `<dt>Rates</dt><dd class="muted">Hidden while presenting</dd>` : c.rates ? `<dt>Rates</dt><dd class="mono">${gbp(c.rates.normal)} / ${gbp(c.rates.ooh)} / ${gbp(c.rates.sun)}</dd><dt>Call-out</dt><dd class="mono">${gbp(c.rates.callout)}</dd>` : `<dt>Pricing</dt><dd>${c.type === 'dlo' ? 'Internal' : 'Quote per job'}</dd>`}
         <dt>CIS</dt><dd>${esc(CIS[c.cis])}</dd><dt>VAT</dt><dd>${c.vat ? 'Registered' : 'Not registered'}</dd>
@@ -995,7 +998,7 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid],[data-suspend]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
@@ -1030,6 +1033,7 @@ function wire(){
     if (t.dataset.decline){ const j = job(t.dataset.decline), reason = document.getElementById('why-' + j.id).value; declineOffer(j, ui.partner, reason); save(); toast(`Declined ${j.id}. Compass has been told.`); return render(); }
     if (t.dataset.engapp){ ui.role = 'engineer'; ui.eng = { who:t.dataset.engapp, jobId:null, step:'list', d:null }; render(); window.scrollTo(0, 0); return; }
     if (act === 'addCon'){ ui.addCon = true; return render(); }
+    if (t.dataset.suspend){ const c = contractor(t.dataset.suspend); c.suspended = !c.suspended; save(); toast(c.suspended ? `${c.name} suspended. No new offers until you lift it.` : `${c.name} can receive offers again.`); return render(); }
     if (t.dataset.pf){ ui.pf = t.dataset.pf; return render(); }
     if (t.dataset.pdim){ ui.pdim = t.dataset.pdim; return render(); }
     if (act === 'submitAfp'){ const A = afpState(), id = 'AFP-' + String(8 + S.applications.length).padStart(3, '0');
@@ -1101,6 +1105,14 @@ function forWates(t){
   S.contractors.forEach(c => { if (c.type !== 'dlo') [c.name, c.name.replace(/ Ltd$/, ''), c.name.replace(/^.* t\/a /, '')].forEach(n => { t = t.split(n).join('Compass supply chain'); }); c.engineers.forEach(e => { t = t.split(e.name).join('engineer'); }); });
   return t.replace(/Offered to Compass supply chain[^.]*\.( Respond by [^.]*\.)?/, 'Booking engineer.').replace(/Emergency offered to \d+ eligible partners? at once\./, 'Booking engineer.');
 }
+const SCORE_PARTS = ['Report', 'Timekeeping', 'Success', 'No repeat visit', 'Time on site'];
+function partnerScore(c){
+  if (c.type === 'dlo') return null;
+  const jobs = finJobs().filter(r => r.partner === c.id && r.date >= '2026-08-18').length;
+  if (!c.stats || !jobs) return { score:100, parts:SCORE_PARTS.map(n => [n, null]), band:['New','info'], isNew:true, jobs:0, earned:0, possible:0 };
+  const earnedBy = c.stats.map(p => Math.round(p / 100 * jobs)), earned = earnedBy.reduce((a, b) => a + b, 0), possible = jobs * 5, score = Math.round(earned / possible * 100);
+  return { score, parts:SCORE_PARTS.map((n, i) => [n, earnedBy[i] + '/' + jobs]), band: score >= 80 ? ['Good','ok'] : score >= 60 ? ['OK','warn'] : ['Poor','crit'], isNew:false, jobs, earned, possible };
+}
 function partnerEligibility(j){
   const s = site(j.site), val = valuation(j).total, offers = j.offers || [];
   return S.contractors.filter(c => c.type !== 'dlo').map(c => {
@@ -1110,12 +1122,13 @@ function partnerEligibility(j){
     if (!tradeOk) why = j.comp ? `No ${j.comp} competency` : j.trade === 'service' ? `Doesn't cover ${j.svcCat.toLowerCase()}` : `Doesn't cover ${RATES[j.trade].short.toLowerCase()}`;
     else if (j.comp && !certOk(c, j.comp).ok) why = `${S.certReq[j.comp]} certificate missing or expired`;
     else if (!c.zones.includes(s.zone)) why = `Doesn't cover Zone ${s.zone}`;
+    else if (c.suspended) why = 'Suspended by Compass';
     else if (st.blocked.length) why = `Blocked: ${st.blocked[0].item} expired`;
     else if (c.maxValue && val > c.maxValue) why = `Over their job limit of ${gbp(c.maxValue)}`;
     else if (prev) why = prev.status === 'declined' ? 'Declined this job' : prev.status === 'expired' ? 'Missed the deadline' : prev.status === 'offered' ? 'Offer live' : 'Already offered';
     const open = S.jobs.filter(x => x.contractor === c.id && ['dispatched','onsite'].includes(x.status)).length;
-    return { c, ok:!why, why, open };
-  }).sort((a, b) => (b.ok - a.ok) || a.open - b.open || a.c.name.localeCompare(b.c.name));
+    return { c, ok:!why, why, open, sc:partnerScore(c).score };
+  }).sort((a, b) => (b.ok - a.ok) || b.sc - a.sc || a.open - b.open);
 }
 function offerJob(j){
   const ok = partnerEligibility(j).filter(x => x.ok); if (!ok.length) return false;
@@ -1155,7 +1168,7 @@ function dispatchPanel(j, wait){
   if (!live){
     h += `<span class="eyebrow">Offer to supply chain partners</span>`;
     if (ok.length) h += `<p class="small muted">${broadcast ? `Emergency: offered to all ${ok.length} eligible partner${ok.length > 1 ? 's' : ''} at once. First to accept gets the job. Reply within ${st.offerMinsEmergency} minutes.` : `Offered to one partner at a time, in this order. If they decline or miss the ${st.offerHours}-hour deadline, it moves to the next.`}</p>
-      <ol class="small" style="margin:0;padding-left:18px">${ok.map(x => `<li>${esc(x.c.name)} <span class="muted">· ${x.open} live job${x.open === 1 ? '' : 's'}</span></li>`).join('')}</ol>
+      <ol class="small" style="margin:0;padding-left:18px">${ok.map(x => `<li>${esc(x.c.name)} <span class="muted">· score ${x.sc} · ${x.open} live job${x.open === 1 ? '' : 's'}</span></li>`).join('')}</ol>
       <button class="btn primary" data-act="offer" ${lock}>${broadcast ? `Offer to all ${ok.length} now` : `Offer to ${esc(ok[0].c.name)}`}</button>`;
     else h += `<div class="note warn small">No eligible partner for this job. Assign a Compass engineer, or see why partners were excluded.</div>`;
   }
