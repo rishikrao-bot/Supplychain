@@ -17,7 +17,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('accounts', function (Blueprint $t) {
+        $this->createIfMissing('accounts', function (Blueprint $t) {
             $t->id();
             $t->string('name');
             $t->string('slug')->unique();
@@ -28,7 +28,7 @@ return new class extends Migration
         });
 
         // Compass itself, each client (e.g. Wates) and each supply chain partner.
-        Schema::create('organisations', function (Blueprint $t) {
+        $this->createIfMissing('organisations', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->string('type'); // compass | client | partner
@@ -52,13 +52,18 @@ return new class extends Migration
             $t->index(['account_id', 'type']);
         });
 
-        Schema::table('users', function (Blueprint $t) {
-            $t->foreign('account_id')->references('id')->on('accounts')->cascadeOnDelete();
-            $t->foreign('organisation_id')->references('id')->on('organisations')->cascadeOnDelete();
+        $userFks = collect(Schema::getForeignKeys('users'))->flatMap(fn ($fk) => $fk['columns'])->all();
+        Schema::table('users', function (Blueprint $t) use ($userFks) {
+            if (! in_array('account_id', $userFks, true)) {
+                $t->foreign('account_id')->references('id')->on('accounts')->cascadeOnDelete();
+            }
+            if (! in_array('organisation_id', $userFks, true)) {
+                $t->foreign('organisation_id')->references('id')->on('organisations')->cascadeOnDelete();
+            }
         });
 
         // A client's schedule of rates, versioned so old jobs keep the rates they were priced on.
-        Schema::create('rate_cards', function (Blueprint $t) {
+        $this->createIfMissing('rate_cards', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('client_id')->constrained('organisations')->cascadeOnDelete();
@@ -68,7 +73,7 @@ return new class extends Migration
             $t->string('status')->default('active'); // draft | active | retired
             $t->timestamps();
         });
-        Schema::create('rate_card_items', function (Blueprint $t) {
+        $this->createIfMissing('rate_card_items', function (Blueprint $t) {
             $t->id();
             $t->foreignId('rate_card_id')->constrained()->cascadeOnDelete();
             $t->string('code');   // e.g. labour.building.normal, callout.emergency, zone.b
@@ -78,7 +83,7 @@ return new class extends Migration
             $t->unique(['rate_card_id', 'code']);
         });
 
-        Schema::create('contracts', function (Blueprint $t) {
+        $this->createIfMissing('contracts', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('client_id')->constrained('organisations')->cascadeOnDelete();
@@ -89,7 +94,7 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        Schema::create('sites', function (Blueprint $t) {
+        $this->createIfMissing('sites', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('contract_id')->constrained()->cascadeOnDelete();
@@ -108,13 +113,13 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        Schema::create('competency_groups', function (Blueprint $t) {
+        $this->createIfMissing('competency_groups', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->string('name');
             $t->unsignedSmallInteger('sort')->default(0);
         });
-        Schema::create('competencies', function (Blueprint $t) {
+        $this->createIfMissing('competencies', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('competency_group_id')->constrained()->cascadeOnDelete();
@@ -122,14 +127,14 @@ return new class extends Migration
             $t->string('certificate_required')->nullable(); // e.g. "Gas Safe", "BAFE"
             $t->timestamps();
         });
-        Schema::create('competency_organisation', function (Blueprint $t) {
+        $this->createIfMissing('competency_organisation', function (Blueprint $t) {
             $t->foreignId('competency_id')->constrained()->cascadeOnDelete();
             $t->foreignId('organisation_id')->constrained()->cascadeOnDelete();
             $t->primary(['competency_id', 'organisation_id']);
         });
 
         // Compliance documents for an organisation, or for one person (CSCS, DBS, asbestos awareness).
-        Schema::create('compliance_documents', function (Blueprint $t) {
+        $this->createIfMissing('compliance_documents', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('organisation_id')->constrained()->cascadeOnDelete();
@@ -146,7 +151,7 @@ return new class extends Migration
         });
 
         // Running numbers per account (Q-/P- job numbers, quote numbers).
-        Schema::create('number_sequences', function (Blueprint $t) {
+        $this->createIfMissing('number_sequences', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->string('name');
@@ -155,7 +160,7 @@ return new class extends Migration
         });
 
         // A maintenance job. Shown as Q-{number} until the client approves it, then P-{number}.
-        Schema::create('work_orders', function (Blueprint $t) {
+        $this->createIfMissing('work_orders', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->unsignedBigInteger('number');
@@ -184,14 +189,16 @@ return new class extends Migration
             $t->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $t->decimal('approved_amount', 10, 2)->nullable();
             $t->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $t->timestamp('received_at');
+            // dateTime with a default: a NOT NULL TIMESTAMP without one fails on MariaDB/MySQL when
+            // explicit_defaults_for_timestamp is off and NO_ZERO_DATE is on (error 1067).
+            $t->dateTime('received_at')->useCurrent();
             $t->timestamps();
             $t->unique(['account_id', 'number']);
             $t->index(['account_id', 'status']);
         });
 
         // One or more trades per job, each with its own competency and estimated hours.
-        Schema::create('work_order_trades', function (Blueprint $t) {
+        $this->createIfMissing('work_order_trades', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->string('trade'); // building | specialist | lift | service
@@ -201,7 +208,7 @@ return new class extends Migration
         });
 
         // Files attached to anything: order attachments, visit photos, certificates.
-        Schema::create('attachments', function (Blueprint $t) {
+        $this->createIfMissing('attachments', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->morphs('attachable');
@@ -216,7 +223,7 @@ return new class extends Migration
         });
 
         // Offers to partners: one at a time, or to all eligible partners for emergencies.
-        Schema::create('job_offers', function (Blueprint $t) {
+        $this->createIfMissing('job_offers', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->foreignId('organisation_id')->constrained()->cascadeOnDelete();
@@ -229,21 +236,21 @@ return new class extends Migration
         });
 
         // Availability requests: every eligible partner offers up to 3 slots.
-        Schema::create('availability_requests', function (Blueprint $t) {
+        $this->createIfMissing('availability_requests', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->timestamp('deadline_at')->nullable();
             $t->string('status')->default('open'); // open | booked | cancelled
             $t->timestamps();
         });
-        Schema::create('availability_replies', function (Blueprint $t) {
+        $this->createIfMissing('availability_replies', function (Blueprint $t) {
             $t->id();
             $t->foreignId('availability_request_id')->constrained()->cascadeOnDelete();
             $t->foreignId('organisation_id')->constrained()->cascadeOnDelete();
             $t->string('status')->default('waiting'); // waiting | offered | not_available
             $t->timestamp('responded_at')->nullable();
         });
-        Schema::create('availability_slots', function (Blueprint $t) {
+        $this->createIfMissing('availability_slots', function (Blueprint $t) {
             $t->id();
             $t->foreignId('availability_reply_id')->constrained()->cascadeOnDelete();
             $t->date('date');
@@ -253,7 +260,7 @@ return new class extends Migration
         });
 
         // Engineer visit and its report.
-        Schema::create('visits', function (Blueprint $t) {
+        $this->createIfMissing('visits', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -271,7 +278,7 @@ return new class extends Migration
             $t->decimal('expenses', 10, 2)->default(0);
             $t->timestamps();
         });
-        Schema::create('visit_materials', function (Blueprint $t) {
+        $this->createIfMissing('visit_materials', function (Blueprint $t) {
             $t->id();
             $t->foreignId('visit_id')->constrained()->cascadeOnDelete();
             $t->string('description');
@@ -279,7 +286,7 @@ return new class extends Migration
         });
 
         // No access, further works, parts, asbestos, over estimate: sent to the client for a decision.
-        Schema::create('job_exceptions', function (Blueprint $t) {
+        $this->createIfMissing('job_exceptions', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->string('type');
@@ -296,7 +303,7 @@ return new class extends Migration
         });
 
         // Further-works and inspection quotes.
-        Schema::create('quotes', function (Blueprint $t) {
+        $this->createIfMissing('quotes', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->unsignedBigInteger('number');
@@ -311,7 +318,7 @@ return new class extends Migration
             $t->unique(['account_id', 'number']);
         });
 
-        Schema::create('valuations', function (Blueprint $t) {
+        $this->createIfMissing('valuations', function (Blueprint $t) {
             $t->id();
             $t->foreignId('work_order_id')->constrained()->cascadeOnDelete();
             $t->json('lines');
@@ -322,7 +329,7 @@ return new class extends Migration
         });
 
         // Everything that happens, for the audit trail.
-        Schema::create('activity_log', function (Blueprint $t) {
+        $this->createIfMissing('activity_log', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -334,7 +341,7 @@ return new class extends Migration
         });
 
         // Rules and settings. status marks items still being agreed with the client.
-        Schema::create('settings', function (Blueprint $t) {
+        $this->createIfMissing('settings', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
             $t->string('key');
@@ -344,6 +351,17 @@ return new class extends Migration
             $t->timestamps();
             $t->unique(['account_id', 'key']);
         });
+    }
+
+    /**
+     * Safe to rerun after a partly failed run: tables that already exist are left as they are.
+     * (MySQL/MariaDB can't roll back table creation, so a failure part-way leaves earlier tables behind.)
+     */
+    private function createIfMissing(string $table, \Closure $callback): void
+    {
+        if (! Schema::hasTable($table)) {
+            Schema::create($table, $callback);
+        }
     }
 
     public function down(): void
