@@ -219,6 +219,10 @@ tr.click:hover td{filter:brightness(.97)}
 .tile:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 .tile .go{order:9;font-size:12px;font-weight:500;color:var(--accent-ink);margin-top:2px}
 .tile:hover .go{color:var(--accent-ink)}
+.rv{position:fixed;inset:0;z-index:70;background:rgba(10,20,26,.72);display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.rv-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);padding:10px 14px;border-radius:8px 8px 0 0;max-width:860px;width:100%;margin:0 auto}
+.rv-pages{overflow:auto;background:var(--surface-2);max-width:860px;width:100%;margin:0 auto;flex:1;padding:14px;display:flex;flex-direction:column;gap:14px;align-items:center;border-radius:0 0 8px 8px}
+.rv-pages img{width:100%;max-width:800px;box-shadow:0 2px 10px rgba(0,0,0,.25);background:#fff}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:calc(100% - 32px);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .hide-sm{} @media (max-width:640px){.hide-sm{display:none}}
@@ -241,6 +245,7 @@ tr.click:hover td{filter:brightness(.97)}
 <div id="app"></div>
 <div id="toast" class="toast" hidden></div>
 <div id="tip" hidden></div>
+<div id="reportView" class="rv" hidden role="dialog" aria-modal="true" aria-label="Completion report"><div class="rv-bar"><b>Completion report (sample)</b><button class="btn sm" data-close-report>Close</button></div><div class="rv-pages"><img src="sample-report-page-1.jpg" alt="Completion report page 1"><img src="sample-report-page-2.jpg" alt="Completion report page 2"></div></div>
 
 <script>
 /* ============================== Helpers ============================== */
@@ -843,7 +848,7 @@ VIEWS.job = () => {
         ${v.outcome === 'noaccess' && !v.withinWindow ? '<div class="note crit small">Engineer arrived outside the agreed window. Not charged automatically.</div>' : ''}
         <p class="small muted">Invoice reference: ${esc(j.wRef)} / ${esc(j.approved?.po || 'order no. pending')}</p></div></div>` : ''}
       ${W && act && j.status !== 'complete' ? `<div class="panel"><div class="panel-b"><p class="small muted">The valuation appears here once Compass has checked the visit report.</p></div></div>` : ''}
-      ${j.status === 'complete' ? `<div class="panel"><div class="panel-h"><h2>Completion report</h2>${info('Created automatically when the job is completed and attached here. It shows the work, times, safety checks, photos and sign-off, with no prices. Download it from the portal; it is not emailed.')}</div><div class="panel-b"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div class="row" style="flex-wrap:nowrap"><span class="mono small" style="border:1px solid var(--line);border-radius:4px;padding:6px 8px">PDF</span><div><b>${esc(refOf(j.id))}-completion-report.pdf</b><div class="small muted">Attached ${fmtDT(j.fin?.date || j.visit?.depart)} · 2 pages</div></div></div><a class="btn sm primary" href="sample-completion-report.pdf" target="_blank" rel="noopener">View sample</a></div><p class="small muted">In the demo this opens a sample report. In the live portal it is the report for this job.</p></div></div>` : ''}
+      ${j.status === 'complete' ? `<div class="panel"><div class="panel-h"><h2>Completion report</h2>${info('Created automatically when the job is completed and attached here. It shows the work, times, safety checks, photos and sign-off, with no prices. Download it from the portal; it is not emailed.')}</div><div class="panel-b"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div class="row" style="flex-wrap:nowrap"><span class="mono small" style="border:1px solid var(--line);border-radius:4px;padding:6px 8px">PDF</span><div><b>${esc(refOf(j.id))}-completion-report.pdf</b><div class="small muted">Attached ${fmtDT(j.fin?.date || j.visit?.depart)} · 2 pages</div></div></div><button class="btn sm primary" data-act="viewReport">View report</button></div><p class="small muted">In the demo this shows a sample report. In the live portal it is the report for this job.${/jobsavvy\.co\.uk$/.test(location.hostname) ? ' <a href="sample-completion-report.pdf" target="_blank" rel="noopener">Download sample PDF</a>' : ''}</p></div></div>` : ''}
       ${cc && !S.settings.presenting ? `<div class="panel"><div class="panel-h"><h2>Contractor cost &amp; margin</h2><span class="small muted">Compass only</span></div><div class="panel-b">
         <table class="val"><tbody>${cc.lines.map(([l, a]) => `<tr><td>${esc(l)}</td><td class="num mono">${gbp(a)}</td></tr>`).join('')}
         <tr class="total"><td>Payable to ${esc(cc.c.name)}</td><td class="num mono">${gbp(cc.gross)}</td></tr>
@@ -1261,6 +1266,8 @@ function wire(){
 document.addEventListener('mousemove', e => { const tip = document.getElementById('tip'), t = e.target.closest && e.target.closest('[data-tip]');
   if (!t){ tip.hidden = true; return; } tip.innerHTML = t.getAttribute('data-tip'); tip.hidden = false;
   const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 14, window.innerHeight - tip.offsetHeight - 8); tip.style.left = x + 'px'; tip.style.top = y + 'px'; });
+document.addEventListener('click', e => { if (e.target.closest('[data-act="viewReport"]')){ document.getElementById('reportView').hidden = false; document.querySelector('[data-close-report]').focus(); } if (e.target.closest('[data-close-report]') || e.target.id === 'reportView') document.getElementById('reportView').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('reportView').hidden = true; });
 document.addEventListener('focusin', e => { const t = e.target.closest && e.target.closest('.tipi'); const tip = document.getElementById('tip'); if (!t) return; tip.innerHTML = esc(t.getAttribute('data-tip')); tip.hidden = false; const r = t.getBoundingClientRect(); tip.style.left = Math.max(8, Math.min(r.left, window.innerWidth - tip.offsetWidth - 8)) + 'px'; tip.style.top = Math.min(r.bottom + 8, window.innerHeight - tip.offsetHeight - 8) + 'px'; });
 document.addEventListener('focusout', e => { if (e.target.closest && e.target.closest('.tipi')) document.getElementById('tip').hidden = true; });
 document.querySelector('.roles').onclick = e => { const b = e.target.closest('[data-role]'); if (!b) return; ui.role = b.dataset.role; ui.view = ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'; render(); };
