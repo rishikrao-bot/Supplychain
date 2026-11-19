@@ -7,6 +7,10 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkOrderReportController;
+use App\Http\Controllers\Setup\CompetencyController;
+use App\Http\Controllers\Setup\ContractorController;
+use App\Http\Controllers\Setup\RulesController;
+use App\Http\Controllers\Setup\SiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -35,4 +39,15 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::post('/users/{user}/reset-two-factor', [UserController::class, 'resetTwoFactor'])->name('users.reset2fa');
     Route::post('/organisations', [OrganisationController::class, 'store'])->name('organisations.store');
     Route::get('/jobs/{workOrder}/completion-report.pdf', WorkOrderReportController::class)->name('jobs.report');
+
+    // Set-up data (Compass admin and helpdesk)
+    Route::resource('sites', SiteController::class)->except(['show', 'destroy']);
+    Route::resource('contractors', ContractorController::class)->except(['show', 'destroy'])->parameters(['contractors' => 'contractor']);
+    Route::post('/contractors/{contractor}/suspend', [ContractorController::class, 'suspend'])->name('contractors.suspend');
+    Route::post('/contractors/{contractor}/documents', [ContractorController::class, 'storeDocument'])->name('contractors.documents.store');
+    Route::get('/documents/{document}/download', [ContractorController::class, 'downloadDocument'])->name('documents.download');
+    Route::get('/competencies', [CompetencyController::class, 'index'])->name('competencies.index');
+    Route::post('/competencies', [CompetencyController::class, 'store'])->name('competencies.store');
+    Route::get('/rates-and-rules', [RulesController::class, 'index'])->name('rules.index');
+    Route::patch('/rates-and-rules/{setting}', [RulesController::class, 'update'])->name('rules.update');
 });

@@ -56,6 +56,12 @@ class User extends Authenticatable
     public function isCompassAdmin(): bool { return $this->isCompass() && $this->role === Roles::ADMIN; }
     public function hasTwoFactor(): bool { return $this->two_factor_confirmed_at !== null; }
 
+    /** Compass admin or helpdesk: may manage sites, contractors and other set-up data. */
+    public function isCompassStaff(): bool
+    {
+        return $this->isCompass() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK], true);
+    }
+
     /** Can this person add or change users at all? */
     public function canManageUsers(): bool
     {

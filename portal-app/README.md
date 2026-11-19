@@ -24,6 +24,15 @@ Laravel 12 application for the live reactive maintenance portal at
 - Email: sends through Microsoft 365 (Rishi's mailbox for now); if sending isn't set up, invite links
   are shown on screen to copy.
 
+- Set-up screens (Compass admin and helpdesk):
+  - Sites: register by client and contract, with zone, contacts, access, asbestos notes and GPS.
+  - Contractors: contact details, type, zones, job limit, their rates, competencies (multi-select with
+    certificate checks), compliance documents with expiry and file upload (only those expiring within
+    30 days shown unless "Show all"), suspend / lift.
+  - Competencies: the grouped list, how many partners hold each, add new (admin) with any required certificate.
+  - Rates & rules: the client rate card (TBC items marked) and the rules with agreed / proposed / on hold
+    status, editable by admins.
+
 ## Run locally
 
     composer install

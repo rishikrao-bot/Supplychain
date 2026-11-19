@@ -17,7 +17,13 @@
   <nav class="nav" aria-label="Sections">
     <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>Dashboard</a>
     @if($me->canManageUsers())<a href="{{ route('users.index') }}" @if(request()->routeIs('users.*')) aria-current="page" @endif>{{ $me->isCompassAdmin() ? 'Users & access' : 'Users' }}</a>@endif
-    <span class="soon small">Jobs, orders, contractors, sites and the engineer app are being built</span>
+    @if($me->isCompassStaff())
+    <a href="{{ route('sites.index') }}" @if(request()->routeIs('sites.*')) aria-current="page" @endif>Sites</a>
+    <a href="{{ route('contractors.index') }}" @if(request()->routeIs('contractors.*')) aria-current="page" @endif>Contractors</a>
+    <a href="{{ route('competencies.index') }}" @if(request()->routeIs('competencies.*')) aria-current="page" @endif>Competencies</a>
+    <a href="{{ route('rules.index') }}" @if(request()->routeIs('rules.*')) aria-current="page" @endif>Rates &amp; rules</a>
+    @endif
+    <span class="soon small">Jobs, orders and the engineer app are being built</span>
   </nav>
   <main><div class="wrap">
     @if(session('status'))<div class="note ok" role="status">{{ session('status') }}</div>@endif
