@@ -537,7 +537,7 @@ function render(){
   document.querySelectorAll('.roles button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === ui.role));
   const app = document.getElementById('app');
   if (ui.role === 'engineer'){ app.innerHTML = `<main><div class="wrap">${viewEngineer()}</div></main>`; wireEngineer(); return; }
-  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['selfbill','Self-billing & CIS'],['settings','Rules & settings']];
+  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],...(S.settings.presenting ? [] : [['selfbill','Self-billing & CIS']]),['settings','Rules & settings']];
   const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes']];
   const P = contractor(ui.partner);
   const navP = [['p-offers','Job offers', S.jobs.filter(j => (j.offers || []).some(o => o.contractor === P.id && o.status === 'offered')).length, true],['p-jobs','My jobs'],['p-docs','Compliance documents', contractorState(P).state !== 'ok' ? '!' : 0, true],['p-inv','Self-billed invoices']];
@@ -549,7 +549,7 @@ function render(){
   if (ui.role === 'partner' && !ui.view.startsWith('p-')) ui.view = 'p-offers';
   app.innerHTML = `<div class="shell"><nav class="nav" aria-label="Sections"><div class="who">${who}</div>
     ${nav.map(([v, l, n, hot]) => `<button data-view="${v}" ${cur === v ? 'aria-current="page"' : ''}><span>${l}</span>${n ? `<span class="count ${hot ? 'hot' : ''}">${n}</span>` : ''}</button>`).join('')}
-    <div class="foot"><button class="btn sm block" data-act="reset">Reset demo data</button></div></nav>
+    <div class="foot" style="display:flex;flex-direction:column;gap:8px"><label class="check small ${S.settings.presenting ? 'on' : ''}"><input type="checkbox" id="presenting" ${S.settings.presenting ? 'checked' : ''}><span>Presenting to client: hide rates &amp; margins</span></label><button class="btn sm block" data-act="reset">Reset demo data</button></div></nav>
     <main><div class="wrap">${(VIEWS[ui.role === 'partner' && !ui.view.startsWith('p-') ? 'p-offers' : ui.view] || VIEWS.dashboard)()}</div></main></div>`;
   wire();
 }
@@ -652,7 +652,7 @@ VIEWS.job = () => {
         <p class="small muted">Arrival and departure times are final unless queried within 14 days (clause 13)${v.depart ? `, by ${fmtD(new Date(new Date(v.depart).getTime() + 14 * 864e5).toISOString())}` : ''}.</p>
         ${!W && j.status === 'review' ? `<div class="row end"><button class="btn primary" data-act="approveReport">Approve report &amp; issue valuation</button></div>` : ''}
       </div></div>` : ''}
-      <div class="panel"><div class="panel-h"><h2>Activity</h2></div><div class="panel-b"><ul class="tl">${(j.log || []).slice().reverse().filter(l => !W || l[1] !== 'Helpdesk' || true).map(([at, who, t]) => `<li><time>${fmtDT(at)}</time><div><b>${esc(W && !['Wates','System','Helpdesk','Rishi Rao'].includes(who) ? 'Compass MEP' : who)}</b> · ${esc(W ? forWates(t) : t)}</div></li>`).join('')}</ul></div></div>
+      <div class="panel"><div class="panel-h"><h2>Activity</h2></div><div class="panel-b"><ul class="tl">${(j.log || []).slice().reverse().filter(l => !W || l[1] !== 'Helpdesk' || true).map(([at, who, t]) => `<li><time>${fmtDT(at)}</time><div><b>${esc(W && !['Wates','System','Helpdesk','Rishi Rao'].includes(who) ? 'Compass MEP' : who)}</b> · ${esc(W ? forWates(t) : S.settings.presenting ? t.replace(/ \(£[^)]*net of CIS\)/, '') : t)}</div></li>`).join('')}</ul></div></div>
     </div>
     <div class="grid" style="align-content:start">
       <div class="panel"><div class="panel-h"><h2>Estimate</h2><span class="small muted">From the rate card</span></div><div class="panel-b">${valTable(est, {totalLabel:'Estimate (excl. VAT)'})}${approval}</div></div>
@@ -661,7 +661,7 @@ VIEWS.job = () => {
         ${v.outcome === 'noaccess' && !v.withinWindow ? '<div class="note crit small">Engineer arrived outside the agreed window. Not charged automatically.</div>' : ''}
         <p class="small muted">Invoice reference: ${esc(j.wRef)} / ${esc(j.approved?.po || 'order no. pending')}</p></div></div>` : ''}
       ${W && act && j.status !== 'complete' ? `<div class="panel"><div class="panel-b"><p class="small muted">The valuation appears here once Compass has checked the visit report.</p></div></div>` : ''}
-      ${cc ? `<div class="panel"><div class="panel-h"><h2>Contractor cost &amp; margin</h2><span class="small muted">Compass only</span></div><div class="panel-b">
+      ${cc && !S.settings.presenting ? `<div class="panel"><div class="panel-h"><h2>Contractor cost &amp; margin</h2><span class="small muted">Compass only</span></div><div class="panel-b">
         <table class="val"><tbody>${cc.lines.map(([l, a]) => `<tr><td>${esc(l)}</td><td class="num mono">${gbp(a)}</td></tr>`).join('')}
         <tr class="total"><td>Payable to ${esc(cc.c.name)}</td><td class="num mono">${gbp(cc.gross)}</td></tr>
         <tr><td class="calc">CIS deduction (${esc(CIS[cc.c.cis])} on labour ${gbp(cc.labour)})</td><td class="num mono">${gbp(-cc.cis)}</td></tr>
@@ -745,7 +745,7 @@ VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors<
     ${s.state === 'crit' ? '<span class="chip crit">Blocked from dispatch</span>' : s.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">Compliant</span>'}</div>
     <div class="panel-b"><div class="grid g3">
       <div><span class="eyebrow">Commercial</span><dl class="kv small" style="margin-top:6px">
-        ${c.rates ? `<dt>Rates</dt><dd class="mono">${gbp(c.rates.normal)} / ${gbp(c.rates.ooh)} / ${gbp(c.rates.sun)}</dd><dt>Call-out</dt><dd class="mono">${gbp(c.rates.callout)}</dd>` : `<dt>Pricing</dt><dd>${c.type === 'dlo' ? 'Internal' : 'Quote per job'}</dd>`}
+        ${S.settings.presenting ? `<dt>Rates</dt><dd class="muted">Hidden while presenting</dd>` : c.rates ? `<dt>Rates</dt><dd class="mono">${gbp(c.rates.normal)} / ${gbp(c.rates.ooh)} / ${gbp(c.rates.sun)}</dd><dt>Call-out</dt><dd class="mono">${gbp(c.rates.callout)}</dd>` : `<dt>Pricing</dt><dd>${c.type === 'dlo' ? 'Internal' : 'Quote per job'}</dd>`}
         <dt>CIS</dt><dd>${esc(CIS[c.cis])}</dd><dt>VAT</dt><dd>${c.vat ? 'Registered' : 'Not registered'}</dd>
         ${c.sba ? `<dt>Self-billing</dt><dd>Agreement to ${fmtD(c.sba.exp)} ${compStatus(c.sba.exp) !== 'ok' ? `<span class="chip ${compStatus(c.sba.exp)}">${compStatus(c.sba.exp) === 'crit' ? 'Expired' : 'Renew'}</span>` : ''}</dd>` : ''}
       </dl></div>
@@ -783,6 +783,7 @@ VIEWS.quotes = () => {
 
 /* ----- Self-billing & CIS ----- */
 VIEWS.selfbill = () => {
+  if (S.settings.presenting) return VIEWS.dashboard();
   const byC = {};
   S.selfbills.forEach(b => { const x = byC[b.contractor] ||= { gross:0, labour:0, cis:0 }; x.gross += b.labour + b.materials; x.labour += b.labour; x.cis += b.cis; });
   return `<div class="page-head"><div><h1>Self-billing &amp; CIS</h1><p class="sub">When a subcontractor's report is approved, a self-billed invoice is raised on their behalf at their agreed rates. CIS is deducted from labour only. Each contractor has its own sequential numbering, under a signed self-billing agreement.</p></div></div>
@@ -909,6 +910,7 @@ function wire(){
   app.onchange = e => {
     const t = e.target;
     if (t.id === 'partnerWho'){ ui.partner = t.value; return render(); }
+    if (t.id === 'presenting'){ S.settings.presenting = t.checked; save(); toast(t.checked ? 'Presenting: partner rates, costs and margins hidden.' : 'Rates and margins visible again.'); if (t.checked && ui.view === 'selfbill') ui.view = 'dashboard'; return render(); }
     if (t.dataset.upload && t.files[0]){ const c = contractor(ui.partner); (c.pending ||= []).push({ item:t.dataset.upload, file:t.files[0].name, at:nowISO() }); save(); toast('Uploaded. Compass will check it before it counts.'); return render(); }
     if (t.dataset.setting){ const k = t.dataset.setting, st = S.settings; st[k] = t.type === 'number' ? Number(t.value) : t.value === 'true' ? true : t.value === 'false' ? false : t.value;
       if (k === 'inspectionFee') S.quotes.forEach(q => { if (q.fee) q.fee = st.inspectionFee; });
@@ -998,7 +1000,7 @@ VIEWS['p-offers'] = () => {
   ${mine.length ? mine.map(j => { const s = site(j.site), o = j.offers.find(o => o.contractor === c.id && o.status === 'offered');
     return `<div class="panel"><div class="panel-h"><div><div class="row"><b class="mono">${j.id}</b>${pri(j.priority)}${o.mode === 'broadcast' ? '<span class="chip warn">Sent to several partners: first to accept</span>' : ''}</div><div class="small muted">${esc(s.name)}, ${esc(s.area)} · Zone ${s.zone}</div></div><span class="small">Reply by <b>${fmtDT(o.deadline)}</b></span></div>
     <div class="panel-b"><div class="grid g2"><div><p>${esc(j.desc)}</p><dl class="kv small" style="margin-top:8px"><dt>Location</dt><dd>${esc(j.loc)}</dd><dt>Window</dt><dd>${esc(j.window || 'To agree')}</dd><dt>Access</dt><dd>${esc(s.access)}</dd><dt>Asbestos</dt><dd>${esc(s.asbestos)}</dd></dl></div>
-      <div><span class="eyebrow">Your terms</span><dl class="kv small" style="margin-top:6px">${c.rates ? `<dt>Call-out</dt><dd class="mono">${gbp(j.parent && !S.settings.returnVisitCallout ? 0 : c.rates.callout)}</dd><dt>Your rate</dt><dd class="mono">${gbp(c.rates[j.band] || c.rates.normal)}/h (${BANDS[j.band].toLowerCase()})</dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : `<dt>Pricing</dt><dd>Your agreed quotation${j.specialist?.ref ? ' ' + esc(j.specialist.ref) : ''}</dd>`}
+      <div><span class="eyebrow">Your terms</span><dl class="kv small" style="margin-top:6px">${S.settings.presenting ? `<dt>Rates</dt><dd>Your agreed rates apply <span class="muted">(hidden while presenting)</span></dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : c.rates ? `<dt>Call-out</dt><dd class="mono">${gbp(j.parent && !S.settings.returnVisitCallout ? 0 : c.rates.callout)}</dd><dt>Your rate</dt><dd class="mono">${gbp(c.rates[j.band] || c.rates.normal)}/h (${BANDS[j.band].toLowerCase()})</dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : `<dt>Pricing</dt><dd>Your agreed quotation${j.specialist?.ref ? ' ' + esc(j.specialist.ref) : ''}</dd>`}
         <dt>Payment</dt><dd>Self-billed by Compass · ${esc(CIS[c.cis])}</dd></dl></div></div>
       <div class="grid g2" style="align-items:end"><div class="field"><label for="eng-${j.id}">Engineer attending</label><select id="eng-${j.id}">${c.engineers.map(e => `<option>${esc(e.name)}</option>`).join('')}</select></div><button class="btn primary" data-accept="${j.id}">Accept job</button></div>
       <div class="grid g2" style="align-items:end"><div class="field"><label for="why-${j.id}">Reason for declining</label><select id="why-${j.id}">${reasons.map(r => `<option>${r}</option>`).join('')}</select></div><button class="btn" data-decline="${j.id}">Decline</button></div>
@@ -1018,6 +1020,7 @@ VIEWS['p-docs'] = () => {
   <div class="panel"><div class="panel-h"><h2>Engineers</h2></div><div class="tbl-wrap"><table><tbody>${c.engineers.flatMap((e, n) => [[`${e.name}: CSCS`, e.cscs], [`${e.name}: asbestos awareness`, e.asb], [`${e.name}: DBS`, e.dbs]].map(([l, d], m) => row(l, d, `e${n}${m}`))).join('')}</tbody></table></div></div>`;
 };
 VIEWS['p-inv'] = () => {
+  if (S.settings.presenting) return `<div class="page-head"><div><h1>Self-billed invoices</h1><p class="sub">Hidden while presenting. Partners see each invoice, CIS deduction and payment here.</p></div></div>`;
   const c = contractor(ui.partner), list = S.selfbills.filter(b => b.contractor === c.id);
   const tot = list.reduce((a, b) => ({ g:a.g + b.labour + b.materials, cis:a.cis + b.cis }), { g:0, cis:0 });
   return `<div class="page-head"><div><h1>Self-billed invoices</h1><p class="sub">Compass raises your invoice when your visit report is approved, at your agreed rates. ${c.sba ? `Self-billing agreement valid to ${fmtD(c.sba.exp)}.` : ''} CIS: ${esc(CIS[c.cis])}.</p></div></div>
