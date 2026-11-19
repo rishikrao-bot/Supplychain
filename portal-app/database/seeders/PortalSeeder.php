@@ -100,6 +100,7 @@ class PortalSeeder extends Seeder
             ['offer_reply_hours', 4, 'agreed', 'Reply deadline for planned, urgent and routine offers.'],
             ['offer_reply_minutes_emergency', 30, 'agreed', 'Reply deadline for emergency offers.'],
             ['show_cis', false, 'on_hold', 'CIS hidden for now.'],
+            ['completion_report_delivery', 'portal_download', 'agreed', 'Completion reports are downloaded from the portal, not emailed (decided 19 Nov 2026).'],
             ['partner_pay_days', 30, 'on_hold', 'Stage 2: partner payment terms.'],
         ];
         foreach ($settings as [$key, $value, $status, $note]) {

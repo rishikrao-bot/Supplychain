@@ -116,7 +116,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
 .tag{font-size:11px;border:1px dashed var(--warn);color:var(--warn);border-radius:4px;padding:1px 6px;white-space:nowrap}
 
 /* Buttons & forms */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .btn.primary:hover{filter:brightness(1.07)}
@@ -347,7 +347,7 @@ function seed(){
     { id:'CMP-1041', wRef:'WTS-55120', contract:'C1', site:'S1', priority:'Emergency', trade:'building', band:'ooh', source:'Phone',
       received:'2026-11-12T19:05', loc:'Main pool hall, north side by spectator seating', nte:500,
       desc:'Water leaking from ceiling void onto poolside in main pool hall. Area cordoned off by duty manager.',
-      est:{hours:2, materials:60}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-12T19:40', po:'PO-771402', amount:null},
+      est:{hours:2, materials:60}, approved:{by:'Paul Coffey (Wates)', at:'2026-11-12T19:40', po:'PO-771402', amount:359.91},
       contractor:'K1', engineer:'Dan Okafor', status:'complete',
       visit:{ arrive:'2026-11-12T22:10', depart:'2026-11-13T00:25', hours:2.25, gps:'51.5304, 0.5711', checklist:chk,
         before:[samplePhotoRef('Leak above poolside','2026-11-12T22:14','51.5304, 0.5711','before',200)],
@@ -472,7 +472,7 @@ function seed(){
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v8';
+const KEY = 'compass-portal-demo-v9';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
 let needHistory = !S.history;
@@ -843,6 +843,7 @@ VIEWS.job = () => {
         ${v.outcome === 'noaccess' && !v.withinWindow ? '<div class="note crit small">Engineer arrived outside the agreed window. Not charged automatically.</div>' : ''}
         <p class="small muted">Invoice reference: ${esc(j.wRef)} / ${esc(j.approved?.po || 'order no. pending')}</p></div></div>` : ''}
       ${W && act && j.status !== 'complete' ? `<div class="panel"><div class="panel-b"><p class="small muted">The valuation appears here once Compass has checked the visit report.</p></div></div>` : ''}
+      ${j.status === 'complete' ? `<div class="panel"><div class="panel-h"><h2>Completion report</h2>${info('Created automatically when the job is completed and attached here. It shows the work, times, safety checks, photos and sign-off, with no prices. Download it from the portal; it is not emailed.')}</div><div class="panel-b"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div class="row" style="flex-wrap:nowrap"><span class="mono small" style="border:1px solid var(--line);border-radius:4px;padding:6px 8px">PDF</span><div><b>${esc(refOf(j.id))}-completion-report.pdf</b><div class="small muted">Attached ${fmtDT(j.fin?.date || j.visit?.depart)} · 2 pages</div></div></div><a class="btn sm primary" href="sample-completion-report.pdf" target="_blank" rel="noopener">View sample</a></div><p class="small muted">In the demo this opens a sample report. In the live portal it is the report for this job.</p></div></div>` : ''}
       ${cc && !S.settings.presenting ? `<div class="panel"><div class="panel-h"><h2>Contractor cost &amp; margin</h2><span class="small muted">Compass only</span></div><div class="panel-b">
         <table class="val"><tbody>${cc.lines.map(([l, a]) => `<tr><td>${esc(l)}</td><td class="num mono">${gbp(a)}</td></tr>`).join('')}
         <tr class="total"><td>Payable to ${esc(cc.c.name)}</td><td class="num mono">${gbp(cc.gross)}</td></tr>
