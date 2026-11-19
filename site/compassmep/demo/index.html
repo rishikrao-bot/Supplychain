@@ -232,6 +232,11 @@ tr.click:hover td{filter:brightness(.97)}
 .bench{border:1px dashed var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .slot{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 10px;flex-wrap:wrap}
 .slot.pref{border-color:var(--accent);background:var(--accent-soft)}
+.tile{font:inherit;color:inherit;text-align:left;cursor:pointer;background:var(--surface);position:relative}
+.tile:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(20,48,58,.08)}
+.tile:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.tile .go{order:9;font-size:12px;font-weight:500;color:var(--accent-ink);margin-top:2px}
+.tile:hover .go{color:var(--accent-ink)}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:calc(100% - 32px);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .hide-sm{} @media (max-width:640px){.hide-sm{display:none}}
@@ -758,10 +763,10 @@ VIEWS.dashboard = () => {
   const valued = S.jobs.filter(j => j.status === 'complete').reduce((a, j) => a + valuation(j, 'actual').total, 0);
   return `<div class="page-head"><div><span class="eyebrow">Wednesday 18 November 2026</span><h1>Helpdesk dashboard</h1><p class="sub">Orders received by email and phone, all logged here. Click any job to see the full record from instruction to valuation.</p></div><button class="btn primary" data-view="new">+ Log an order</button></div>
   <div class="grid g4">
-    <div class="panel stat"><span class="eyebrow">Open jobs</span><span class="v">${open.length}</span><span class="small muted">${S.jobs.filter(j => ['dispatched','onsite'].includes(j.status)).length} with engineers now</span></div>
-    <div class="panel stat warn"><span class="eyebrow">Awaiting Wates approval</span><span class="v">${awaiting.length}</span><span class="small muted">${gbp(awaiting.reduce((a, j) => a + valuation(j).total, 0))} estimated</span></div>
-    <div class="panel stat crit"><span class="eyebrow">Open exceptions</span><span class="v">${exc.length}</span><span class="small muted">Wates notified on each</span></div>
-    <div class="panel stat"><span class="eyebrow">Valued this month</span><span class="v">${gbp(valued)}</span><span class="small muted">Ready to invoice from Xero/Sage</span></div>
+    <button class="panel stat tile" data-view="jobs" data-jf="open" aria-label="Open jobs: view"><span class="go">View →</span><span class="eyebrow">Open jobs</span><span class="v">${open.length}</span><span class="small muted">${S.jobs.filter(j => ['dispatched','onsite'].includes(j.status)).length} with engineers now</span></button>
+    <button class="panel stat tile warn" data-view="jobs" data-jf="awaiting" aria-label="Awaiting Wates approval: view"><span class="go">View →</span><span class="eyebrow">Awaiting Wates approval</span><span class="v">${awaiting.length}</span><span class="small muted">${gbp(awaiting.reduce((a, j) => a + valuation(j).total, 0))} estimated</span></button>
+    <button class="panel stat tile crit" data-view="alerts" aria-label="Open exceptions: view"><span class="go">View →</span><span class="eyebrow">Open exceptions</span><span class="v">${exc.length}</span><span class="small muted">Wates notified on each</span></button>
+    <button class="panel stat tile" data-view="afp" aria-label="Valued this month: view"><span class="go">View →</span><span class="eyebrow">Valued this month</span><span class="v">${gbp(valued)}</span><span class="small muted">Ready to invoice from Xero/Sage</span></button>
   </div>
   <div class="grid split">
     <div class="panel"><div class="panel-h"><h2>Needs action</h2></div><div class="panel-b">
@@ -779,8 +784,8 @@ VIEWS.dashboard = () => {
   <div class="panel"><div class="panel-h"><h2>Live jobs</h2></div>${jobRows(open)}</div>`;
 };
 VIEWS.jobs = () => {
-  const f = ui.jobFilter, filters = [['all','All'],['awaiting','Awaiting approval'],['approved','To dispatch'],['dispatched','Dispatched'],['review','Reports to check'],['hold','On hold'],['complete','Complete']];
-  const list = S.jobs.filter(j => f === 'all' || j.status === f || (f === 'dispatched' && j.status === 'onsite')).sort((a, b) => b.received.localeCompare(a.received));
+  const f = ui.jobFilter, filters = [['all','All'],['open','Open'],['awaiting','Awaiting approval'],['approved','To dispatch'],['dispatched','Dispatched'],['review','Reports to check'],['hold','On hold'],['complete','Complete']];
+  const list = S.jobs.filter(j => f === 'all' || j.status === f || (f === 'dispatched' && j.status === 'onsite') || (f === 'open' && !['complete','cancelled'].includes(j.status)) || (f === 'approved' && ['offered','slots'].includes(j.status))).sort((a, b) => b.received.localeCompare(a.received));
   return `<div class="page-head"><div><h1>Jobs</h1><p class="sub">Every instruction, whichever way it arrived, with its status and value.</p></div><button class="btn primary" data-view="new">+ Log an order</button></div>
   <div class="row">${filters.map(([k, l]) => `<button class="btn sm ${f === k ? 'primary' : ''}" data-filter="${k}">${l}</button>`).join('')}</div>
   <div class="panel">${jobRows(list)}</div>`;
@@ -1107,10 +1112,10 @@ VIEWS['w-home'] = () => {
   const done = mine.filter(j => j.status === 'complete');
   return `<div class="page-head"><div><span class="eyebrow">Wates · client portal</span><h1>Good afternoon, Paul</h1><p class="sub">Your orders with Compass MEP across Castle Point and the South East corporate estate.</p></div><button class="btn primary" data-view="w-new">+ Raise an order</button></div>
   <div class="grid g4">
-    <div class="panel stat warn"><span class="eyebrow">Estimates to approve</span><span class="v">${aw.length}</span><span class="small muted">${gbp(aw.reduce((a, j) => a + valuation(j).total, 0))}</span></div>
-    <div class="panel stat crit"><span class="eyebrow">Decisions needed</span><span class="v">${exc.length}</span><span class="small muted">No access, further works</span></div>
-    <div class="panel stat"><span class="eyebrow">In progress</span><span class="v">${live.length}</span><span class="small muted">Booked or on site</span></div>
-    <div class="panel stat"><span class="eyebrow">Completed & valued</span><span class="v">${done.length}</span><span class="small muted">${gbp(done.reduce((a, j) => a + valuation(j, 'actual').total, 0))}</span></div>
+    <button class="panel stat tile warn" data-view="w-approvals" aria-label="Estimates to approve: view"><span class="go">View →</span><span class="eyebrow">Estimates to approve</span><span class="v">${aw.length}</span><span class="small muted">${gbp(aw.reduce((a, j) => a + valuation(j).total, 0))}</span></button>
+    <button class="panel stat tile crit" data-view="w-approvals" aria-label="Decisions needed: view"><span class="go">View →</span><span class="eyebrow">Decisions needed</span><span class="v">${exc.length}</span><span class="small muted">No access, further works</span></button>
+    <button class="panel stat tile" data-view="w-jobs" data-wf="live" aria-label="In progress: view"><span class="go">View →</span><span class="eyebrow">In progress</span><span class="v">${live.length}</span><span class="small muted">Booked or on site</span></button>
+    <button class="panel stat tile" data-view="w-jobs" data-wf="complete" aria-label="Completed & valued: view"><span class="go">View →</span><span class="eyebrow">Completed & valued</span><span class="v">${done.length}</span><span class="small muted">${gbp(done.reduce((a, j) => a + valuation(j, 'actual').total, 0))}</span></button>
   </div>
   ${exc.length ? `<div class="panel"><div class="panel-h"><h2>Decisions needed</h2></div><div class="panel-b">${exc.map(e => exceptionCard(e, true)).join('')}</div></div>` : ''}
   <div class="panel"><div class="panel-h"><h2>Estimates waiting for you</h2><button class="btn sm" data-view="w-approvals">Go to approvals</button></div>${jobRows(aw, {wates:true})}</div>`;
@@ -1123,8 +1128,10 @@ VIEWS['w-approvals'] = () => {
     <div class="row end"><div class="field" style="width:200px"><label for="po-${j.id}">Wates order number</label><input type="text" id="po-${j.id}" placeholder="PO-…"></div><button class="btn" data-query="${j.id}" style="align-self:flex-end">Query</button><button class="btn primary" data-approve="${j.id}" style="align-self:flex-end">Approve estimate</button></div></div></div>`; }).join('') || '<div class="panel"><div class="empty">No estimates waiting.</div></div>'}
   ${exc.length ? `<div class="panel"><div class="panel-h"><h2>Decisions needed</h2></div><div class="panel-b">${exc.map(e => exceptionCard(e, true)).join('')}</div></div>` : ''}`;
 };
-VIEWS['w-jobs'] = () => `<div class="page-head"><div><h1>All jobs</h1><p class="sub">Live status, visit reports with timestamped photos, and valuations once checked.</p></div><button class="btn primary" data-view="w-new">+ Raise an order</button></div>
-  <div class="panel">${jobRows(S.jobs.slice().sort((a, b) => b.received.localeCompare(a.received)), {wates:true})}</div>`;
+VIEWS['w-jobs'] = () => { const f = ui.wFilter || 'all', F = { all:['All', () => true], awaiting:['Awaiting your approval', j => j.status === 'awaiting'], live:['In progress', j => ['approved','offered','slots','dispatched','onsite'].includes(j.status)], review:['Being checked', j => ['review','hold'].includes(j.status)], complete:['Completed & valued', j => j.status === 'complete'] };
+  return `<div class="page-head"><div><h1>All jobs</h1><p class="sub">Live status, visit reports with timestamped photos, and valuations once checked.</p></div><button class="btn primary" data-view="w-new">+ Raise an order</button></div>
+  <div class="row">${Object.entries(F).map(([k, [l]]) => `<button class="btn sm ${f === k ? 'primary' : ''}" data-wfilter="${k}">${l}</button>`).join('')}</div>
+  <div class="panel">${jobRows(S.jobs.filter(F[f][1]).sort((a, b) => b.received.localeCompare(a.received)), {wates:true})}</div>`; };
 VIEWS['w-new'] = () => (ui.orderFiles = [], '') + `<div class="page-head"><div><h1>Raise an order</h1><p class="sub">You can still email or phone the Compass helpdesk. Orders raised here get an instant estimate from the agreed rates.</p></div></div>${orderForm('o', true)}`;
 VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="sub">Quotes from Compass, with any inspection fee held against them. Fees are credited in full when the work is ordered.</p></div></div><div class="panel">${quoteRows(true)}</div>`;
 
@@ -1132,10 +1139,13 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid],[data-suspend],[data-uorg],[data-uact],[data-rmtrade],[data-rmatt],[data-showdocs],[data-book],[data-wpref],[data-sendslots],[data-noslots]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid],[data-suspend],[data-uorg],[data-uact],[data-rmtrade],[data-rmatt],[data-showdocs],[data-book],[data-wpref],[data-sendslots],[data-noslots],[data-wfilter]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
+    if (t.dataset.jf) ui.jobFilter = t.dataset.jf;
+    if (t.dataset.wf) ui.wFilter = t.dataset.wf;
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
+    if (t.dataset.wfilter){ ui.wFilter = t.dataset.wfilter; return render(); }
     if (t.dataset.filter){ ui.jobFilter = t.dataset.filter; return render(); }
     if (t.dataset.approve){
       const j = job(t.dataset.approve), po = (document.getElementById('po-' + j.id)?.value || '').trim() || 'PO-' + (771480 + Math.floor(Math.random() * 90));
