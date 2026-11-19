@@ -15,7 +15,7 @@ Also: certificate-checked competencies, monthly applications for payment (Compas
 
 Pricing follows the Wates Schedule of Rates (11 Nov 2026). Terms still under discussion (return-visit call-outs, multi-trade call-outs, approval policy, inspection fee window) are settings.
 
-## Hosted site (compassmep.jobsavvy.co.uk)
+## Hosted site (compass-mep.jobsavvy.co.uk)
 
 - `site/compassmep/index.html`: start page with two ways in: the live portal and the demo.
 - `site/compassmep/portal/`: the live portal (placeholder until the real system is deployed).
