@@ -166,6 +166,14 @@ textarea{min-height:84px;resize:vertical}
 .jobcard:hover{border-color:var(--accent)}
 .sig{width:100%;height:140px;border:1px dashed var(--muted);border-radius:6px;background:var(--surface-2);touch-action:none;display:block}
 .signed{font-family:"Brush Script MT","Segoe Script",cursive;font-size:24px;color:var(--brand)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+fieldset{border:1px solid var(--line);border-radius:6px;padding:8px 10px 10px;margin:0;min-width:0}
+legend{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:0 4px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 7px;font-size:12.5px;cursor:pointer;background:var(--surface)}
+.opt input{accent-color:var(--accent);margin:0}
+.opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.ctag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--surface-2)}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:calc(100% - 32px);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .hide-sm{} @media (max-width:640px){.hide-sm{display:none}}
@@ -194,7 +202,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const gbp = n => n == null || isNaN(n) ? '—' : (n < 0 ? '−' : '') + '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 const r2 = n => Math.round(n * 100) / 100;
 const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-const fmtD = iso => iso ? new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const fmtD = iso => iso ? new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Not provided';
 const fmtT = iso => iso ? new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
 const hrs = h => { const H = Math.floor(h), M = Math.round((h - H) * 60); return `${H}h ${String(M).padStart(2,'0')}m`; };
 const DEMO_TODAY = new Date('2026-11-18T12:00:00');
@@ -259,6 +267,15 @@ function seed(){
     { id:'K6', name:'Northgate Asbestos Surveys Ltd', type:'spec', trades:['service'], zones:['A','B'], maxValue:0, cats:['Asbestos'], rates:null, cis:'gross', vat:true, sba:{signed:'2025-11-01',exp:'2026-11-01'}, nextSB:1,
       compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-09',block:true},{item:"Employer's liability insurance",exp:'2027-01-31',block:true},{item:'UKAS accreditation',exp:'2027-04-30',block:true},{item:'Self-billing agreement',exp:'2026-11-01'}],
       engineers:[{name:'Mark Chen',trade:'service',cscs:'2027-01-01',asb:'2027-01-01',dbs:'2026-10-30'}] }
+  ];
+  S.competencies = [
+    { group:'Mechanical', items:['Plumbing & heating','Gas (Gas Safe)','Commercial boilers','HVAC & air conditioning (F-Gas)','Ventilation & extract','Pumps & pressurisation','Pool plant & filtration','Refrigeration'] },
+    { group:'Electrical', items:['Electrical installation & repair','Emergency lighting','EICR testing','HV, generators & UPS','Lightning protection'] },
+    { group:'Specialist systems', items:['Fire alarm','Sprinklers','Smoke ventilation','BMS / controls','Intruder alarm','CCTV','Access control','IT / data'] },
+    { group:'Lifts & access', items:['Passenger lifts','Platform & stair lifts','Doors & shutters','Scaffolding & access equipment'] },
+    { group:'Building fabric', items:["Builder's work",'Roofing','Waterproofing','Drainage','Passive fire protection','Fire doors','Groundworks'] },
+    { group:'Compliance & surveys', items:['Asbestos surveys','Asbestos removal (licensed)','Water hygiene / legionella','Structural engineering','Fire risk assessment'] },
+    { group:'Site services', items:['Waste removal','Traffic management','Ductwork & extract cleaning'] }
   ];
   const chk = {signin:true,asbestos:true,rams:true,permit:true,safe:true};
   S.jobs = [
@@ -344,6 +361,14 @@ function seed(){
       contractor:null, engineer:null, status:'offered', window:'19 Nov, 08:00–12:00',
       offers:[{ contractor:'K3', at:'2026-11-18T11:30', deadline:'2026-11-18T15:30', status:'offered', mode:'single' }],
       log:[['2026-11-18T11:05','Helpdesk','Order logged from Wates email.'],['2026-11-18T11:20','Wates','Estimate approved. PO-771471.'],['2026-11-18T11:30','Helpdesk','Offered to K. Mensah t/a Eastway Plumbing & Heating. Respond by 18 Nov, 15:30.']] });
+  const CC = { K1:['Plumbing & heating','Electrical installation & repair','Emergency lighting',"Builder's work",'Fire alarm','BMS / controls'],
+    K2:['Fire alarm','Smoke ventilation','Emergency lighting','Access control','Intruder alarm'],
+    K3:['Plumbing & heating','Gas (Gas Safe)','Commercial boilers','Drainage',"Builder's work"],
+    K4:['Passenger lifts','Platform & stair lifts'], K5:['Water hygiene / legionella','Pool plant & filtration'], K6:['Asbestos surveys'],
+    K7:['Fire alarm','CCTV','Access control','Intruder alarm','IT / data'] };
+  S.contractors.forEach(c => c.comps = CC[c.id] || []);
+  const JC = { 'CMP-1041':'Plumbing & heating','CMP-1047':'Plumbing & heating','CMP-1040':'Passenger lifts','CMP-1042':'Plumbing & heating','CMP-1043':'Fire alarm','CMP-1044':'Water hygiene / legionella','CMP-1045':'Plumbing & heating','CMP-1046':'Emergency lighting','CMP-1048':'Access control','CMP-1049':'Drainage' };
+  S.jobs.forEach(j => j.comp = JC[j.id]);
   S.exceptions = [
     { id:'E-031', job:'CMP-1042', type:'noaccess', at:'2026-11-17T09:51', status:'open',
       title:'No access at Paddocks Community Centre',
@@ -369,7 +394,7 @@ function seed(){
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v2';
+const KEY = 'compass-portal-demo-v3';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
@@ -454,7 +479,7 @@ function needsApproval(j){
 }
 
 /* ============================== Compliance ============================== */
-function compStatus(exp){ const d = daysBetween(DEMO_TODAY, exp); return d < 0 ? 'crit' : d <= 30 ? 'warn' : 'ok'; }
+function compStatus(exp){ if (!exp) return 'crit'; const d = daysBetween(DEMO_TODAY, exp); return d < 0 ? 'crit' : d <= 30 ? 'warn' : 'ok'; }
 function contractorState(c){
   const items = [...c.compliance, ...c.engineers.flatMap(e => [{item:`${e.name}: CSCS`, exp:e.cscs},{item:`${e.name}: asbestos awareness`, exp:e.asb},{item:`${e.name}: DBS`, exp:e.dbs}])];
   const blocked = c.compliance.filter(i => i.block && compStatus(i.exp) === 'crit');
@@ -581,7 +606,7 @@ VIEWS.dashboard = () => {
     </div></div>
     <div class="panel"><div class="panel-h"><h2>Contractor compliance</h2><button class="btn sm" data-view="contractors">View all</button></div><div class="panel-b">
       ${comp.length ? comp.map(([c, s]) => `<div><div class="row" style="justify-content:space-between"><b>${esc(c.name)}</b>${s.blocked.length ? '<span class="chip crit">Blocked</span>' : '<span class="chip warn">Expiring</span>'}</div>
-        <div class="small muted">${[...s.expired, ...s.warn].slice(0, 3).map(i => `${esc(i.item)}: ${compStatus(i.exp) === 'crit' ? 'expired' : 'expires'} ${fmtD(i.exp)}`).join('<br>')}</div></div>`).join('') : '<div class="empty">All contractors compliant.</div>'}
+        <div class="small muted">${[...s.expired, ...s.warn].slice(0, 3).map(i => `${esc(i.item)}: ${!i.exp ? 'not provided' : (compStatus(i.exp) === 'crit' ? 'expired ' : 'expires ') + fmtD(i.exp)}`).join('<br>')}</div></div>`).join('') : '<div class="empty">All contractors compliant.</div>'}
     </div></div>
   </div>
   <div class="panel"><div class="panel-h"><h2>Exceptions flagged to Wates</h2><button class="btn sm" data-view="alerts">All exceptions</button></div><div class="panel-b">${exc.length ? exc.map(e => exceptionCard(e)).join('') : '<div class="empty">No open exceptions.</div>'}</div></div>
@@ -631,6 +656,7 @@ VIEWS.job = () => {
         <dt>Site</dt><dd>${esc(s.name)}, ${esc(s.area)} <span class="chip">Zone ${s.zone}</span></dd>
         <dt>Location</dt><dd>${esc(j.loc || '—')}</dd>
         <dt>Trade</dt><dd>${esc(j.trade === 'service' ? `Specialist service: ${j.svcCat}` : RATES[j.trade].label)}${j.assist ? ` + ${esc(RATES[j.assist.trade].short)} assist` : ''}</dd>
+        <dt>Competency</dt><dd>${esc(j.comp || '—')}</dd>
         <dt>Rate band</dt><dd>${esc(BANDS[j.band])}</dd>
         <dt>Received</dt><dd>${fmtDT(j.received)}${j.priority === 'Emergency' ? ` · attend by ${fmtDT(new Date(new Date(j.received).getTime() + 12 * 36e5).toISOString())}` : ''}</dd>
         ${j.window ? `<dt>Appointment</dt><dd>${esc(j.window)}</dd>` : ''}
@@ -687,6 +713,7 @@ function orderForm(prefix, wates){
       <div class="field"><label for="o-band">When will the work happen?</label><select id="o-band">${Object.entries(BANDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div>
       <div class="field"><label for="o-trade">Trade</label><select id="o-trade">${Object.entries(RATES).map(([k, r]) => `<option value="${k}">${r.label}</option>`).join('')}</select></div>
       <div class="field" id="f-cat" hidden><label for="o-cat">Specialist category</label><select id="o-cat">${SERVICE_CATS.map(c => `<option>${c}</option>`).join('')}</select></div>
+      <div class="field"><label for="o-comp">Competency needed</label><select id="o-comp">${S.competencies.map(g => `<optgroup label="${esc(g.group)}">${g.items.map(i => `<option>${esc(i)}</option>`).join('')}</optgroup>`).join('')}</select></div>
       <div class="field" id="f-hours"><label for="o-hours">Estimated hours on site</label><input type="number" id="o-hours" value="1.5" min="0" step="0.5"></div>
       <div class="field" id="f-mat"><label for="o-mat">Estimated materials (cost, £)</label><input type="number" id="o-mat" value="50" min="0" step="5"></div>
       <div class="field" id="f-spec" hidden><label for="o-spec">Specialist quotation (cost, £)</label><input type="number" id="o-spec" value="600" min="0" step="10"></div>
@@ -707,13 +734,51 @@ function readOrder(){
   const j = { contract: site(g('o-site').value).contract, site:g('o-site').value, priority:g('o-pri').value, band:g('o-band').value, trade,
     est:{ hours:Number(g('o-hours').value) || 0, materials:Number(g('o-mat').value) || 0 }, nte:Number(g('o-nte').value) || 0,
     loc:g('o-loc').value, desc:g('o-desc').value || 'No description given.', wRef:g('o-wref').value };
+  j.comp = g('o-comp').value;
   if (trade === 'service'){ j.svcCat = g('o-cat').value; j.specialist = { cost:Number(g('o-spec').value) || 0, labourPct:.6, ref:'Pending' }; }
   return j;
+}
+const SVC_COMP = { 'Structural engineering':'Structural engineering', 'Waterproofing':'Waterproofing', 'Asbestos':'Asbestos surveys', 'Swimming pools':'Pool plant & filtration', 'Water hygiene':'Water hygiene / legionella', 'Drainage':'Drainage', 'Passive fire protection':'Passive fire protection', 'Power and plant':'HV, generators & UPS', 'Building fabric and access':'Roofing', 'Site services':'Waste removal' };
+function defaultComp(trade, cat){ return trade === 'service' ? SVC_COMP[cat] : { building:'Plumbing & heating', specialist:'Fire alarm', lift:'Passenger lifts' }[trade]; }
+function compGrid(sel, name){ return `<div class="cgrid">${S.competencies.map(g => `<fieldset><legend>${esc(g.group)}</legend><div class="opts">${g.items.map(i => `<label class="opt"><input type="checkbox" name="${name}" value="${esc(i)}" ${sel.includes(i) ? 'checked' : ''}><span>${esc(i)}</span></label>`).join('')}</div></fieldset>`).join('')}</div>`; }
+const checked = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => x.value);
+function compBlock(c){
+  if (ui.editComp === c.id) return `<div class="field"><span class="eyebrow">Competencies: tick all that apply</span>${compGrid(c.comps || [], 'ec-' + c.id)}<div class="row end"><button class="btn sm" data-act="cancelComp">Cancel</button><button class="btn sm primary" data-savecomp="${c.id}">Save competencies</button></div></div>`;
+  return `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><span class="eyebrow">Competencies (${(c.comps || []).length})</span><div class="row" style="gap:5px;margin-top:5px">${(c.comps || []).map(x => `<span class="ctag">${esc(x)}</span>`).join('') || '<span class="small muted">None set: this contractor won\'t receive offers.</span>'}</div></div><button class="btn sm" data-editcomp="${c.id}">Edit</button></div>`;
+}
+function addContractorForm(){
+  return `<div class="panel"><div class="panel-h"><h2>Add a contractor</h2><span class="small muted">They are blocked from offers until their documents are uploaded and approved</span></div><div class="panel-b">
+    <div class="grid g3">
+      <div class="field"><label for="ac-name">Company name</label><input type="text" id="ac-name" placeholder="e.g. Riverside Mechanical Ltd"></div>
+      <div class="field"><label for="ac-type">Type</label><select id="ac-type"><option value="sub">Subcontractor: fixed rates</option><option value="spec">Specialist: quotes per job</option></select></div>
+      <div class="field"><label for="ac-eng">First engineer's name</label><input type="text" id="ac-eng" placeholder="Name"></div>
+      <div class="field"><label>Zones covered</label><div class="opts">${['A','B','C'].map(z => `<label class="opt"><input type="checkbox" name="ac-zone" value="${z}" ${z === 'A' ? 'checked' : ''}><span>Zone ${z}</span></label>`).join('')}</div></div>
+      <div class="field"><label for="ac-limit">Job value limit (£, blank for none)</label><input type="number" id="ac-limit" min="0" step="100"></div>
+      <div class="field"><label for="ac-cis">CIS status</label><select id="ac-cis">${Object.entries(CIS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="ac-rn">Hourly rate: normal / out of hours / Sunday (£)</label><div class="row" style="flex-wrap:nowrap"><input type="number" id="ac-rn" value="45"><input type="number" id="ac-ro" value="65"><input type="number" id="ac-rs" value="85"></div></div>
+      <div class="field"><label for="ac-co">Call-out (£)</label><input type="number" id="ac-co" value="30"></div>
+      <label class="check"><input type="checkbox" id="ac-vat" checked><span>VAT registered</span></label>
+    </div>
+    <div class="field"><span class="eyebrow">Competencies: tick all that apply</span>${compGrid([], 'ac-comp')}</div>
+    <div class="row end"><button class="btn" data-act="cancelCon">Cancel</button><button class="btn primary" data-act="saveCon">Add contractor</button></div>
+  </div></div>`;
+}
+function competencyPanel(){
+  return `<div class="panel"><div class="panel-h"><div><h2>Competency list</h2><div class="small muted">${S.competencies.reduce((a, g) => a + g.items.length, 0)} competencies in ${S.competencies.length} groups. Add new ones as the supply chain grows.</div></div></div><div class="panel-b">
+    ${S.competencies.map(g => `<div><span class="eyebrow">${esc(g.group)}</span><div class="row" style="gap:5px;margin-top:5px">${g.items.map(i => `<span class="ctag">${esc(i)} <span class="muted">· ${S.contractors.filter(c => c.type !== 'dlo' && (c.comps || []).includes(i)).length}</span></span>`).join('')}</div></div>`).join('')}
+    <p class="small muted">The number after each competency is how many partners hold it. A competency with 0 is a gap in the supply chain.</p>
+    <div class="grid g3" style="align-items:end"><div class="field"><label for="nc-group">Group</label><select id="nc-group">${S.competencies.map(g => `<option>${esc(g.group)}</option>`).join('')}<option value="__new">New group…</option></select></div>
+      <div class="field"><label for="nc-name">New competency</label><input type="text" id="nc-name" placeholder="e.g. Solar PV, EV charging"></div>
+      <div class="field"><label for="nc-newgroup">New group name (if chosen)</label><input type="text" id="nc-newgroup" placeholder="e.g. Renewables"></div></div>
+    <div class="row end"><button class="btn primary" data-act="addComp">Add competency</button></div>
+  </div></div>`;
 }
 function updateEstimate(){
   const g = id => document.getElementById(id); if (!g('estPanel')) return;
   const svc = g('o-trade').value === 'service';
   g('f-cat').hidden = !svc; g('f-spec').hidden = !svc; g('f-hours').hidden = svc; g('f-mat').hidden = svc;
+  const tc = g('o-trade').value + '|' + (svc ? g('o-cat').value : '');
+  if (tc !== updateEstimate.tc){ updateEstimate.tc = tc; const d = defaultComp(g('o-trade').value, g('o-cat').value); if (d) g('o-comp').value = d; }
   const j = readOrder(), v = valuation(j), s = site(j.site);
   const warn = [];
   if (j.trade === 'lift' && j.band !== 'normal') warn.push('Lift out-of-hours rates are TBC in the schedule.');
@@ -739,11 +804,12 @@ function submitOrder(wates){
 }
 
 /* ----- Contractors ----- */
-VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Compliance is checked before every dispatch. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks dispatch.</p></div></div>
+VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors</h1><p class="sub">Jobs are offered only to partners who hold the competency the job needs, cover its zone and are compliant. Warnings start 30 days before expiry. Expired insurance or a key accreditation blocks offers.</p></div>${ui.addCon ? '' : '<button class="btn primary" data-act="addCon">+ Add contractor</button>'}</div>
+  ${ui.addCon ? addContractorForm() : ''}
   ${S.contractors.map(c => { const s = contractorState(c);
-    return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · ${c.type === 'spec' ? esc(c.cats.join(', ')) : c.trades.map(t => RATES[t].short).join(', ')} · Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</div></div>
+    return `<div class="panel"><div class="panel-h"><div><h2>${esc(c.name)}</h2><div class="small muted">${c.type === 'dlo' ? 'Direct labour' : c.type === 'sub' ? 'Subcontractor · fixed rates' : 'Specialist · quoted per job'} · Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</div></div>
     ${s.state === 'crit' ? '<span class="chip crit">Blocked from dispatch</span>' : s.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">Compliant</span>'}</div>
-    <div class="panel-b"><div class="grid g3">
+    <div class="panel-b">${compBlock(c)}<div class="grid g3" style="border-top:1px solid var(--line);padding-top:12px">
       <div><span class="eyebrow">Commercial</span><dl class="kv small" style="margin-top:6px">
         ${S.settings.presenting ? `<dt>Rates</dt><dd class="muted">Hidden while presenting</dd>` : c.rates ? `<dt>Rates</dt><dd class="mono">${gbp(c.rates.normal)} / ${gbp(c.rates.ooh)} / ${gbp(c.rates.sun)}</dd><dt>Call-out</dt><dd class="mono">${gbp(c.rates.callout)}</dd>` : `<dt>Pricing</dt><dd>${c.type === 'dlo' ? 'Internal' : 'Quote per job'}</dd>`}
         <dt>CIS</dt><dd>${esc(CIS[c.cis])}</dd><dt>VAT</dt><dd>${c.vat ? 'Registered' : 'Not registered'}</dd>
@@ -751,7 +817,8 @@ VIEWS.contractors = () => `<div class="page-head"><div><h1>Approved contractors<
       </dl></div>
       <div><span class="eyebrow">Company documents</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">${c.compliance.map(i => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><span>${esc(i.item)}${i.block ? '' : ''}</span><span class="chip ${compStatus(i.exp)}">${fmtD(i.exp)}</span></div>`).join('')}</div></div>
       <div><span class="eyebrow">Engineers</span><div class="small" style="margin-top:6px;display:flex;flex-direction:column;gap:8px">${c.engineers.map(e => `<div><b>${esc(e.name)}</b><div class="row" style="gap:4px;margin-top:3px">${[['CSCS', e.cscs], ['Asbestos', e.asb], ['DBS', e.dbs]].map(([l, d]) => `<span class="chip ${compStatus(d)}" title="${fmtD(d)}">${l} ${fmtD(d)}</span>`).join('')}</div></div>`).join('')}</div></div>
-    </div>${(c.pending || []).length ? `<div class="note warn small">${c.pending.map((p, i) => `<div class="row" style="justify-content:space-between">Renewal uploaded by partner: <b>${esc(p.item)}</b> (${esc(p.file)}) <button class="btn sm primary" data-approvedoc="${c.id}|${i}">Approve</button></div>`).join('')}</div>` : ''}</div></div>`; }).join('')}`;
+    </div>${(c.pending || []).length ? `<div class="note warn small">${c.pending.map((p, i) => `<div class="row" style="justify-content:space-between">Renewal uploaded by partner: <b>${esc(p.item)}</b> (${esc(p.file)}) <button class="btn sm primary" data-approvedoc="${c.id}|${i}">Approve</button></div>`).join('')}</div>` : ''}</div></div>`; }).join('')}
+  ${competencyPanel()}`;
 
 /* ----- Sites ----- */
 VIEWS.sites = () => `<div class="page-head"><div><h1>Site register</h1><p class="sub">Each site is set up once. Orders pick up its zone, access notes and asbestos information automatically, and every job builds the site's history.</p></div></div>
@@ -859,7 +926,7 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
@@ -893,8 +960,29 @@ function wire(){
     if (t.dataset.accept){ const j = job(t.dataset.accept), eng = document.getElementById('eng-' + j.id).value; acceptOffer(j, ui.partner, eng); save(); toast(`Accepted ${j.id}. ${eng} will see it in the engineer app.`); return render(); }
     if (t.dataset.decline){ const j = job(t.dataset.decline), reason = document.getElementById('why-' + j.id).value; declineOffer(j, ui.partner, reason); save(); toast(`Declined ${j.id}. Compass has been told.`); return render(); }
     if (t.dataset.engapp){ ui.role = 'engineer'; ui.eng = { who:t.dataset.engapp, jobId:null, step:'list', d:null }; render(); window.scrollTo(0, 0); return; }
+    if (act === 'addCon'){ ui.addCon = true; return render(); }
+    if (act === 'cancelCon'){ ui.addCon = false; return render(); }
+    if (act === 'cancelComp'){ ui.editComp = null; return render(); }
+    if (t.dataset.editcomp){ ui.editComp = t.dataset.editcomp; return render(); }
+    if (t.dataset.savecomp){ const c = contractor(t.dataset.savecomp); c.comps = checked('ec-' + c.id); ui.editComp = null; save(); toast(`${c.name}: ${c.comps.length} competencies saved.`); return render(); }
+    if (act === 'addComp'){ const g = document.getElementById('nc-group').value, n = document.getElementById('nc-name').value.trim(), ng = document.getElementById('nc-newgroup').value.trim();
+      if (!n) return toast('Type the new competency first.');
+      if (S.competencies.some(x => x.items.some(i => i.toLowerCase() === n.toLowerCase()))) return toast(`${n} is already on the list.`);
+      if (g === '__new'){ if (!ng) return toast('Name the new group.'); S.competencies.push({ group:ng, items:[n] }); } else S.competencies.find(x => x.group === g).items.push(n);
+      save(); toast(`${n} added. Tick it on any contractor who holds it.`); return render(); }
+    if (act === 'saveCon'){ const v = id => document.getElementById(id).value.trim(), name = v('ac-name'), comps = checked('ac-comp'), zones = checked('ac-zone'), type = v('ac-type');
+      if (!name) return toast('Enter the company name.'); if (!comps.length) return toast('Tick at least one competency.'); if (!zones.length) return toast('Tick at least one zone.');
+      const grp = n => S.competencies.find(g => g.items.includes(n))?.group, trades = type === 'spec' ? ['service'] : [...new Set(comps.map(n => grp(n) === 'Specialist systems' ? 'specialist' : grp(n) === 'Lifts & access' ? 'lift' : 'building'))];
+      const id = 'K' + (100 + S.contractors.length), eng = v('ac-eng') || 'Lead engineer';
+      S.contractors.push({ id, name, type, trades, cats:[], comps, zones, maxValue:Number(v('ac-limit')) || 0, cis:v('ac-cis'), vat:document.getElementById('ac-vat').checked, nextSB:1, sba:null, pending:[],
+        rates: type === 'sub' ? { normal:Number(v('ac-rn')) || 0, ooh:Number(v('ac-ro')) || 0, sun:Number(v('ac-rs')) || 0, callout:Number(v('ac-co')) || 0 } : null,
+        compliance:[{item:'Public liability insurance',exp:null,block:true},{item:"Employer's liability insurance",exp:null,block:true},{item:'Trade accreditation',exp:null,block:true},{item:'SSIP accreditation',exp:null},{item:'RAMS',exp:null},{item:'Self-billing agreement',exp:null}],
+        engineers:[{ name:eng, trade:trades[0], cscs:null, asb:null, dbs:null }] });
+      ui.addCon = false; save(); toast(`${name} added. Ask them to upload their documents in the partner portal.`); return render(); }
     if (t.dataset.approvedoc){ const [cid, i] = t.dataset.approvedoc.split('|'), c = contractor(cid), pd = c.pending.splice(Number(i), 1)[0];
       const item = c.compliance.find(x => x.item === pd.item); if (item) item.exp = '2027-11-30';
+      if (pd.item === 'Self-billing agreement') c.sba = { signed:nowISO(), exp:'2027-11-30' };
+      c.engineers.forEach(e => { if (pd.item === `${e.name}: CSCS`) e.cscs = '2027-11-30'; if (pd.item === `${e.name}: asbestos awareness`) e.asb = '2027-11-30'; if (pd.item === `${e.name}: DBS`) e.dbs = '2027-11-30'; });
       save(); toast(`${pd.item} approved for ${c.name}. Valid to 30 Nov 2027.`); return render(); }
     if (act === 'approveReport'){
       const j = job(ui.jobId); j.status = 'complete';
@@ -931,9 +1019,9 @@ function partnerEligibility(j){
   const s = site(j.site), val = valuation(j).total, offers = j.offers || [];
   return S.contractors.filter(c => c.type !== 'dlo').map(c => {
     const st = contractorState(c), prev = offers.find(o => o.contractor === c.id);
-    const tradeOk = j.trade === 'service' ? c.type === 'spec' && (c.cats || []).includes(j.svcCat) : c.trades.includes(j.trade);
+    const tradeOk = j.comp ? (c.comps || []).includes(j.comp) : j.trade === 'service' ? c.type === 'spec' && (c.cats || []).includes(j.svcCat) : c.trades.includes(j.trade);
     let why = '';
-    if (!tradeOk) why = j.trade === 'service' ? `Doesn't cover ${j.svcCat.toLowerCase()}` : `Doesn't cover ${RATES[j.trade].short.toLowerCase()}`;
+    if (!tradeOk) why = j.comp ? `No ${j.comp} competency` : j.trade === 'service' ? `Doesn't cover ${j.svcCat.toLowerCase()}` : `Doesn't cover ${RATES[j.trade].short.toLowerCase()}`;
     else if (!c.zones.includes(s.zone)) why = `Doesn't cover Zone ${s.zone}`;
     else if (st.blocked.length) why = `Blocked: ${st.blocked[0].item} expired`;
     else if (c.maxValue && val > c.maxValue) why = `Over their job limit of ${gbp(c.maxValue)}`;
@@ -999,7 +1087,7 @@ VIEWS['p-offers'] = () => {
   ${st.state !== 'ok' ? `<div class="note ${st.blocked.length ? 'crit' : 'warn'} small">${st.blocked.length ? 'You are not receiving offers: ' + esc(st.blocked[0].item) + ' has expired.' : 'A document expires soon.'} <a href="#" data-view="p-docs">Update compliance documents</a></div>` : ''}
   ${mine.length ? mine.map(j => { const s = site(j.site), o = j.offers.find(o => o.contractor === c.id && o.status === 'offered');
     return `<div class="panel"><div class="panel-h"><div><div class="row"><b class="mono">${j.id}</b>${pri(j.priority)}${o.mode === 'broadcast' ? '<span class="chip warn">Sent to several partners: first to accept</span>' : ''}</div><div class="small muted">${esc(s.name)}, ${esc(s.area)} · Zone ${s.zone}</div></div><span class="small">Reply by <b>${fmtDT(o.deadline)}</b></span></div>
-    <div class="panel-b"><div class="grid g2"><div><p>${esc(j.desc)}</p><dl class="kv small" style="margin-top:8px"><dt>Location</dt><dd>${esc(j.loc)}</dd><dt>Window</dt><dd>${esc(j.window || 'To agree')}</dd><dt>Access</dt><dd>${esc(s.access)}</dd><dt>Asbestos</dt><dd>${esc(s.asbestos)}</dd></dl></div>
+    <div class="panel-b"><div class="grid g2"><div><p>${esc(j.desc)}</p><dl class="kv small" style="margin-top:8px"><dt>Competency</dt><dd>${esc(j.comp || '—')}</dd><dt>Location</dt><dd>${esc(j.loc)}</dd><dt>Window</dt><dd>${esc(j.window || 'To agree')}</dd><dt>Access</dt><dd>${esc(s.access)}</dd><dt>Asbestos</dt><dd>${esc(s.asbestos)}</dd></dl></div>
       <div><span class="eyebrow">Your terms</span><dl class="kv small" style="margin-top:6px">${S.settings.presenting ? `<dt>Rates</dt><dd>Your agreed rates apply <span class="muted">(hidden while presenting)</span></dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : c.rates ? `<dt>Call-out</dt><dd class="mono">${gbp(j.parent && !S.settings.returnVisitCallout ? 0 : c.rates.callout)}</dd><dt>Your rate</dt><dd class="mono">${gbp(c.rates[j.band] || c.rates.normal)}/h (${BANDS[j.band].toLowerCase()})</dd><dt>Estimated time</dt><dd>${hrs(j.est?.hours || 0)}</dd>` : `<dt>Pricing</dt><dd>Your agreed quotation${j.specialist?.ref ? ' ' + esc(j.specialist.ref) : ''}</dd>`}
         <dt>Payment</dt><dd>Self-billed by Compass · ${esc(CIS[c.cis])}</dd></dl></div></div>
       <div class="grid g2" style="align-items:end"><div class="field"><label for="eng-${j.id}">Engineer attending</label><select id="eng-${j.id}">${c.engineers.map(e => `<option>${esc(e.name)}</option>`).join('')}</select></div><button class="btn primary" data-accept="${j.id}">Accept job</button></div>
@@ -1014,8 +1102,9 @@ VIEWS['p-jobs'] = () => {
 };
 VIEWS['p-docs'] = () => {
   const c = contractor(ui.partner), st = contractorState(c), pend = c.pending || [];
-  const row = (item, exp, key) => { const p = pend.find(x => x.item === item); return `<tr><td>${esc(item)}</td><td><span class="chip ${compStatus(exp)}">${compStatus(exp) === 'crit' ? 'Expired' : 'Expires'} ${fmtD(exp)}</span></td><td>${p ? `<span class="chip info">Uploaded ${esc(p.file)}: Compass checking</span>` : `<label class="btn sm" for="up-${key}">Upload renewal</label><input type="file" id="up-${key}" data-upload="${esc(item)}" hidden>`}</td></tr>`; };
+  const row = (item, exp, key) => { const p = pend.find(x => x.item === item); return `<tr><td>${esc(item)}</td><td><span class="chip ${compStatus(exp)}">${!exp ? 'Not provided' : (compStatus(exp) === 'crit' ? 'Expired ' : 'Expires ') + fmtD(exp)}</span></td><td>${p ? `<span class="chip info">Uploaded ${esc(p.file)}: Compass checking</span>` : `<label class="btn sm" for="up-${key}">Upload renewal</label><input type="file" id="up-${key}" data-upload="${esc(item)}" hidden>`}</td></tr>`; };
   return `<div class="page-head"><div><h1>Compliance documents</h1><p class="sub">Keep these current to keep receiving offers. Expired insurance or a key accreditation pauses offers until Compass approves the renewal.</p></div>${st.blocked.length ? '<span class="chip crit">Offers paused</span>' : st.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">All current</span>'}</div>
+  <div class="panel"><div class="panel-h"><h2>Your competencies</h2><span class="small muted">You are offered jobs that need one of these. Ask Compass to add more.</span></div><div class="panel-b"><div class="row" style="gap:5px">${(c.comps || []).map(x => `<span class="ctag">${esc(x)}</span>`).join('') || '<span class="muted small">None set yet.</span>'}</div></div></div>
   <div class="panel"><div class="panel-h"><h2>Company</h2><span class="small muted">Coverage: Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</span></div><div class="tbl-wrap"><table><tbody>${c.compliance.map((i, n) => row(i.item, i.exp, 'c' + n)).join('')}</tbody></table></div></div>
   <div class="panel"><div class="panel-h"><h2>Engineers</h2></div><div class="tbl-wrap"><table><tbody>${c.engineers.flatMap((e, n) => [[`${e.name}: CSCS`, e.cscs], [`${e.name}: asbestos awareness`, e.asb], [`${e.name}: DBS`, e.dbs]].map(([l, d], m) => row(l, d, `e${n}${m}`))).join('')}</tbody></table></div></div>`;
 };
