@@ -1,5 +1,9 @@
 # Compass MEP Job & Supply Chain Portal
 
+- `portal-app/`: the **live system** (Laravel 12, PHP 8.3, MySQL). See `portal-app/README.md` and `portal-app/DEPLOY.md`.
+- `prototype/`: the clickable **demo** (single HTML file, sample data).
+- `site/`: static pages for the hosting (portal start page, hosted demo, jobsavvy.co.uk holding page).
+
 Order intake, Wates approvals, contractor dispatch, engineer visit reports, exceptions, valuations and self-billing.
 
 ## Prototype
