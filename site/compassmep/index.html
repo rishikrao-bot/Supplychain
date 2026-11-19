@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compass MEP · Reactive Maintenance</title>
+<meta name="description" content="Compass MEP reactive maintenance portal for clients, supply chain partners and engineers.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root{--deep:#294653;--teal:#25C4A9;--teal-ink:#13806D;--amber:#B86A00;--amber-soft:#FCEFD9;--ink:#1E3440;--muted:#587078;--mist:#F1F7F6;--line:#D5E2E1;--card:#FFFFFF}
+  @media (prefers-color-scheme: dark){:root{--ink:#E4EEEE;--muted:#93AAB0;--mist:#0E181D;--line:#2A3E47;--card:#15232A;--teal-ink:#43D8BE;--amber:#F0B45A;--amber-soft:#3A2A10}}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--mist);color:var(--ink);font:16px/1.6 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+  header{background:#FFFFFF;border-bottom:3px solid var(--teal);padding:14px max(20px,env(safe-area-inset-left))}
+  header img{height:46px;display:block}
+  main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:48px 20px;display:flex;flex-direction:column;gap:28px}
+  h1{font-family:"Montserrat",system-ui,sans-serif;font-size:30px;line-height:1.2;margin:0;text-wrap:balance}
+  .lead{color:var(--muted);margin:6px 0 0;max-width:62ch}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+  @media (max-width:720px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:14px;min-width:0}
+  .card.live{border-top:5px solid var(--teal)}
+  .card.demo{border:2px dashed var(--amber);background:repeating-linear-gradient(135deg,var(--card) 0 14px,var(--amber-soft) 14px 15px)}
+  .tag{align-self:flex-start;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:3px 9px}
+  .live .tag{background:var(--teal);color:#14303A}
+  .demo .tag{background:var(--amber);color:#FFFFFF}
+  h2{font-family:"Montserrat",system-ui,sans-serif;font-size:21px;margin:0}
+  .card p{margin:0;color:var(--muted)}
+  ul{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px}
+  a.btn{margin-top:auto;display:block;text-align:center;text-decoration:none;font-weight:600;border-radius:7px;padding:13px 18px}
+  .live a.btn{background:var(--teal);color:#14303A}
+  .demo a.btn{background:transparent;border:2px solid var(--amber);color:var(--amber)}
+  a.btn:hover{filter:brightness(1.06)}
+  a:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+  footer{padding:20px;text-align:center;font-size:13px;color:var(--muted)}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+<header><img src="assets/compass-mep-logo.png" alt="Compass MEP"></header>
+<main>
+  <div>
+    <h1>Reactive maintenance</h1>
+    <p class="lead">For Compass MEP, our clients and our approved supply chain partners. Choose where you want to go.</p>
+  </div>
+  <div class="cards">
+    <section class="card live" aria-labelledby="live-h">
+      <span class="tag">Live system</span>
+      <h2 id="live-h">Reactive maintenance portal</h2>
+      <p>The real system for logging orders, approvals, job offers, visit reports and valuations.</p>
+      <ul><li>Your own login with two-step verification</li><li>Real jobs, sites and documents</li><li>Access is set up by Compass MEP or your company's admin</li></ul>
+      <a class="btn" href="portal/">Log in to the live portal</a>
+    </section>
+    <section class="card demo" aria-labelledby="demo-h">
+      <span class="tag">Demo only</span>
+      <h2 id="demo-h">Demo with sample data</h2>
+      <p>A walk-through of how the portal works, using invented jobs, sites and partners. No login needed.</p>
+      <ul><li>Nothing here is real</li><li>Nothing you enter reaches the live system</li><li>Changes are kept only in your browser</li></ul>
+      <a class="btn" href="demo/">Open the demo</a>
+    </section>
+  </div>
+</main>
+<footer>Compass MEP Ltd · <a href="https://www.compass-mep.com">compass-mep.com</a></footer>
+</body>
+</html>

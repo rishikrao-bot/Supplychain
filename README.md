@@ -14,3 +14,10 @@ Order intake, Wates approvals, contractor dispatch, engineer visit reports, exce
 Also: certificate-checked competencies, monthly applications for payment (Compass submits, Wates certifies in the portal or Compass records the payment notice), partner payment periods, and a Compass-only profitability view.
 
 Pricing follows the Wates Schedule of Rates (11 Nov 2026). Terms still under discussion (return-visit call-outs, multi-trade call-outs, approval policy, inspection fee window) are settings.
+
+## Hosted site (compassmep.jobsavvy.co.uk)
+
+- `site/compassmep/index.html`: start page with two ways in: the live portal and the demo.
+- `site/compassmep/portal/`: the live portal (placeholder until the real system is deployed).
+- `site/compassmep/demo/`: the demo, built from `prototype/index.html` with a permanent DEMO banner. Rebuild with `scripts/build-site.sh`, which also creates `site/compassmep-upload.zip` for cPanel.
+- `site/jobsavvy/`: holding page for jobsavvy.co.uk.
