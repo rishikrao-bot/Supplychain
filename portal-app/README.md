@@ -18,6 +18,12 @@ Laravel 12 application for the live reactive maintenance portal at
   their own site staff. Change role, remove/restore access, resend invite, reset two-step login.
   The last active Compass admin can't be removed. Every change is written to the audit log.
 
+- Completion report: a branded PDF (job, attendance, safety checks, work done, materials, before/after
+  photos, sign-off; no prices) is created and attached automatically when a job is completed. Sample:
+  `docs/sample-completion-report.pdf`.
+- Email: sends through Microsoft 365 (Rishi's mailbox for now); if sending isn't set up, invite links
+  are shown on screen to copy.
+
 ## Run locally
 
     composer install

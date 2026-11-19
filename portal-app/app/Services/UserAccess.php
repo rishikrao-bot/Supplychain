@@ -20,6 +20,14 @@ use Illuminate\Support\Str;
  */
 class UserAccess
 {
+    public static bool $lastSendFailed = false;
+
+    /** True when invites are not really emailed (log mailer) or the last send failed: show the link on screen. */
+    public static function showLink(): bool
+    {
+        return self::$lastSendFailed || in_array(config('mail.default'), ['log', 'array'], true);
+    }
+
     public static function manageableOrganisations(User $actor): Collection
     {
         if (! $actor->canManageUsers()) {
@@ -62,7 +70,14 @@ class UserAccess
         $token = Str::random(48);
         $user->forceFill(['invite_token_hash' => hash('sha256', $token), 'invited_at' => now(), 'invited_by' => $by?->id, 'status' => User::INVITED])->save();
         $link = route('invite.show', $token);
-        Mail::to($user->email)->send(new InviteMail($user, $link, $by?->name));
+        self::$lastSendFailed = false;
+        try {
+            Mail::to($user->email)->send(new InviteMail($user, $link, $by?->name));
+        } catch (\Throwable $e) {
+            // Don't lose the invite if email fails: the admin is shown the link to pass on.
+            report($e);
+            self::$lastSendFailed = true;
+        }
 
         return $link;
     }

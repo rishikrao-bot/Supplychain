@@ -21,6 +21,7 @@
   </nav>
   <main><div class="wrap">
     @if(session('status'))<div class="note ok" role="status">{{ session('status') }}</div>@endif
+    @if(session('invite_link'))<div class="note warn" role="status"><b>Invite link</b> (works once, for 7 days): <input type="text" readonly value="{{ session('invite_link') }}" onclick="this.select()" style="margin-top:6px" aria-label="Invite link"></div>@endif
     @if($errors->any())<div class="note crit" role="alert">{{ $errors->first() }}</div>@endif
     @yield('content')
   </div></main>

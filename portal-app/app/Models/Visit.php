@@ -14,4 +14,6 @@ class Visit extends Model
 
     public function materials(): HasMany { return $this->hasMany(VisitMaterial::class); }
     public function workOrder(): BelongsTo { return $this->belongsTo(WorkOrder::class); }
+    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany { return $this->morphMany(Attachment::class, 'attachable'); }
 }

@@ -71,16 +71,37 @@ curl, openssl), MySQL database `messaxwp_compass`, user `messaxwp_compass`.
 
 Never run `migrate:fresh` or `db:wipe` on the server: they delete all data.
 
-## Sending email (invites)
+## Sending email (invites and notifications)
 
-Until email is set up, `MAIL_MAILER=log` writes emails to `storage/logs/laravel.log` instead of sending
-them; `portal:invite-admin` prints its link on screen. jobsavvy.co.uk's email is on Microsoft 365, so
-emails must be sent through Microsoft 365 (sending from the hosting server would fail SPF checks and
-land in spam). Needed: a mailbox such as portal@jobsavvy.co.uk with SMTP AUTH enabled, then:
+For now the portal sends from Rishi's Microsoft 365 mailbox, and replies come back to it (set up
+Outlook rules for them). Later, point replies at a helpdesk mailbox by changing only
+MAIL_REPLY_TO_ADDRESS, or switch the sender to a dedicated mailbox such as portal@jobsavvy.co.uk.
+
+In `.env` on the server:
 
     MAIL_MAILER=smtp
     MAIL_HOST=smtp.office365.com
     MAIL_PORT=587
     MAIL_SCHEME=null
-    MAIL_USERNAME=portal@jobsavvy.co.uk
-    MAIL_PASSWORD=   (entered on the server only)
+    MAIL_USERNAME=rishi.rao@compass-mep.com
+    MAIL_PASSWORD=   (typed in by Rishi on the server only, never committed)
+    MAIL_FROM_ADDRESS=rishi.rao@compass-mep.com
+    MAIL_FROM_NAME="Compass MEP Portal"
+    MAIL_REPLY_TO_ADDRESS=rishi.rao@compass-mep.com
+
+Then `php artisan config:cache`.
+
+Microsoft 365 must allow the mailbox to send this way. In the Microsoft 365 admin centre: Users >
+Active users > Rishi Rao > Mail > Manage email apps > tick **Authenticated SMTP**. If the Compass
+tenant has Security Defaults or blocks SMTP AUTH (common when two-step login is on), Compass's
+Microsoft 365 administrator needs to allow it for this mailbox, or provide a dedicated mailbox for the
+portal. Until it works, set `MAIL_MAILER=log`: invites are then shown on screen as a link to copy and
+send by hand, so nobody is blocked.
+
+## Completion reports
+
+When a job is marked complete, a PDF completion report is created automatically and attached to the
+job (stored under `storage/app/private/reports/`). Compass staff, the job's client and the partner
+who did the work can download it at `/portal/jobs/{id}/completion-report.pdf`. It shows no prices.
+A sample is in `docs/sample-completion-report.pdf`. Back up `storage/app/private` along with the
+database.

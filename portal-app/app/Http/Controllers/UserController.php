@@ -47,10 +47,12 @@ class UserController extends Controller
             'account_id' => $actor->account_id, 'organisation_id' => $org->id, 'name' => $data['name'],
             'email' => Str::lower($data['email']), 'phone' => $data['phone'] ?? null, 'role' => $data['role'], 'status' => User::INVITED,
         ]);
-        UserAccess::sendInvite($user, $actor);
+        $link = UserAccess::sendInvite($user, $actor);
         Activity::log('user.invited', "{$actor->name} invited {$user->name} ({$user->email}) as ".Roles::label($user->role)." at {$org->name}.", $user);
 
-        return redirect()->route('users.index', ['tab' => $org->type])->with('status', "Invite sent to {$user->email}.");
+        return redirect()->route('users.index', ['tab' => $org->type])
+            ->with('status', UserAccess::showLink() ? "Invite created for {$user->email}, but email isn't being sent. Copy the link below and send it to them." : "Invite sent to {$user->email}.")
+            ->with('invite_link', UserAccess::showLink() ? $link : null);
     }
 
     public function updateRole(Request $request, User $user)
@@ -104,10 +106,11 @@ class UserController extends Controller
     {
         $actor = $request->user();
         abort_unless(UserAccess::canManage($actor, $user) && $user->status === User::INVITED, 403);
-        UserAccess::sendInvite($user, $actor);
+        $link = UserAccess::sendInvite($user, $actor);
         Activity::log('user.invite_resent', "{$actor->name} re-sent the invite to {$user->name}.", $user);
 
-        return back()->with('status', "Invite sent again to {$user->email}.");
+        return back()->with('status', UserAccess::showLink() ? "New invite link created for {$user->email}, but email isn't being sent. Copy the link below." : "Invite sent again to {$user->email}.")
+            ->with('invite_link', UserAccess::showLink() ? $link : null);
     }
 
     public function resetTwoFactor(Request $request, User $user)
