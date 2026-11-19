@@ -11,20 +11,20 @@
   --ok:#23784A; --ok-soft:#DDF1E5; --warn:#9A6212; --warn-soft:#FBEFD9; --crit:#B23A2E; --crit-soft:#F9E1DE;
   --info:#3A5A8C; --info-soft:#E1E9F5;
   --f-display:"Montserrat",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:8px;
+  --r:8px; --c-cost:#2a78d6; --c-margin:#1baf7a;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E181D; --surface:#15232A; --surface-2:#1B2C34; --line:#2A3E47;
   --fg:#E4EEEE; --muted:#93AAB0; --brand:#B5CDD6; --band:#FFFFFF; --band-fg:#294653; --deep:#1B323C;
   --accent:#25C4A9; --accent-ink:#43D8BE; --accent-soft:#123A35; --accent-fg:#0E181D;
   --ok:#5CC48A; --ok-soft:#14301F; --warn:#E3A84B; --warn-soft:#33270F; --crit:#F0806F; --crit-soft:#3A1A16;
-  --info:#8FB0E3; --info-soft:#1B2840; color-scheme:dark }}
+  --info:#8FB0E3; --info-soft:#1B2840; --c-cost:#3987e5; --c-margin:#199e70; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#0E181D; --surface:#15232A; --surface-2:#1B2C34; --line:#2A3E47;
   --fg:#E4EEEE; --muted:#93AAB0; --brand:#B5CDD6; --band:#FFFFFF; --band-fg:#294653; --deep:#1B323C;
   --accent:#25C4A9; --accent-ink:#43D8BE; --accent-soft:#123A35; --accent-fg:#0E181D;
   --ok:#5CC48A; --ok-soft:#14301F; --warn:#E3A84B; --warn-soft:#33270F; --crit:#F0806F; --crit-soft:#3A1A16;
-  --info:#8FB0E3; --info-soft:#1B2840; color-scheme:dark }
+  --info:#8FB0E3; --info-soft:#1B2840; --c-cost:#3987e5; --c-margin:#199e70; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--band)}
@@ -174,6 +174,16 @@ legend{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--
 .opt input{accent-color:var(--accent);margin:0}
 .opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
 .ctag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--surface-2)}
+.ctag.bad{border-color:var(--crit);color:var(--crit);background:var(--crit-soft)}
+.ctag.cert{border-color:var(--ok)}
+#tip{position:fixed;z-index:60;pointer-events:none;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.15);max-width:240px}
+.chart svg{display:block;width:100%;height:auto}
+.chart text{font-family:var(--f-body);font-size:11px;fill:var(--muted)}
+.chart .val{fill:var(--fg);font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.mbar{height:6px;border-radius:3px;background:var(--c-margin);display:inline-block;vertical-align:middle;margin-right:8px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:calc(100% - 32px);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .hide-sm{} @media (max-width:640px){.hide-sm{display:none}}
@@ -195,6 +205,7 @@ legend{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--
 </header>
 <div id="app"></div>
 <div id="toast" class="toast" hidden></div>
+<div id="tip" hidden></div>
 
 <script>
 /* ============================== Helpers ============================== */
@@ -230,7 +241,7 @@ function seed(){
   const S = {};
   S.settings = {
     returnVisitCallout:false, multiTrade:'per_trade', approvalPolicy:'except_emergency', approvalThreshold:500,
-    inspectionFee:120, inspectionCreditDays:180, inspectionReviewMonths:6, offerHours:4, offerMinsEmergency:30,
+    inspectionFee:120, inspectionCreditDays:180, inspectionReviewMonths:6, offerHours:4, offerMinsEmergency:30, pPayDays:30,
     materialsMarkup:15, specialistFee:12.5, specialistMin:50
   };
   S.contracts = [
@@ -247,18 +258,18 @@ function seed(){
   const ok = (y) => y; // readability
   S.contractors = [
     { id:'K1', name:'Compass MEP (direct)', type:'dlo', trades:['building','specialist'], zones:['A','B','C'], rates:null, cis:'na', vat:true,
-      compliance:[{item:'Public liability insurance',exp:'2027-06-30',block:true},{item:"Employer's liability insurance",exp:'2027-06-30',block:true},{item:'SSIP: CHAS',exp:'2027-03-14'},{item:'Company RAMS library',exp:'2027-01-31'}],
+      compliance:[{item:'Public liability insurance',exp:'2027-06-30',block:true},{item:"Employer's liability insurance",exp:'2027-06-30',block:true},{item:'SSIP: CHAS',exp:'2027-03-14'},{item:'Company RAMS library',exp:'2027-01-31'},{item:'NICEIC Approved Contractor',exp:'2027-08-31',block:true}], costRate:38,
       engineers:[{name:'Dan Okafor',trade:'building',cscs:'2028-02-01',asb:'2027-05-10',dbs:'2027-09-01'},{name:'Priya Shah',trade:'specialist',cscs:'2027-11-20',asb:'2027-04-02',dbs:'2027-08-15'}] },
     { id:'K2', name:'Brightline Fire & Security Ltd', type:'sub', trades:['specialist'], zones:['A','B'], maxValue:2500, rates:{normal:52,ooh:75,sun:100,callout:30}, cis:'gross', vat:true, sba:{signed:'2026-02-01',exp:'2027-02-01'}, nextSB:7,
       compliance:[{item:'Public liability insurance (£10m)',exp:'2027-04-30',block:true},{item:"Employer's liability insurance",exp:'2027-04-30',block:true},{item:'BAFE SP203-1',exp:'2027-08-31',block:true},{item:'SSIP: SafeContractor',exp:'2027-01-15'},{item:'RAMS: fire alarm servicing',exp:'2027-03-01'},{item:'Self-billing agreement',exp:'2027-02-01'}],
       engineers:[{name:'Sam Reid',trade:'specialist',cscs:'2027-10-11',asb:'2027-06-19',dbs:'2027-02-03'}] },
     { id:'K7', name:'Sentinel Security Systems Ltd', type:'sub', trades:['specialist'], zones:['A'], maxValue:2000, rates:{normal:55,ooh:80,sun:105,callout:35}, cis:'gross', vat:true, sba:{signed:'2026-06-01',exp:'2027-06-01'}, nextSB:1,
-      compliance:[{item:'Public liability insurance (£5m)',exp:'2027-05-31',block:true},{item:"Employer's liability insurance",exp:'2027-05-31',block:true},{item:'NSI Gold',exp:'2027-09-30',block:true},{item:'SSIP: CHAS',exp:'2027-04-15'},{item:'Self-billing agreement',exp:'2027-06-01'}],
+      compliance:[{item:'Public liability insurance (£5m)',exp:'2027-05-31',block:true},{item:"Employer's liability insurance",exp:'2027-05-31',block:true},{item:'NSI Gold',exp:'2027-09-30',block:true},{item:'BAFE SP203-1',exp:'2027-07-31',block:true},{item:'SSIP: CHAS',exp:'2027-04-15'},{item:'Self-billing agreement',exp:'2027-06-01'}],
       engineers:[{name:'Tom Hughes',trade:'specialist',cscs:'2027-12-01',asb:'2027-03-03',dbs:'2027-08-08'}] },
     { id:'K3', name:'K. Mensah t/a Eastway Plumbing & Heating', type:'sub', trades:['building'], zones:['A'], maxValue:1500, rates:{normal:42,ooh:60,sun:80,callout:25}, cis:'net20', vat:false, sba:{signed:'2026-05-12',exp:'2027-05-12'}, nextSB:4,
       compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-30',block:true},{item:"Employer's liability insurance",exp:'2027-05-01',block:true},{item:'Gas Safe registration',exp:'2027-07-31',block:true},{item:'SSIP: Constructionline Gold',exp:'2027-02-20'},{item:'RAMS: plumbing & heating',exp:'2027-05-12'},{item:'Self-billing agreement',exp:'2027-05-12'}],
       engineers:[{name:'Kwame Mensah',trade:'building',cscs:'2027-03-30',asb:'2026-12-08',dbs:'2027-07-21'}] },
-    { id:'K4', name:'Apex Lift Services Ltd', type:'sub', trades:['lift'], zones:['A','B'], maxValue:5000, rates:{normal:140,ooh:190,sun:240,callout:40}, cis:'gross', vat:true, sba:{signed:'2026-03-01',exp:'2027-03-01'}, nextSB:3,
+    { id:'K4', name:'Apex Lift Services Ltd', type:'sub', trades:['lift'], zones:['A','B'], maxValue:5000, rates:{normal:165,ooh:230,sun:290,callout:60}, cis:'gross', vat:true, sba:{signed:'2026-03-01',exp:'2027-03-01'}, nextSB:3,
       compliance:[{item:'Public liability insurance (£10m)',exp:'2027-09-30',block:true},{item:"Employer's liability insurance",exp:'2027-09-30',block:true},{item:'LEIA membership',exp:'2027-12-31',block:true},{item:'SSIP: CHAS',exp:'2027-05-01'},{item:'Self-billing agreement',exp:'2027-03-01'}],
       engineers:[{name:'Lee Turner',trade:'lift',cscs:'2027-08-08',asb:'2027-01-12',dbs:'2027-06-06'}] },
     { id:'K5', name:'AquaSure Water Hygiene Ltd', type:'spec', trades:['service'], zones:['A','B','C'], maxValue:0, cats:['Water hygiene','Swimming pools'], rates:null, cis:'na', vat:true, sba:{signed:'2026-04-10',exp:'2027-04-10'}, nextSB:2,
@@ -268,6 +279,8 @@ function seed(){
       compliance:[{item:'Public liability insurance (£5m)',exp:'2026-11-09',block:true},{item:"Employer's liability insurance",exp:'2027-01-31',block:true},{item:'UKAS accreditation',exp:'2027-04-30',block:true},{item:'Self-billing agreement',exp:'2026-11-01'}],
       engineers:[{name:'Mark Chen',trade:'service',cscs:'2027-01-01',asb:'2027-01-01',dbs:'2026-10-30'}] }
   ];
+  S.clients = [{ id:'CL1', name:'Wates', afpDay:25, dueDays:7, finalDays:30, portalCertify:true }];
+  S.certReq = { 'Gas (Gas Safe)':'Gas Safe', 'HVAC & air conditioning (F-Gas)':'F-Gas', 'Electrical installation & repair':'NICEIC', 'EICR testing':'NICEIC', 'Asbestos removal (licensed)':'HSE asbestos licence', 'Fire alarm':'BAFE', 'Water hygiene / legionella':'Legionella Control Association', 'Passenger lifts':'LEIA', 'Platform & stair lifts':'LEIA', 'Intruder alarm':'NSI', 'CCTV':'NSI', 'Access control':'NSI', 'Asbestos surveys':'UKAS' };
   S.competencies = [
     { group:'Mechanical', items:['Plumbing & heating','Gas (Gas Safe)','Commercial boilers','HVAC & air conditioning (F-Gas)','Ventilation & extract','Pumps & pressurisation','Pool plant & filtration','Refrigeration'] },
     { group:'Electrical', items:['Electrical installation & repair','Emergency lighting','EICR testing','HV, generators & UPS','Lightning protection'] },
@@ -394,9 +407,10 @@ function seed(){
 }
 
 /* ============================== State ============================== */
-const KEY = 'compass-portal-demo-v3';
+const KEY = 'compass-portal-demo-v4';
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ S = seed(); }
+let needHistory = !S.history;
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 const ui = { role:'compass', view:'dashboard', jobId:null, jobFilter:'all', partner:'K3', eng:{ who:'Dan Okafor', jobId:null, step:'list', d:null } };
 
@@ -406,6 +420,51 @@ const contract = id => S.contracts.find(c => c.id === id);
 const job = id => S.jobs.find(j => j.id === id);
 const excFor = id => S.exceptions.filter(e => e.job === id);
 function log(j, who, text){ (j.log ||= []).push([nowISO(), who, text]); }
+const client = () => S.clients[0];
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const addDays = (iso, n) => { const d = new Date(iso.slice(0, 10) + 'T12:00:00'); d.setDate(d.getDate() + n); return isoDate(d); };
+function afpEnd(date){ const x = new Date(date), day = client().afpDay; return isoDate(x.getDate() <= day ? new Date(x.getFullYear(), x.getMonth(), day) : new Date(x.getFullYear(), x.getMonth() + 1, day)); }
+function shiftMonth(iso, n){ const d = new Date(iso.slice(0, 10) + 'T12:00:00'); return isoDate(new Date(d.getFullYear(), d.getMonth() + n, client().afpDay)); }
+const sbCode = c => c.name.replace(/[^A-Z]/g, '').slice(0, 3).padEnd(3, 'X');
+function rng(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function finRecord(j, date){
+  const v = valuation(j, 'actual'), c = contractor(j.contractor || j.specialist?.contractor), vs = j.visit || {};
+  let cost = 0, labour = 0, materials = 0, cis = 0;
+  if (c && c.type === 'dlo'){ materials = (vs.materials || []).reduce((a, m) => a + Number(m.cost || 0), 0) + (vs.expenses || 0); labour = (vs.hours || 0) * (c.costRate || 38); cost = labour + materials; }
+  else { const cc = contractorCost(j); if (cc){ cost = cc.gross; labour = cc.labour; materials = cc.materials; cis = cc.cis; } }
+  return { id:j.id, date, site:j.site, contract:j.contract, comp:j.comp, trade:j.trade, priority:j.priority, partner:c ? c.id : null, revenue:v.total, cost:r2(cost), labour:r2(labour), materials:r2(materials), cis:r2(cis), outcome:vs.outcome || 'complete', wRef:j.wRef, po:j.approved?.po || '', appId:null };
+}
+const finJobs = () => [...(S.history || []), ...S.jobs.filter(j => j.fin).map(j => j.fin)];
+function genHistory(){
+  const R = rng(11), pick = a => a[Math.floor(R() * a.length)];
+  const P = [{comp:'Plumbing & heating',trade:'building',k:'K3',w:6},{comp:'Plumbing & heating',trade:'building',k:'K1',w:4},{comp:'Fire alarm',trade:'specialist',k:'K2',w:4},{comp:'Access control',trade:'specialist',k:'K7',w:2},{comp:'Emergency lighting',trade:'building',k:'K1',w:2},{comp:'Passenger lifts',trade:'lift',k:'K4',w:3},{comp:'Water hygiene / legionella',trade:'service',k:'K5',w:2},{comp:'Drainage',trade:'building',k:'K3',w:2}];
+  const wpick = () => { let r = R() * P.reduce((a, x) => a + x.w, 0); for (const x of P){ if ((r -= x.w) < 0) return x; } return P[0]; };
+  const sites = ['S1','S1','S2','S2','S3','S4','S5'], t0 = new Date('2026-08-01T09:00:00').getTime(), t1 = new Date('2026-11-17T17:00:00').getTime();
+  S.history = []; S.selfbills = [];
+  Array.from({ length:54 }, () => t0 + R() * (t1 - t0)).sort((a, b) => a - b).forEach((t, i) => {
+    const p = wpick(), sId = pick(sites), r = R(), pr = r < .15 ? 'Emergency' : r < .45 ? 'Urgent' : r < .85 ? 'Routine' : 'Planned';
+    const band = p.trade === 'lift' ? 'normal' : pr === 'Emergency' && R() < .6 ? 'ooh' : R() < .04 ? 'sun' : 'normal';
+    const noacc = p.trade !== 'service' && R() < .08, id = 'CMP-' + String(980 + i).padStart(4, '0');
+    const hours = noacc ? .5 : p.trade === 'lift' ? 1 + Math.round(R() * 6) / 4 : .75 + Math.round(R() * 12) / 4;
+    const mats = noacc || (p.trade === 'lift' && R() < .6) ? [] : [{ desc:'Materials', cost:r2(10 + R() * 140) }];
+    const j = { id, wRef:'WTS-5' + (4400 + i), contract:site(sId).contract, site:sId, priority:pr, trade:p.trade, band, comp:p.comp, contractor:p.k, approved:{ po:'PO-77' + (1000 + i) },
+      visit:{ hours, materials:mats, expenses:R() < .2 ? 8 : 0, outcome:noacc ? 'noaccess' : 'complete' } };
+    if (p.trade === 'service'){ j.svcCat = 'Water hygiene'; j.specialist = { contractor:p.k, cost:Math.round(300 + R() * 600), labourPct:0 }; }
+    const d = new Date(t).toISOString(), rec = finRecord(j, d); S.history.push(rec);
+    const c = contractor(p.k);
+    if (c.type !== 'dlo') S.selfbills.push({ id:`SB-${sbCode(c)}-${String(c.nextSB++).padStart(4, '0')}`, contractor:c.id, job:id, date:d, labour:rec.labour, materials:rec.materials, cis:rec.cis, vatNote:c.vat ? 'Reverse charge' : 'Not VAT registered' });
+  });
+  S.jobs.filter(j => j.status === 'complete' && !j.fin).forEach(j => { j.fin = finRecord(j, j.log?.[j.log.length - 1]?.[0] || nowISO()); });
+  S.applications = [];
+  ['2026-08-25','2026-09-25','2026-10-25'].forEach((e, n) => {
+    const recs = S.history.filter(r => !r.appId && r.date.slice(0, 10) <= e), id = 'AFP-' + String(8 + n).padStart(3, '0'); recs.forEach(r => r.appId = id);
+    const gross = r2(recs.reduce((a, r) => a + r.revenue, 0)), pl = n === 1 ? recs.find(r => r.outcome === 'noaccess') : null, cert = r2(gross - (pl ? pl.revenue : 0));
+    const due = addDays(e, client().dueDays), fin = addDays(due, client().finalDays);
+    S.applications.push({ id, client:'CL1', periodEnd:e, submitted:e, jobs:recs.map(r => r.id), gross, certified:cert, certifiedAt:addDays(e, 5), certifiedBy: n === 0 ? 'Wates (portal)' : 'Recorded by Compass from Wates payment notice',
+      note: pl ? `Pay-less notice: ${pl.id} no-access charge disputed` : '', paid: n < 2 ? cert : null, paidAt: n < 2 ? fin : null, status: n < 2 ? 'paid' : 'certified' });
+  });
+}
+if (needHistory){ genHistory(); save(); }
 
 /* ============================== Pricing engine ============================== */
 function minHours(band){ return band === 'normal' ? 1 : 2; }
@@ -562,10 +621,10 @@ function render(){
   document.querySelectorAll('.roles button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === ui.role));
   const app = document.getElementById('app');
   if (ui.role === 'engineer'){ app.innerHTML = `<main><div class="wrap">${viewEngineer()}</div></main>`; wireEngineer(); return; }
-  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],...(S.settings.presenting ? [] : [['selfbill','Self-billing & CIS']]),['settings','Rules & settings']];
-  const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes']];
+  const navC = [['dashboard','Dashboard'],['jobs','Jobs', S.jobs.filter(j => !['complete','cancelled'].includes(j.status)).length],['new','Log an order'],['alerts','Exceptions', S.exceptions.filter(e => e.status === 'open').length, true],['contractors','Contractors', S.contractors.filter(c => contractorState(c).state !== 'ok').length, true],['sites','Sites'],['quotes','Quote register'],['afp','Applications for payment'],...(S.settings.presenting ? [] : [['profit','Profitability'],['selfbill','Self-billing & CIS']]),['settings','Rules & settings']];
+  const navW = [['w-home','Overview'],['w-approvals','Approvals', S.jobs.filter(j => j.status === 'awaiting').length + S.exceptions.filter(e => e.status === 'open').length, true],['w-jobs','All jobs'],['w-new','Raise an order'],['w-quotes','Quotes'],['w-afp','Applications for payment', S.applications.filter(a => a.status === 'submitted').length, true]];
   const P = contractor(ui.partner);
-  const navP = [['p-offers','Job offers', S.jobs.filter(j => (j.offers || []).some(o => o.contractor === P.id && o.status === 'offered')).length, true],['p-jobs','My jobs'],['p-docs','Compliance documents', contractorState(P).state !== 'ok' ? '!' : 0, true],['p-inv','Self-billed invoices']];
+  const navP = [['p-offers','Job offers', S.jobs.filter(j => (j.offers || []).some(o => o.contractor === P.id && o.status === 'offered')).length, true],['p-jobs','My jobs'],['p-docs','Compliance documents', contractorState(P).state !== 'ok' ? '!' : 0, true],['p-inv','Payments & invoices']];
   const nav = ui.role === 'compass' ? navC : ui.role === 'partner' ? navP : navW;
   const who = ui.role === 'compass' ? '<b>Rishi Rao</b><div class="small muted">Admin · Compass MEP</div>'
     : ui.role === 'partner' ? `<label class="small muted" for="partnerWho">Signed in as (demo)</label><select id="partnerWho" style="margin-top:4px">${S.contractors.filter(c => c.type !== 'dlo').map(c => `<option value="${c.id}" ${c.id === P.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>`
@@ -741,10 +800,12 @@ function readOrder(){
 const SVC_COMP = { 'Structural engineering':'Structural engineering', 'Waterproofing':'Waterproofing', 'Asbestos':'Asbestos surveys', 'Swimming pools':'Pool plant & filtration', 'Water hygiene':'Water hygiene / legionella', 'Drainage':'Drainage', 'Passive fire protection':'Passive fire protection', 'Power and plant':'HV, generators & UPS', 'Building fabric and access':'Roofing', 'Site services':'Waste removal' };
 function defaultComp(trade, cat){ return trade === 'service' ? SVC_COMP[cat] : { building:'Plumbing & heating', specialist:'Fire alarm', lift:'Passenger lifts' }[trade]; }
 function compGrid(sel, name){ return `<div class="cgrid">${S.competencies.map(g => `<fieldset><legend>${esc(g.group)}</legend><div class="opts">${g.items.map(i => `<label class="opt"><input type="checkbox" name="${name}" value="${esc(i)}" ${sel.includes(i) ? 'checked' : ''}><span>${esc(i)}</span></label>`).join('')}</div></fieldset>`).join('')}</div>`; }
+function certOk(c, comp){ const k = (S.certReq || {})[comp]; if (!k) return { ok:true }; const it = c.compliance.find(i => i.item.includes(k)); return { ok:!!it && compStatus(it.exp) !== 'crit', k, it }; }
+function compTag(c, x){ const ch = certOk(c, x); return `<span class="ctag ${ch.k ? (ch.ok ? 'cert' : 'bad') : ''}" title="${ch.k ? esc(ch.k + (ch.ok ? ' certificate in date' : ' certificate missing or expired: not offered this work')) : ''}">${esc(x)}${ch.k ? ` · ${ch.ok ? '✓' : '✗'} ${esc(ch.k)}` : ''}</span>`; }
 const checked = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => x.value);
 function compBlock(c){
   if (ui.editComp === c.id) return `<div class="field"><span class="eyebrow">Competencies: tick all that apply</span>${compGrid(c.comps || [], 'ec-' + c.id)}<div class="row end"><button class="btn sm" data-act="cancelComp">Cancel</button><button class="btn sm primary" data-savecomp="${c.id}">Save competencies</button></div></div>`;
-  return `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><span class="eyebrow">Competencies (${(c.comps || []).length})</span><div class="row" style="gap:5px;margin-top:5px">${(c.comps || []).map(x => `<span class="ctag">${esc(x)}</span>`).join('') || '<span class="small muted">None set: this contractor won\'t receive offers.</span>'}</div></div><button class="btn sm" data-editcomp="${c.id}">Edit</button></div>`;
+  return `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><span class="eyebrow">Competencies (${(c.comps || []).length})</span><div class="row" style="gap:5px;margin-top:5px">${(c.comps || []).map(x => compTag(c, x)).join('') || '<span class="small muted">None set: this contractor won\'t receive offers.</span>'}</div>${(c.comps || []).some(x => !certOk(c, x).ok) ? '<div class="small" style="color:var(--crit);margin-top:5px">Competencies marked ✗ need a valid certificate before this contractor is offered that work.</div>' : ''}</div><button class="btn sm" data-editcomp="${c.id}">Edit</button></div>`;
 }
 function addContractorForm(){
   return `<div class="panel"><div class="panel-h"><h2>Add a contractor</h2><span class="small muted">They are blocked from offers until their documents are uploaded and approved</span></div><div class="panel-b">
@@ -765,11 +826,12 @@ function addContractorForm(){
 }
 function competencyPanel(){
   return `<div class="panel"><div class="panel-h"><div><h2>Competency list</h2><div class="small muted">${S.competencies.reduce((a, g) => a + g.items.length, 0)} competencies in ${S.competencies.length} groups. Add new ones as the supply chain grows.</div></div></div><div class="panel-b">
-    ${S.competencies.map(g => `<div><span class="eyebrow">${esc(g.group)}</span><div class="row" style="gap:5px;margin-top:5px">${g.items.map(i => `<span class="ctag">${esc(i)} <span class="muted">· ${S.contractors.filter(c => c.type !== 'dlo' && (c.comps || []).includes(i)).length}</span></span>`).join('')}</div></div>`).join('')}
-    <p class="small muted">The number after each competency is how many partners hold it. A competency with 0 is a gap in the supply chain.</p>
+    ${S.competencies.map(g => `<div><span class="eyebrow">${esc(g.group)}</span><div class="row" style="gap:5px;margin-top:5px">${g.items.map(i => `<span class="ctag">${esc(i)}${S.certReq[i] ? ` <span class="muted">(needs ${esc(S.certReq[i])})</span>` : ''} <span class="muted">· ${S.contractors.filter(c => c.type !== 'dlo' && (c.comps || []).includes(i) && certOk(c, i).ok).length}</span></span>`).join('')}</div></div>`).join('')}
+    <p class="small muted">The number after each competency is how many partners hold it with any required certificate in date. A competency with 0 is a gap in the supply chain.</p>
     <div class="grid g3" style="align-items:end"><div class="field"><label for="nc-group">Group</label><select id="nc-group">${S.competencies.map(g => `<option>${esc(g.group)}</option>`).join('')}<option value="__new">New group…</option></select></div>
       <div class="field"><label for="nc-name">New competency</label><input type="text" id="nc-name" placeholder="e.g. Solar PV, EV charging"></div>
-      <div class="field"><label for="nc-newgroup">New group name (if chosen)</label><input type="text" id="nc-newgroup" placeholder="e.g. Renewables"></div></div>
+      <div class="field"><label for="nc-newgroup">New group name (if chosen)</label><input type="text" id="nc-newgroup" placeholder="e.g. Renewables"></div>
+      <div class="field"><label for="nc-cert">Certificate required (blank if none)</label><input type="text" id="nc-cert" placeholder="e.g. MCS"></div></div>
     <div class="row end"><button class="btn primary" data-act="addComp">Add competency</button></div>
   </div></div>`;
 }
@@ -852,12 +914,12 @@ VIEWS.quotes = () => {
 VIEWS.selfbill = () => {
   if (S.settings.presenting) return VIEWS.dashboard();
   const byC = {};
-  S.selfbills.forEach(b => { const x = byC[b.contractor] ||= { gross:0, labour:0, cis:0 }; x.gross += b.labour + b.materials; x.labour += b.labour; x.cis += b.cis; });
+  S.selfbills.filter(b => b.date >= '2026-11-06').forEach(b => { const x = byC[b.contractor] ||= { gross:0, labour:0, cis:0 }; x.gross += b.labour + b.materials; x.labour += b.labour; x.cis += b.cis; });
   return `<div class="page-head"><div><h1>Self-billing &amp; CIS</h1><p class="sub">When a subcontractor's report is approved, a self-billed invoice is raised on their behalf at their agreed rates. CIS is deducted from labour only. Each contractor has its own sequential numbering, under a signed self-billing agreement.</p></div></div>
   <div class="panel"><div class="panel-h"><h2>Self-billed invoices</h2></div><div class="tbl-wrap"><table><thead><tr><th>Invoice</th><th>Contractor</th><th>Job</th><th class="num">Labour</th><th class="num">Materials</th><th class="num">CIS</th><th class="num">Net payable</th><th class="hide-sm">VAT</th></tr></thead><tbody>
   ${S.selfbills.slice().reverse().map(b => `<tr><td class="mono"><b>${b.id}</b><div class="small muted">${fmtD(b.date)}</div><div class="small muted">SELF-BILLED INVOICE</div></td><td>${esc(contractor(b.contractor).name)}</td><td class="mono">${b.job}</td><td class="num mono">${gbp(b.labour)}</td><td class="num mono">${gbp(b.materials)}</td><td class="num mono">${gbp(-b.cis)}</td><td class="num mono"><b>${gbp(b.labour + b.materials - b.cis)}</b></td><td class="small hide-sm">${esc(b.vatNote)}</td></tr>`).join('')}
   </tbody></table></div></div>
-  <div class="panel"><div class="panel-h"><h2>CIS summary: November 2026</h2><span class="small muted">For your accountant's monthly CIS300 return</span></div><div class="tbl-wrap"><table><thead><tr><th>Subcontractor</th><th>Status</th><th class="num">Gross paid</th><th class="num">Labour</th><th class="num">CIS deducted</th></tr></thead><tbody>
+  <div class="panel"><div class="panel-h"><h2>CIS summary: tax month 6 Nov – 5 Dec 2026</h2><span class="small muted">For your accountant's monthly CIS300 return</span></div><div class="tbl-wrap"><table><thead><tr><th>Subcontractor</th><th>Status</th><th class="num">Gross paid</th><th class="num">Labour</th><th class="num">CIS deducted</th></tr></thead><tbody>
   ${Object.entries(byC).map(([id, x]) => { const c = contractor(id); return `<tr><td>${esc(c.name)}</td><td>${esc(CIS[c.cis])}</td><td class="num mono">${gbp(x.gross)}</td><td class="num mono">${gbp(x.labour)}</td><td class="num mono">${gbp(x.cis)}</td></tr>`; }).join('')}
   </tbody></table></div></div>
   <div class="note small">VAT treatment on subcontractor invoices (domestic reverse charge for construction services) to be confirmed with your accountant before go-live.</div>`;
@@ -877,6 +939,13 @@ VIEWS.settings = () => { const st = S.settings;
   <div class="panel"><div class="panel-h"><h2>Approvals</h2></div><div class="panel-b" style="gap:0">
     ${rule('When Wates must approve before dispatch', 'Proposed', 'Emergencies go immediately to protect the 12-hour response; the estimate is sent at the same time.', sel('approvalPolicy', st.approvalPolicy, [['except_emergency','All jobs except emergencies'],['all','Every job'],['threshold','Only above a value']]))}
     ${rule('Approval threshold (£)', '', 'Used when approval is required only above a value.', num('approvalThreshold', st.approvalThreshold, 50))}
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2>Client payment terms: ${esc(client().name)}</h2><span class="tag">To agree at onboarding</span></div><div class="panel-b" style="gap:0">
+    ${rule('Application for payment date (day of month)', '', 'Valuations up to this date go into that month\'s application.', `<input type="number" id="afpDay" data-client="afpDay" value="${client().afpDay}" min="1" max="28">`)}
+    ${rule('Due date (days after application)', '', 'When payment falls due.', `<input type="number" id="dueDays" data-client="dueDays" value="${client().dueDays}" min="0">`)}
+    ${rule('Final date for payment (days after due date)', '', 'Payment notice must be given within 5 days of the due date.', `<input type="number" id="finalDays" data-client="finalDays" value="${client().finalDays}" min="0">`)}
+    ${rule('Client can issue payment notices in their portal', '', 'Off: the client sends its payment notice as usual and Compass records it.', sel('portalCertify', String(client().portalCertify), [['true','Yes, option available'],['false','No, Compass records it']]))}
+    ${rule('Partners paid within (days after period end)', '', 'Applies to self-billed partners.', num('pPayDays', S.settings.pPayDays, 1))}
   </div></div>
   <div class="panel"><div class="panel-h"><h2>Offering jobs to partners</h2></div><div class="panel-b" style="gap:0">
     ${rule('Reply deadline: planned, urgent, routine (hours)', '', 'Offered to one partner at a time. Declined or missed jobs move to the next partner.', num('offerHours', st.offerHours, 1))}
@@ -926,7 +995,7 @@ VIEWS['w-quotes'] = () => `<div class="page-head"><div><h1>Quotes</h1><p class="
 function wire(){
   const app = document.getElementById('app');
   app.onclick = e => {
-    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp]'); if (!t) return;
+    const t = e.target.closest('[data-view],[data-open],[data-filter],[data-act],[data-approve],[data-query],[data-decide],[data-orderq],[data-expire],[data-accept],[data-decline],[data-engapp],[data-approvedoc],[data-editcomp],[data-savecomp],[data-pf],[data-pdim],[data-certify],[data-paid]'); if (!t) return;
     if (t.tagName === 'A') e.preventDefault();
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.open) return go('job', t.dataset.open);
@@ -950,7 +1019,7 @@ function wire(){
     }
     if (t.dataset.orderq){ const q = S.quotes.find(q => q.id === t.dataset.orderq); q.status = 'ordered'; q.ordered = nowISO(); save(); toast(`${q.id} ordered.${q.fee ? ` Inspection fee ${gbp(q.fee)} credited.` : ''}`); return render(); }
     const act = t.dataset.act;
-    if (act === 'reset'){ S = seed(); save(); ui.eng = { who:'Dan Okafor', jobId:null, step:'list', d:null }; toast('Demo data reset.'); return go(ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'); }
+    if (act === 'reset'){ S = seed(); genHistory(); save(); ui.eng = { who:'Dan Okafor', jobId:null, step:'list', d:null }; toast('Demo data reset.'); return go(ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'); }
     const winVal = () => { const w = document.getElementById('window'); return w && w.value ? w.value : null; };
     if (act === 'offer'){ const j = job(ui.jobId); j.window = winVal() || j.window; offerJob(j); save(); toast(j.priority === 'Emergency' ? `${j.id} offered to all eligible partners. First to accept gets it.` : `${j.id} offered. Partner notified by email and portal.`); return render(); }
     if (act === 'assignDlo'){ const j = job(ui.jobId), eng = document.getElementById('dloEng').value; j.window = winVal() || j.window;
@@ -961,6 +1030,16 @@ function wire(){
     if (t.dataset.decline){ const j = job(t.dataset.decline), reason = document.getElementById('why-' + j.id).value; declineOffer(j, ui.partner, reason); save(); toast(`Declined ${j.id}. Compass has been told.`); return render(); }
     if (t.dataset.engapp){ ui.role = 'engineer'; ui.eng = { who:t.dataset.engapp, jobId:null, step:'list', d:null }; render(); window.scrollTo(0, 0); return; }
     if (act === 'addCon'){ ui.addCon = true; return render(); }
+    if (t.dataset.pf){ ui.pf = t.dataset.pf; return render(); }
+    if (t.dataset.pdim){ ui.pdim = t.dataset.pdim; return render(); }
+    if (act === 'submitAfp'){ const A = afpState(), id = 'AFP-' + String(8 + S.applications.length).padStart(3, '0');
+      A.draft.forEach(r => r.appId = id);
+      S.applications.push({ id, client:'CL1', periodEnd:A.end, submitted:nowISO(), jobs:A.draft.map(r => r.id), gross:A.gross, certified:null, paid:null, status:'submitted', note:'' });
+      save(); toast(`${id} submitted to Wates: ${gbp(A.gross)} for ${A.draft.length} jobs.`); return render(); }
+    if (t.dataset.certify){ const a = S.applications.find(x => x.id === t.dataset.certify), amt = Number(document.getElementById('cert-' + a.id).value), note = document.getElementById('certn-' + a.id).value.trim();
+      a.certified = r2(amt); a.certifiedAt = nowISO(); a.note = note; a.status = 'certified'; a.certifiedBy = ui.role === 'wates' ? 'Paul Coffey (Wates, in portal)' : 'Recorded by Compass from Wates payment notice';
+      save(); toast(`Payment notice for ${a.id}: ${gbp(a.certified)}.`); return render(); }
+    if (t.dataset.paid){ const a = S.applications.find(x => x.id === t.dataset.paid); a.paid = a.certified; a.paidAt = nowISO(); a.status = 'paid'; save(); toast(`${a.id} marked as paid.`); return render(); }
     if (act === 'cancelCon'){ ui.addCon = false; return render(); }
     if (act === 'cancelComp'){ ui.editComp = null; return render(); }
     if (t.dataset.editcomp){ ui.editComp = t.dataset.editcomp; return render(); }
@@ -968,6 +1047,7 @@ function wire(){
     if (act === 'addComp'){ const g = document.getElementById('nc-group').value, n = document.getElementById('nc-name').value.trim(), ng = document.getElementById('nc-newgroup').value.trim();
       if (!n) return toast('Type the new competency first.');
       if (S.competencies.some(x => x.items.some(i => i.toLowerCase() === n.toLowerCase()))) return toast(`${n} is already on the list.`);
+      const cert = document.getElementById('nc-cert').value.trim(); if (cert) S.certReq[n] = cert;
       if (g === '__new'){ if (!ng) return toast('Name the new group.'); S.competencies.push({ group:ng, items:[n] }); } else S.competencies.find(x => x.group === g).items.push(n);
       save(); toast(`${n} added. Tick it on any contractor who holds it.`); return render(); }
     if (act === 'saveCon'){ const v = id => document.getElementById(id).value.trim(), name = v('ac-name'), comps = checked('ac-comp'), zones = checked('ac-zone'), type = v('ac-type');
@@ -976,7 +1056,7 @@ function wire(){
       const id = 'K' + (100 + S.contractors.length), eng = v('ac-eng') || 'Lead engineer';
       S.contractors.push({ id, name, type, trades, cats:[], comps, zones, maxValue:Number(v('ac-limit')) || 0, cis:v('ac-cis'), vat:document.getElementById('ac-vat').checked, nextSB:1, sba:null, pending:[],
         rates: type === 'sub' ? { normal:Number(v('ac-rn')) || 0, ooh:Number(v('ac-ro')) || 0, sun:Number(v('ac-rs')) || 0, callout:Number(v('ac-co')) || 0 } : null,
-        compliance:[{item:'Public liability insurance',exp:null,block:true},{item:"Employer's liability insurance",exp:null,block:true},{item:'Trade accreditation',exp:null,block:true},{item:'SSIP accreditation',exp:null},{item:'RAMS',exp:null},{item:'Self-billing agreement',exp:null}],
+        compliance:[{item:'Public liability insurance',exp:null,block:true},{item:"Employer's liability insurance",exp:null,block:true},{item:'SSIP accreditation',exp:null},{item:'RAMS',exp:null},{item:'Self-billing agreement',exp:null},...[...new Set(comps.map(x => S.certReq[x]).filter(Boolean))].map(k => ({ item:`${k} certificate`, exp:null }))],
         engineers:[{ name:eng, trade:trades[0], cscs:null, asb:null, dbs:null }] });
       ui.addCon = false; save(); toast(`${name} added. Ask them to upload their documents in the partner portal.`); return render(); }
     if (t.dataset.approvedoc){ const [cid, i] = t.dataset.approvedoc.split('|'), c = contractor(cid), pd = c.pending.splice(Number(i), 1)[0];
@@ -988,6 +1068,7 @@ function wire(){
       const j = job(ui.jobId); j.status = 'complete';
       if (j.approved) j.approved.amount ??= valuation(j).total;
       log(j, 'Rishi Rao', `Report approved. Valuation ${gbp(valuation(j, 'actual').total)} issued to Wates.`);
+      j.fin = finRecord(j, nowISO());
       const cc = contractorCost(j);
       if (cc){ const c = cc.c, code = c.name.replace(/[^A-Z]/g, '').slice(0, 3).padEnd(3, 'X'), id = `SB-${code}-${String(c.nextSB++).padStart(4, '0')}`;
         S.selfbills.push({ id, contractor:c.id, job:j.id, date:nowISO(), labour:cc.labour, materials:cc.materials, cis:cc.cis, vatNote: c.vat ? 'Reverse charge' : 'Not VAT registered' });
@@ -1000,6 +1081,8 @@ function wire(){
     if (t.id === 'partnerWho'){ ui.partner = t.value; return render(); }
     if (t.id === 'presenting'){ S.settings.presenting = t.checked; save(); toast(t.checked ? 'Presenting: partner rates, costs and margins hidden.' : 'Rates and margins visible again.'); if (t.checked && ui.view === 'selfbill') ui.view = 'dashboard'; return render(); }
     if (t.dataset.upload && t.files[0]){ const c = contractor(ui.partner); (c.pending ||= []).push({ item:t.dataset.upload, file:t.files[0].name, at:nowISO() }); save(); toast('Uploaded. Compass will check it before it counts.'); return render(); }
+    if (t.dataset.client){ client()[t.dataset.client] = Number(t.value); save(); toast('Payment terms updated.'); return; }
+    if (t.dataset.setting === 'portalCertify'){ client().portalCertify = t.value === 'true'; save(); toast('Updated.'); return; }
     if (t.dataset.setting){ const k = t.dataset.setting, st = S.settings; st[k] = t.type === 'number' ? Number(t.value) : t.value === 'true' ? true : t.value === 'false' ? false : t.value;
       if (k === 'inspectionFee') S.quotes.forEach(q => { if (q.fee) q.fee = st.inspectionFee; });
       save(); toast('Rule updated. Estimates recalculated.'); }
@@ -1007,6 +1090,9 @@ function wire(){
   const f = document.getElementById('orderForm');
   if (f){ f.oninput = updateEstimate; f.onchange = updateEstimate; f.onsubmit = e => { e.preventDefault(); submitOrder(ui.role === 'wates'); }; updateEstimate(); }
 }
+document.addEventListener('mousemove', e => { const tip = document.getElementById('tip'), t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t){ tip.hidden = true; return; } tip.innerHTML = t.getAttribute('data-tip'); tip.hidden = false;
+  const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 14, window.innerHeight - tip.offsetHeight - 8); tip.style.left = x + 'px'; tip.style.top = y + 'px'; });
 document.querySelector('.roles').onclick = e => { const b = e.target.closest('[data-role]'); if (!b) return; ui.role = b.dataset.role; ui.view = ui.role === 'compass' ? 'dashboard' : ui.role === 'partner' ? 'p-offers' : 'w-home'; render(); };
 
 
@@ -1022,6 +1108,7 @@ function partnerEligibility(j){
     const tradeOk = j.comp ? (c.comps || []).includes(j.comp) : j.trade === 'service' ? c.type === 'spec' && (c.cats || []).includes(j.svcCat) : c.trades.includes(j.trade);
     let why = '';
     if (!tradeOk) why = j.comp ? `No ${j.comp} competency` : j.trade === 'service' ? `Doesn't cover ${j.svcCat.toLowerCase()}` : `Doesn't cover ${RATES[j.trade].short.toLowerCase()}`;
+    else if (j.comp && !certOk(c, j.comp).ok) why = `${S.certReq[j.comp]} certificate missing or expired`;
     else if (!c.zones.includes(s.zone)) why = `Doesn't cover Zone ${s.zone}`;
     else if (st.blocked.length) why = `Blocked: ${st.blocked[0].item} expired`;
     else if (c.maxValue && val > c.maxValue) why = `Over their job limit of ${gbp(c.maxValue)}`;
@@ -1104,7 +1191,7 @@ VIEWS['p-docs'] = () => {
   const c = contractor(ui.partner), st = contractorState(c), pend = c.pending || [];
   const row = (item, exp, key) => { const p = pend.find(x => x.item === item); return `<tr><td>${esc(item)}</td><td><span class="chip ${compStatus(exp)}">${!exp ? 'Not provided' : (compStatus(exp) === 'crit' ? 'Expired ' : 'Expires ') + fmtD(exp)}</span></td><td>${p ? `<span class="chip info">Uploaded ${esc(p.file)}: Compass checking</span>` : `<label class="btn sm" for="up-${key}">Upload renewal</label><input type="file" id="up-${key}" data-upload="${esc(item)}" hidden>`}</td></tr>`; };
   return `<div class="page-head"><div><h1>Compliance documents</h1><p class="sub">Keep these current to keep receiving offers. Expired insurance or a key accreditation pauses offers until Compass approves the renewal.</p></div>${st.blocked.length ? '<span class="chip crit">Offers paused</span>' : st.state === 'warn' ? '<span class="chip warn">Action needed</span>' : '<span class="chip ok">All current</span>'}</div>
-  <div class="panel"><div class="panel-h"><h2>Your competencies</h2><span class="small muted">You are offered jobs that need one of these. Ask Compass to add more.</span></div><div class="panel-b"><div class="row" style="gap:5px">${(c.comps || []).map(x => `<span class="ctag">${esc(x)}</span>`).join('') || '<span class="muted small">None set yet.</span>'}</div></div></div>
+  <div class="panel"><div class="panel-h"><h2>Your competencies</h2><span class="small muted">You are offered jobs that need one of these. Ask Compass to add more.</span></div><div class="panel-b"><div class="row" style="gap:5px">${(c.comps || []).map(x => compTag(c, x)).join('') || '<span class="muted small">None set yet.</span>'}</div><p class="small muted">Competencies marked ✗ need their certificate uploaded and approved before you are offered that work.</p></div></div>
   <div class="panel"><div class="panel-h"><h2>Company</h2><span class="small muted">Coverage: Zone${c.zones.length > 1 ? 's' : ''} ${c.zones.join(', ')}${c.maxValue ? ` · job limit ${gbp(c.maxValue)}` : ''}</span></div><div class="tbl-wrap"><table><tbody>${c.compliance.map((i, n) => row(i.item, i.exp, 'c' + n)).join('')}</tbody></table></div></div>
   <div class="panel"><div class="panel-h"><h2>Engineers</h2></div><div class="tbl-wrap"><table><tbody>${c.engineers.flatMap((e, n) => [[`${e.name}: CSCS`, e.cscs], [`${e.name}: asbestos awareness`, e.asb], [`${e.name}: DBS`, e.dbs]].map(([l, d], m) => row(l, d, `e${n}${m}`))).join('')}</tbody></table></div></div>`;
 };
@@ -1112,10 +1199,141 @@ VIEWS['p-inv'] = () => {
   if (S.settings.presenting) return `<div class="page-head"><div><h1>Self-billed invoices</h1><p class="sub">Hidden while presenting. Partners see each invoice, CIS deduction and payment here.</p></div></div>`;
   const c = contractor(ui.partner), list = S.selfbills.filter(b => b.contractor === c.id);
   const tot = list.reduce((a, b) => ({ g:a.g + b.labour + b.materials, cis:a.cis + b.cis }), { g:0, cis:0 });
-  return `<div class="page-head"><div><h1>Self-billed invoices</h1><p class="sub">Compass raises your invoice when your visit report is approved, at your agreed rates. ${c.sba ? `Self-billing agreement valid to ${fmtD(c.sba.exp)}.` : ''} CIS: ${esc(CIS[c.cis])}.</p></div></div>
+  const per = partnerPeriods(c);
+  return `<div class="page-head"><div><h1>Payments &amp; invoices</h1><p class="sub">Work approved up to the ${client().afpDay}th of each month is paid within ${S.settings.pPayDays} days. Compass raises your invoice when your visit report is approved, at your agreed rates. ${c.sba ? `Self-billing agreement valid to ${fmtD(c.sba.exp)}.` : ''} CIS: ${esc(CIS[c.cis])}.</p></div></div>
   <div class="grid g3"><div class="panel stat"><span class="eyebrow">Invoiced</span><span class="v">${gbp(tot.g)}</span></div><div class="panel stat"><span class="eyebrow">CIS deducted</span><span class="v">${gbp(tot.cis)}</span></div><div class="panel stat"><span class="eyebrow">Net paid</span><span class="v">${gbp(tot.g - tot.cis)}</span></div></div>
-  <div class="panel">${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Invoice</th><th>Job</th><th class="num">Labour</th><th class="num">Materials</th><th class="num">CIS</th><th class="num">Net</th></tr></thead><tbody>${list.slice().reverse().map(b => `<tr><td class="mono"><b>${b.id}</b><div class="small muted">${fmtD(b.date)}</div></td><td class="mono">${b.job}</td><td class="num mono">${gbp(b.labour)}</td><td class="num mono">${gbp(b.materials)}</td><td class="num mono">${gbp(-b.cis)}</td><td class="num mono"><b>${gbp(b.labour + b.materials - b.cis)}</b></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No invoices yet.</div>'}</div>`;
+  <div class="panel"><div class="panel-h"><h2>Payment periods</h2></div>${per.length ? `<div class="tbl-wrap"><table><thead><tr><th>Period to</th><th class="num">Jobs</th><th class="num">Gross</th><th class="num">CIS</th><th class="num">Net</th><th>Status</th></tr></thead><tbody>${per.map(p => `<tr><td>${fmtD(p.e)}</td><td class="num mono">${p.n}</td><td class="num mono">${gbp(p.g)}</td><td class="num mono">${gbp(-p.cis)}</td><td class="num mono"><b>${gbp(p.g - p.cis)}</b></td><td><span class="chip ${p.status[1]}">${esc(p.status[0])}</span></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No payments yet.</div>'}</div>
+  <div class="panel"><div class="panel-h"><h2>Self-billed invoices</h2></div>${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Invoice</th><th>Job</th><th class="num">Labour</th><th class="num">Materials</th><th class="num">CIS</th><th class="num">Net</th></tr></thead><tbody>${list.slice().reverse().map(b => `<tr><td class="mono"><b>${b.id}</b><div class="small muted">${fmtD(b.date)}</div></td><td class="mono">${b.job}</td><td class="num mono">${gbp(b.labour)}</td><td class="num mono">${gbp(b.materials)}</td><td class="num mono">${gbp(-b.cis)}</td><td class="num mono"><b>${gbp(b.labour + b.materials - b.cis)}</b></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No invoices yet.</div>'}</div>`;
 };
+
+
+/* ============================== Applications for payment ============================== */
+function afpState(){
+  let end = afpEnd(DEMO_TODAY); while (S.applications.some(a => a.periodEnd === end)) end = shiftMonth(end, 1);
+  const start = addDays(shiftMonth(end, -1), 1), draft = finJobs().filter(r => !r.appId);
+  return { end, start, draft, gross:r2(draft.reduce((a, r) => a + r.revenue, 0)) };
+}
+const APP = { submitted:['Submitted: awaiting payment notice','warn'], certified:['Certified: awaiting payment','info'], paid:['Paid','ok'] };
+function appDates(a){ const c = client(), due = addDays(a.periodEnd, c.dueDays); return { due, fin:addDays(due, c.finalDays) }; }
+function appJobTable(ids, showDate){
+  const recs = finJobs().filter(r => ids.includes(r.id));
+  return `<div class="tbl-wrap"><table><thead><tr><th>Job</th><th>Wates ref / order</th><th>Site</th><th>Completed</th><th class="num">Value (excl. VAT)</th></tr></thead><tbody>${recs.map(r => `<tr><td class="mono">${r.id}</td><td class="small mono">${esc(r.wRef)}<br>${esc(r.po)}</td><td>${esc(site(r.site).name)}${r.outcome === 'noaccess' ? ' <span class="chip warn">No access</span>' : ''}</td><td class="small">${fmtD(r.date)}</td><td class="num mono">${gbp(r.revenue)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function appHistory(wates){
+  return S.applications.slice().reverse().map(a => { const d = appDates(a);
+    return `<div class="panel"><div class="panel-h"><div><div class="row"><h2 class="mono">${a.id}</h2><span class="chip ${APP[a.status][1]}">${APP[a.status][0]}</span></div><div class="small muted">Valuation to ${fmtD(a.periodEnd)} · ${a.jobs.length} jobs · ${esc(client().name)}</div></div><b class="mono">${gbp(a.gross)}</b></div>
+    <div class="panel-b"><dl class="kv small"><dt>Application date</dt><dd>${fmtD(a.submitted)}</dd><dt>Due date</dt><dd>${fmtD(d.due)}</dd><dt>Final date for payment</dt><dd>${fmtD(d.fin)}</dd>
+      ${a.certified != null ? `<dt>Payment notice</dt><dd><b class="mono">${gbp(a.certified)}</b> on ${fmtD(a.certifiedAt)} · ${esc(a.certifiedBy || '')}${a.certified < a.gross ? ` <span class="chip warn">${gbp(a.certified - a.gross)}</span>` : ''}</dd>` : ''}
+      ${a.note ? `<dt>Note</dt><dd>${esc(a.note)}</dd>` : ''}${a.paid != null ? `<dt>Paid</dt><dd class="mono">${gbp(a.paid)} on ${fmtD(a.paidAt)}</dd>` : ''}</dl>
+      ${a.status === 'submitted' && wates && client().portalCertify ? `<div class="note small">Issue your payment notice here, or send it as usual and Compass will record it.</div><div class="grid g2" style="align-items:end"><div class="field"><label for="cert-${a.id}">Amount certified (£)</label><input type="number" id="cert-${a.id}" value="${a.gross}" step="0.01"></div><div class="field"><label for="certn-${a.id}">Reason for any difference</label><input type="text" id="certn-${a.id}" placeholder="e.g. CMP-1042 queried"></div></div><div class="row end"><button class="btn primary" data-certify="${a.id}">Issue payment notice</button></div>` : ''}
+      ${a.status === 'submitted' && !wates ? `<div class="grid g2" style="align-items:end"><div class="field"><label for="cert-${a.id}">Payment notice amount received from Wates (£)</label><input type="number" id="cert-${a.id}" value="${a.gross}" step="0.01"></div><div class="field"><label for="certn-${a.id}">Note (e.g. pay-less reasons)</label><input type="text" id="certn-${a.id}"></div></div><div class="row end"><span class="small muted">Wates can also issue it in their portal.</span><button class="btn primary" data-certify="${a.id}">Record payment notice</button></div>` : ''}
+      ${a.status === 'certified' && !wates ? `<div class="row end"><span class="small muted">Final date for payment ${fmtD(d.fin)}</span><button class="btn primary" data-paid="${a.id}">Record payment received</button></div>` : ''}
+      <details><summary class="small muted" style="cursor:pointer">Jobs in this application (${a.jobs.length})</summary>${appJobTable(a.jobs)}</details>
+    </div></div>`; }).join('');
+}
+VIEWS.afp = () => {
+  const A = afpState(), c = client();
+  const wip = S.jobs.filter(j => ['review','hold'].includes(j.status)), live = S.jobs.filter(j => ['approved','offered','dispatched','onsite'].includes(j.status));
+  const owed = S.applications.filter(a => a.status === 'certified').reduce((x, a) => x + a.certified, 0);
+  const byP = {}; A.draft.forEach(r => { const k = contractor(r.partner); if (!k || k.type === 'dlo') return; const x = byP[k.id] ||= { n:0, g:0, cis:0 }; x.n++; x.g += r.cost; x.cis += r.cis; });
+  const days = daysBetween(DEMO_TODAY, A.end + 'T12:00:00');
+  return `<div class="page-head"><div><span class="eyebrow">${esc(c.name)} · application on the ${c.afpDay}th of each month</span><h1>Applications for payment</h1><p class="sub">Every job valued since the last application is collected automatically. Submit on the application date; Wates certifies in the portal or sends its payment notice as usual and you record it here.</p></div></div>
+  <div class="grid g4">
+    <div class="panel stat"><span class="eyebrow">Next application</span><span class="v">${fmtD(A.end)}</span><span class="small muted">${days > 0 ? `in ${days} days` : 'due now'} · period from ${fmtD(A.start)}</span></div>
+    <div class="panel stat"><span class="eyebrow">Valued, ready to apply</span><span class="v">${gbp(A.gross)}</span><span class="small muted">${A.draft.length} jobs</span></div>
+    <div class="panel stat warn"><span class="eyebrow">Not yet valued</span><span class="v">${gbp(wip.reduce((x, j) => x + valuation(j, 'actual').total, 0) + live.reduce((x, j) => x + valuation(j).total, 0))}</span><span class="small muted">${wip.length} reports to check · ${live.length} jobs in progress</span></div>
+    <div class="panel stat"><span class="eyebrow">Certified, awaiting payment</span><span class="v">${gbp(owed)}</span><span class="small muted">From Wates</span></div>
+  </div>
+  <div class="panel"><div class="panel-h"><div><h2>Draft application to ${fmtD(A.end)}</h2><div class="small muted">Jobs valued and not yet applied for</div></div><button class="btn primary" data-act="submitAfp" ${A.draft.length ? '' : 'disabled'}>Submit application to Wates</button></div>
+    ${wip.length ? `<div class="panel-b" style="padding-bottom:0"><div class="note warn small">Approve these reports before ${fmtD(A.end)} to include them: ${wip.map(j => `<a href="#" data-open="${j.id}" class="mono">${j.id}</a>`).join(', ')}.</div></div>` : ''}
+    ${A.draft.length ? appJobTable(A.draft.map(r => r.id)) : '<div class="empty">Nothing valued since the last application.</div>'}</div>
+  ${S.settings.presenting ? '' : `<div class="panel"><div class="panel-h"><div><h2>Due to partners for this period</h2><div class="small muted">Self-billed at their agreed rates · pay by ${fmtD(addDays(A.end, S.settings.pPayDays))}</div></div></div>
+    ${Object.keys(byP).length ? `<div class="tbl-wrap"><table><thead><tr><th>Partner</th><th class="num">Jobs</th><th class="num">Gross</th><th class="num">CIS</th><th class="num">Net to pay</th></tr></thead><tbody>${Object.entries(byP).map(([id, x]) => `<tr><td>${esc(contractor(id).name)}</td><td class="num mono">${x.n}</td><td class="num mono">${gbp(x.g)}</td><td class="num mono">${gbp(-x.cis)}</td><td class="num mono"><b>${gbp(x.g - x.cis)}</b></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No partner work in this period yet.</div>'}</div>`}
+  <h2>Previous applications</h2>${appHistory(false)}`;
+};
+VIEWS['w-afp'] = () => `<div class="page-head"><div><h1>Applications for payment</h1><p class="sub">Compass applies on the ${client().afpDay}th of each month for every job valued in the period, each referenced to your job and order numbers. ${client().portalCertify ? 'You can issue your payment notice here, or send it as usual.' : 'Send your payment notice as usual; Compass records it.'}</p></div></div>${appHistory(true)}`;
+
+/* ============================== Profitability ============================== */
+function segs(recs, key, label){
+  const g = {}; recs.forEach(r => { const k = key(r); if (k == null) return; const x = g[k] ||= { n:0, rev:0, cost:0 }; x.n++; x.rev += r.revenue; x.cost += r.cost; });
+  return Object.entries(g).map(([k, x]) => ({ k, label:label(k), ...x, m:x.rev - x.cost, pct:x.rev ? (x.rev - x.cost) / x.rev * 100 : 0 })).sort((a, b) => b.m - a.m);
+}
+const verdict = p => p >= 30 ? ['Working','ok'] : p >= 15 ? ['Watch','warn'] : ['Not working','crit'];
+const pct = n => `${Math.round(n)}%`;
+const gbp0 = n => (n < 0 ? '−' : '') + '£' + Math.round(Math.abs(n)).toLocaleString('en-GB');
+function niceMax(v){ const p = Math.pow(10, Math.floor(Math.log10(v || 1))), m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+function profitChart(recs){
+  const mo = {}; recs.forEach(r => { const k = r.date.slice(0, 7), x = mo[k] ||= { rev:0, cost:0, n:0 }; x.rev += r.revenue; x.cost += r.cost; x.n++; });
+  const keys = Object.keys(mo).sort(); if (!keys.length) return '<div class="empty">No valued jobs in this period.</div>';
+  const W = 640, H = 250, L = 52, Rr = 10, T = 30, B = 26, top = niceMax(Math.max(...keys.map(k => mo[k].rev)) * 1.08);
+  const y = v => T + (H - T - B) * (1 - v / top), step = (W - L - Rr) / keys.length, bw = Math.min(56, step * .46);
+  const ticks = [0, .25, .5, .75, 1].map(f => f * top);
+  const topR = (x, yy, w, h, r) => h <= 0 ? '' : `M${x},${yy + h}V${yy + Math.min(r, h)}Q${x},${yy} ${x + Math.min(r, w / 2)},${yy}H${x + w - Math.min(r, w / 2)}Q${x + w},${yy} ${x + w},${yy + Math.min(r, h)}V${yy + h}Z`;
+  const nm = k => new Date(k + '-15').toLocaleDateString('en-GB', { month:'short' }) + (k === '2026-11' ? ' (to date)' : '');
+  return `<div class="legend"><span><i style="background:var(--c-cost)"></i>Direct cost</span><span><i style="background:var(--c-margin)"></i>Gross margin</span><span>Bar height = value certified to Wates</span></div>
+  <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly value split into direct cost and gross margin">
+  ${ticks.map(t => `<line x1="${L}" x2="${W - Rr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t >= 1000 ? '£' + (t / 1000).toFixed(t % 1000 ? 1 : 0) + 'k' : '£' + t}</text>`).join('')}
+  ${keys.map((k, i) => { const x = L + step * i + (step - bw) / 2, m = mo[k], mg = Math.max(0, m.rev - m.cost), yc = y(Math.min(m.cost, m.rev)), yb = y(0), yr = y(m.rev);
+    const tip = `<b>${nm(k)}</b><br>${m.n} jobs<br>Value ${gbp0(m.rev)}<br>Cost ${gbp0(m.cost)}<br>Margin ${gbp0(m.rev - m.cost)} (${pct((m.rev - m.cost) / m.rev * 100)})`;
+    return `<path d="${mg > 0 ? `M${x},${yc}H${x + bw}V${yb}H${x}Z` : topR(x, yc, bw, yb - yc, 4)}" fill="var(--c-cost)"/>
+      ${mg > 0 ? `<path d="${topR(x, yr, bw, Math.max(0, yc - yr - 2), 4)}" fill="var(--c-margin)"/>` : ''}
+      <text class="val" x="${x + bw / 2}" y="${yr - 16}" text-anchor="middle">${gbp0(m.rev)}</text><text x="${x + bw / 2}" y="${yr - 4}" text-anchor="middle">${pct((m.rev - m.cost) / m.rev * 100)} margin</text>
+      <text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${nm(k)}</text>
+      <rect x="${L + step * i}" y="${T - 20}" width="${step}" height="${H - T - B + 20}" fill="transparent" data-tip="${esc(tip)}"/>`; }).join('')}
+  </svg></div>
+  <details><summary class="small muted" style="cursor:pointer">Show as table</summary><div class="tbl-wrap"><table><thead><tr><th>Month</th><th class="num">Jobs</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Margin</th><th class="num">Margin %</th></tr></thead><tbody>${keys.map(k => { const m = mo[k]; return `<tr><td>${nm(k)}</td><td class="num mono">${m.n}</td><td class="num mono">${gbp(m.rev)}</td><td class="num mono">${gbp(m.cost)}</td><td class="num mono">${gbp(m.rev - m.cost)}</td><td class="num mono">${pct((m.rev - m.cost) / m.rev * 100)}</td></tr>`; }).join('')}</tbody></table></div></details>`;
+}
+function segTable(rows){
+  return `<div class="tbl-wrap"><table><thead><tr><th></th><th class="num">Jobs</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Margin</th><th>Margin %</th><th>Verdict</th></tr></thead><tbody>${rows.map(r => { const v = verdict(r.pct); return `<tr><td>${esc(r.label)}</td><td class="num mono">${r.n}</td><td class="num mono">${gbp0(r.rev)}</td><td class="num mono">${gbp0(r.cost)}</td><td class="num mono">${gbp0(r.m)}</td><td style="white-space:nowrap"><span class="mbar" style="width:${Math.max(2, Math.min(60, r.pct) * 1.2)}px"></span><span class="mono">${pct(r.pct)}</span></td><td><span class="chip ${v[1]}">${v[0]}</span></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+function insights(recs){
+  const out = [], comp = segs(recs, r => r.comp, k => k).filter(x => x.n >= 3), part = segs(recs, r => r.partner, k => contractor(k)?.name || k).filter(x => x.n >= 3);
+  const all = [...comp.map(x => ({ ...x, dim:'comp' })), ...part.filter(p => !comp.some(c => c.n === p.n && Math.abs(c.rev - p.rev) < .01)).map(x => ({ ...x, dim:'partner' }))].sort((a, b) => a.pct - b.pct);
+  const bad = all.filter(x => x.pct < 15).slice(0, 3), good = all.slice().reverse().filter(x => x.pct >= 30).slice(0, 3);
+  bad.forEach(x => {
+    let why = '';
+    const rs = recs.filter(r => x.dim === 'comp' ? r.comp === x.k : r.partner === x.k), main = segs(rs, r => r.partner, k => k)[0], c = main && contractor(main.k);
+    if (rs.every(r => r.trade === 'service')) why = `Specialist work only earns the ${S.settings.specialistFee}% management fee. Consider a higher fee or a larger minimum for small instructions.`;
+    else if (c && c.rates){ const t = rs[0].trade; why = `${c.name} charges ${gbp(c.rates.normal)}/h plus ${gbp(c.rates.callout)} call-out, against ${gbp(RATES[t].normal)}/h plus £55 from Wates. Renegotiate the partner's rates, find a second partner, or review the rate with Wates.`; }
+    out.push(['crit', `${x.label}: ${pct(x.pct)} margin on ${x.n} jobs (${gbp0(x.m)}).`, why]);
+  });
+  good.forEach(x => out.push(['ok', `${x.label}: ${pct(x.pct)} margin on ${x.n} jobs (${gbp0(x.m)}).`, x.dim === 'partner' && x.k === 'K1' ? 'Direct labour is the most profitable route. More capacity here would lift overall margin.' : x.dim === 'partner' ? 'Working well. Offer this partner more work.' : 'Working well at current rates.']));
+  const na = recs.filter(r => r.outcome === 'noaccess');
+  if (na.length) out.push(['warn', `${na.length} no-access visits recovered ${gbp0(na.reduce((a, r) => a + r.revenue, 0))} against ${gbp0(na.reduce((a, r) => a + r.cost, 0))} cost.`, 'Charges stand when the engineer arrived in the window. Confirming keyholders the day before cuts these.']);
+  const held = S.quotes.filter(q => q.status === 'awaiting' && q.fee);
+  if (held.length) out.push(['warn', `${gbp0(held.reduce((a, q) => a + q.fee, 0))} of inspection fees held on ${held.length} unconverted quotes.`, `Raise them at the ${S.settings.inspectionReviewMonths}-monthly review if the work isn't ordered.`]);
+  const loss = recs.filter(r => r.revenue < r.cost);
+  if (loss.length) out.push(['crit', `${loss.length} jobs lost money (${gbp0(loss.reduce((a, r) => a + r.revenue - r.cost, 0))}).`, loss.map(r => r.id).slice(0, 6).join(', ')]);
+  return out;
+}
+VIEWS.profit = () => {
+  if (S.settings.presenting) return VIEWS.dashboard();
+  const all = finJobs(), months = [...new Set(all.map(r => r.date.slice(0, 7)))].sort(), f = ui.pf || 'all';
+  const recs = f === 'all' ? all : all.filter(r => r.date.slice(0, 7) === f);
+  const rev = recs.reduce((a, r) => a + r.revenue, 0), cost = recs.reduce((a, r) => a + r.cost, 0), m = rev - cost;
+  const dim = ui.pdim || 'comp', DIMS = { comp:['Competency', r => r.comp, k => k], partner:['Partner', r => r.partner, k => contractor(k)?.name || k], site:['Site', r => r.site, k => site(k).name], priority:['Priority', r => r.priority, k => k], outcome:['Outcome', r => r.outcome, k => k === 'noaccess' ? 'No access' : 'Completed'] };
+  const D = DIMS[dim];
+  return `<div class="page-head"><div><span class="eyebrow">Compass only</span><h1>Profitability</h1><p class="sub">Value certified to Wates against what each job cost: partner self-bills, or internal labour at ${gbp(contractor('K1').costRate)}/h plus materials for Compass engineers. Overheads are not included.</p></div></div>
+  <div class="seg">${[['all','Aug – Nov'], ...months.map(k => [k, new Date(k + '-15').toLocaleDateString('en-GB', { month:'long' })])].map(([k, l]) => `<button class="btn sm ${f === k ? 'primary' : ''}" data-pf="${k}">${l}</button>`).join('')}</div>
+  <div class="grid g4">
+    <div class="panel stat"><span class="eyebrow">Value</span><span class="v">${gbp0(rev)}</span><span class="small muted">${recs.length} jobs</span></div>
+    <div class="panel stat"><span class="eyebrow">Direct cost</span><span class="v">${gbp0(cost)}</span><span class="small muted">Partners and internal labour</span></div>
+    <div class="panel stat"><span class="eyebrow">Gross margin</span><span class="v">${gbp0(m)}</span><span class="small muted">${rev ? pct(m / rev * 100) : '—'} of value</span></div>
+    <div class="panel stat"><span class="eyebrow">Margin per job</span><span class="v">${recs.length ? gbp0(m / recs.length) : '—'}</span><span class="small muted">Average</span></div>
+  </div>
+  <div class="grid split">
+    <div class="panel"><div class="panel-h"><h2>Value, cost and margin by month</h2></div><div class="panel-b">${profitChart(recs)}</div></div>
+    <div class="panel"><div class="panel-h"><h2>What's working, what's not</h2></div><div class="panel-b">${insights(recs).map(([c, t, w]) => `<div class="note ${c} small"><b>${esc(t)}</b>${w ? `<div>${esc(w)}</div>` : ''}</div>`).join('') || '<div class="empty">Not enough jobs yet.</div>'}</div></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Margin by ${D[0].toLowerCase()}</h2><div class="seg">${Object.entries(DIMS).map(([k, d]) => `<button class="btn sm ${dim === k ? 'primary' : ''}" data-pdim="${k}">${d[0]}</button>`).join('')}</div></div>${segTable(segs(recs, D[1], D[2]))}
+    <div class="panel-b" style="padding-top:8px"><p class="small muted">Working: 30% or more. Watch: 15–30%. Not working: under 15%.</p></div></div>`;
+};
+
+/* ============================== Partner payments ============================== */
+function partnerPeriods(c){
+  const g = {}; S.selfbills.filter(b => b.contractor === c.id).forEach(b => { const e = afpEnd(b.date), x = g[e] ||= { n:0, g:0, cis:0 }; x.n++; x.g += b.labour + b.materials; x.cis += b.cis; });
+  return Object.entries(g).sort((a, b) => b[0].localeCompare(a[0])).map(([e, x]) => { const pay = addDays(e, S.settings.pPayDays), open = e >= isoDate(DEMO_TODAY); return { e, ...x, pay, status: open ? ['Open: closes ' + fmtD(e), 'info'] : pay < isoDate(DEMO_TODAY) ? ['Paid', 'ok'] : ['Scheduled for ' + fmtD(pay), 'warn'] }; });
+}
 
 /* ============================== Engineer app ============================== */
 const SAFETY = { signin:'Signed in with site contact / reception', asbestos:'Asbestos register checked for the work area', rams:'RAMS reviewed and briefed', permit:'Permits and isolations in place where needed', safe:'Work area made safe for the public' };

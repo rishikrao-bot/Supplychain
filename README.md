@@ -11,4 +11,6 @@ Order intake, Wates approvals, contractor dispatch, engineer visit reports, exce
 - **Supply chain partner**: accept or decline job offers within their remit (trade, zone, job limit, compliance), choose the attending engineer, upload compliance renewals, view self-billed invoices.
 - **Engineer app**: check-in with GPS, safety checklist, timestamped photos, materials, outcome, site sign-off, check-out.
 
+Also: certificate-checked competencies, monthly applications for payment (Compass submits, Wates certifies in the portal or Compass records the payment notice), partner payment periods, and a Compass-only profitability view.
+
 Pricing follows the Wates Schedule of Rates (11 Nov 2026). Terms still under discussion (return-visit call-outs, multi-trade call-outs, approval policy, inspection fee window) are settings.
