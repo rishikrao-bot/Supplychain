@@ -77,7 +77,7 @@ Settings:
 ## 4. Give the app access to Dataverse
 
 1. <https://admin.powerplatform.microsoft.com> → **Environments** → your CRM environment.
-   Copy the **Environment URL** (e.g. `https://compassmep.crm11.dynamics.com`) → `DATAVERSE_URL`.
+   Copy the **Environment URL** (e.g. `https://compassmepdev.crm17.dynamics.com`) → `DATAVERSE_URL`.
 2. **Settings → Users + permissions → Application users → New app user → Add an app** → pick
    `Compass MEP Portal`. Business unit: the top one.
 3. Security role: for now **Basic User** plus read/write on the tables the portal should use.
@@ -100,7 +100,7 @@ Add (the secret is typed in here only; never email it or commit it):
     SHAREPOINT_SITE=compassmep.sharepoint.com:/sites/Operations
     SHAREPOINT_LIBRARY=Documents
     SHAREPOINT_FOLDER="Portal/Completion reports"
-    DATAVERSE_URL=https://compassmep.crm11.dynamics.com
+    DATAVERSE_URL=https://compassmepdev.crm17.dynamics.com
 
 Then:
 
