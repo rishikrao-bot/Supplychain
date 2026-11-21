@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Console\Commands\MicrosoftCheck;
 use App\Http\Controllers\Auth\MicrosoftLoginController;
+use App\Models\ApiKey;
 use App\Models\Attachment;
 use App\Services\CompletionReport;
 use App\Services\Microsoft\Dataverse;
@@ -36,6 +37,7 @@ class IntegrationsController extends Controller
             'results' => session('results'),
             'recent' => $recent,
             'pending' => SharePoint::isConfigured() ? ReportFiler::pending(500)->count() : 0,
+            'keys' => ApiKey::with('creator')->whereNull('revoked_at')->latest()->get(),
         ]);
     }
 
@@ -56,5 +58,25 @@ class IntegrationsController extends Controller
         }
 
         return back()->with('status', "Copied {$done} report(s) to SharePoint.".($failed ? " {$failed} failed: see the list below." : ''));
+    }
+
+    /** A key for Power BI, Power Automate or an agent to read the portal's data (shown once). */
+    public function createKey(Request $request)
+    {
+        $this->authorise($request);
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        [$key, $secret] = ApiKey::issue($request->user()->account_id, $data['name'], $request->user()->id);
+        \App\Services\Activity::log('api.key_created', "{$request->user()->name} created API key \"{$key->name}\".", $key);
+
+        return back()->with('new_api_key', ['name' => $key->name, 'secret' => $secret]);
+    }
+
+    public function revokeKey(Request $request, ApiKey $apiKey)
+    {
+        $this->authorise($request);
+        $apiKey->forceFill(['revoked_at' => now()])->save();
+        \App\Services\Activity::log('api.key_revoked', "{$request->user()->name} revoked API key \"{$apiKey->name}\".", $apiKey);
+
+        return back()->with('status', "\"{$apiKey->name}\" can no longer read the portal's data.");
     }
 }

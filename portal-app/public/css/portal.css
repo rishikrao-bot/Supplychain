@@ -75,3 +75,18 @@ details summary{cursor:pointer;color:var(--accent-ink);font-weight:500}
 .overdue{color:var(--crit);font-weight:600}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 details.add>summary{cursor:pointer;list-style:none}details.add>summary::-webkit-details-marker{display:none}
+/* Resource planner */
+.plan{border-collapse:separate;border-spacing:0}.plan th,.plan td{padding:6px 8px}
+.plan .sticky{position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px;max-width:260px;border-right:1px solid var(--line)}
+.plan thead th{text-align:center;font-size:10.5px;letter-spacing:.04em}.plan thead th.now{background:var(--accent-soft);color:var(--accent-ink)}
+.plan td.c{text-align:center;font-variant-numeric:tabular-nums;font-size:12.5px;min-width:52px}
+.plan td.now{box-shadow:inset 2px 0 var(--accent),inset -2px 0 var(--accent)}
+.plan input.cell{width:48px;padding:5px 4px;text-align:center;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--fg);font:inherit;font-size:12.5px}
+.plan input.cell:focus{border-color:var(--accent-ink)}
+.plan tr.team td{background:var(--surface-2);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plan tr.total td{font-weight:600;background:var(--surface-2)}
+.u-none{color:var(--muted)}.u-low{background:var(--info-soft);color:var(--info)}.u-part{background:var(--accent-soft);color:var(--accent-ink)}
+.u-full{background:var(--ok-soft);color:var(--ok);font-weight:600}.u-over{background:var(--crit-soft);color:var(--crit);font-weight:700}
+.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}.legend span{padding:2px 8px;border-radius:999px}
+.report-frame{width:100%;aspect-ratio:16/10;min-height:480px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.panel-b.row{flex-direction:row;align-items:center}

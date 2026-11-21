@@ -117,6 +117,11 @@ In cPanel → **Cron Jobs** → Add New Cron Job, "Once Per Minute" (`* * * * *`
 (If `php -v` on the server shows a different PHP than 8.3, use the path cPanel's MultiPHP gives for 8.3,
 e.g. `/opt/cpanel/ea-php83/root/usr/bin/php`.)
 
+## Resource planner and Power BI
+
+After the update that adds them: `php artisan migrate --force`, then follow `RESOURCES.md` to import the
+Resources Tracker and `POWERBI.md` for reports and API keys.
+
 ## Microsoft 365 (sign-in, SharePoint, Dataverse)
 
 See `MICROSOFT.md`. After an update that adds it, run `php artisan migrate --force` (adds one column

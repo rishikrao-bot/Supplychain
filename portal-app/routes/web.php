@@ -10,6 +10,9 @@ use App\Http\Controllers\Crm\ContactController;
 use App\Http\Controllers\Crm\OpportunityController;
 use App\Http\Controllers\Crm\TaskController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\Resources\PlannerController;
+use App\Http\Controllers\Resources\SetupController;
 use App\Http\Controllers\IntegrationsController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\UserController;
@@ -76,6 +79,33 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::post('/tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+    // Resource planner (view: Compass office staff; change: Compass admins)
+    Route::get('/resources', [PlannerController::class, 'index'])->name('resources.index');
+    Route::get('/resources/export.csv', [PlannerController::class, 'export'])->name('resources.export');
+    Route::post('/resources/save', [PlannerController::class, 'save'])->name('resources.save');
+    Route::post('/resources/fill', [PlannerController::class, 'fill'])->name('resources.fill');
+    Route::get('/resources/people', [SetupController::class, 'staff'])->name('resources.staff');
+    Route::get('/resources/people/new', [SetupController::class, 'createStaff'])->name('resources.staff.create');
+    Route::post('/resources/people', [SetupController::class, 'storeStaff'])->name('resources.staff.store');
+    Route::get('/resources/people/{staff}', [PlannerController::class, 'person'])->name('resources.person');
+    Route::get('/resources/people/{staff}/edit', [SetupController::class, 'editStaff'])->name('resources.staff.edit');
+    Route::put('/resources/people/{staff}', [SetupController::class, 'updateStaff'])->name('resources.staff.update');
+    Route::get('/resources/projects', [SetupController::class, 'projects'])->name('resources.projects');
+    Route::get('/resources/projects/new', [SetupController::class, 'createProject'])->name('resources.projects.create');
+    Route::post('/resources/projects', [SetupController::class, 'storeProject'])->name('resources.projects.store');
+    Route::get('/resources/projects/{project}', [PlannerController::class, 'project'])->name('resources.project');
+    Route::get('/resources/projects/{project}/edit', [SetupController::class, 'editProject'])->name('resources.projects.edit');
+    Route::put('/resources/projects/{project}', [SetupController::class, 'updateProject'])->name('resources.projects.update');
+
+    // Management reports (Power BI) and API keys
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/{dashboard}', [ReportsController::class, 'show'])->name('reports.show');
+    Route::post('/reports', [ReportsController::class, 'store'])->name('reports.store');
+    Route::put('/reports/{dashboard}', [ReportsController::class, 'update'])->name('reports.update');
+    Route::delete('/reports/{dashboard}', [ReportsController::class, 'destroy'])->name('reports.destroy');
+    Route::post('/microsoft-365/api-keys', [IntegrationsController::class, 'createKey'])->name('integrations.keys.store');
+    Route::delete('/microsoft-365/api-keys/{apiKey}', [IntegrationsController::class, 'revokeKey'])->name('integrations.keys.destroy');
 
     // Microsoft 365 connections (Compass admins)
     Route::get('/microsoft-365', [IntegrationsController::class, 'index'])->name('integrations.index');

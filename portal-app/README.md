@@ -28,6 +28,11 @@ Laravel 12 application for the live reactive maintenance portal at
   activity history (notes, calls, meetings, saved Outlook emails), pipeline & tenders with return dates and
   win rate, and tasks that sync both ways with each person's Microsoft To Do. One-off import from the old
   Dataverse CRM: `php artisan portal:crm-import`.
+- Resource planner (replaces the Resources Tracker spreadsheet, see `RESOURCES.md`): one project list, people,
+  days per project per week, utilisation by week with over-booking in red, "plan several weeks at once",
+  CSV export, and an import of the old spreadsheet (`php artisan portal:resources-import file.xlsx`).
+- Management reports and data API (see `POWERBI.md`): Power BI reports embedded for chosen roles; a read-only,
+  key-protected JSON API (`/api/v1/...`) for Power BI refresh, Power Automate and future agents.
 - Microsoft 365 (optional, see `MICROSOFT.md`): Compass staff can sign in with Microsoft; completion
   reports are copied to a SharePoint library by client and contract; a Dataverse CRM connection for
   syncing clients and jobs. Compass admins test it all under **Microsoft 365**.

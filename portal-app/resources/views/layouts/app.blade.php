@@ -23,6 +23,10 @@
     <a href="{{ route('contacts.index') }}" @if(request()->routeIs('contacts.*')) aria-current="page" @endif>Contacts</a>
     <a href="{{ route('pipeline.index') }}" @if(request()->routeIs('pipeline.*')) aria-current="page" @endif>Pipeline &amp; tenders</a>
     <a href="{{ route('tasks.index') }}" @if(request()->routeIs('tasks.*')) aria-current="page" @endif>Tasks</a>
+    <span class="nav-h">Resources</span>
+    <a href="{{ route('resources.index') }}" @if(request()->routeIs('resources.index', 'resources.person', 'resources.staff*')) aria-current="page" @endif>Resource planner</a>
+    <a href="{{ route('resources.projects') }}" @if(request()->routeIs('resources.project*')) aria-current="page" @endif>Projects</a>
+    @if(\App\Models\Dashboard::get()->contains(fn ($d) => $d->visibleTo($me)) || $me->isCompassAdmin())<a href="{{ route('reports.index') }}" @if(request()->routeIs('reports.*')) aria-current="page" @endif>Management reports</a>@endif
     <span class="nav-h">Set-up</span>
     @endif
     @if($me->isCompassStaff())

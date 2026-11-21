@@ -31,4 +31,14 @@
   @else<span class="chip">Waiting</span>@endif</td></tr>@endforeach
 </tbody></table></div>@endif</div>
 @endif
+<div class="panel"><div class="panel-h"><h2>API keys</h2><span class="small muted">For Power BI, Power Automate and agents to read the portal's data</span></div>
+@if(session('new_api_key'))<div class="panel-b"><div class="note warn"><b>Copy this key now for "{{ session('new_api_key')['name'] }}"</b>. It won't be shown again.
+  <input type="text" readonly value="{{ session('new_api_key')['secret'] }}" onclick="this.select()" aria-label="New API key" style="margin-top:6px" class="mono"></div></div>@endif
+@if($keys->isNotEmpty())<div class="tbl"><table><thead><tr><th>Name</th><th>Key starts</th><th>Last used</th><th>Created</th><th></th></tr></thead><tbody>
+@foreach($keys as $k)<tr><td>{{ $k->name }}</td><td class="mono small">{{ $k->prefix }}…</td><td class="small">{{ $k->last_used_at?->diffForHumans() ?? 'Never' }}</td><td class="small">{{ $k->created_at->format('j M Y') }}@if($k->creator) · {{ $k->creator->name }}@endif</td>
+<td><form method="post" action="{{ route('integrations.keys.destroy', $k) }}" onsubmit="return confirm('Revoke this key? Anything using it stops working.')">@csrf @method('delete')<button class="btn sm danger">Revoke</button></form></td></tr>@endforeach
+</tbody></table></div>@endif
+<form method="post" action="{{ route('integrations.keys.store') }}" class="panel-b row">@csrf<input type="text" name="name" required placeholder="What it's for, e.g. Power BI" aria-label="Key name" style="max-width:320px"><button class="btn">Create key</button>
+<span class="small muted">Data address: <span class="mono">{{ url('/api/v1') }}</span> · see POWERBI.md</span></form>
+</div>
 @endsection
