@@ -19,8 +19,8 @@ class UserController extends Controller
         abort_unless($actor->canManageUsers(), 403);
         $orgs = UserAccess::manageableOrganisations($actor);
         $users = User::with('organisation')->whereIn('organisation_id', $orgs->pluck('id'))->orderBy('name')->get();
-        $groups = $actor->isCompassAdmin()
-            ? ['compass' => 'Compass MEP', 'client' => 'Clients', 'partner' => 'Supply chain partners']
+        $groups = $actor->isOperatorAdmin()
+            ? ['operator' => config('portal.company'), 'client' => 'Clients', 'partner' => 'Supply chain partners']
             : [$actor->orgType() => $actor->organisation->name];
         $tab = array_key_exists($request->query('tab'), $groups) ? $request->query('tab') : array_key_first($groups);
 
@@ -64,7 +64,7 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'That role is not available for this organisation.']);
         }
         if ($role !== Roles::ADMIN && UserAccess::isLastAdmin($user)) {
-            return back()->withErrors(['role' => 'Keep at least one active Compass admin.']);
+            return back()->withErrors(['role' => 'Keep at least one active admin.']);
         }
         $old = $user->roleLabel();
         $user->update(['role' => $role]);
@@ -78,7 +78,7 @@ class UserController extends Controller
         $actor = $request->user();
         abort_unless(UserAccess::canManage($actor, $user) && $actor->id !== $user->id, 403);
         if (UserAccess::isLastAdmin($user)) {
-            return back()->withErrors(['user' => 'Keep at least one active Compass admin.']);
+            return back()->withErrors(['user' => 'Keep at least one active admin.']);
         }
         $user->forceFill(['status' => User::DISABLED, 'disabled_at' => now(), 'invite_token_hash' => null])->save();
         Activity::log('user.deactivated', "{$actor->name} removed access for {$user->name}.", $user);

@@ -7,9 +7,9 @@
   $tabOrgs = $orgs->where('type', $tab);
   $list = $users->filter(fn ($u) => $u->organisation->type === $tab);
 @endphp
-<div><h1>{{ $actor->isCompassAdmin() ? 'Users & access' : 'Users' }}</h1>
+<div><h1>{{ $actor->isOperatorAdmin() ? 'Users & access' : 'Users' }}</h1>
 <p class="muted">Each person has their own login with two-step verification and sees only what their role allows.
-@if($actor->isCompassAdmin()) Client admins can add their own users, and partner managers add their own site staff. @endif</p></div>
+@if($actor->isOperatorAdmin()) Client admins can add their own users, and partner managers add their own site staff. @endif</p></div>
 
 <div class="grid g4">
   <div class="panel stat"><span class="eyebrow">Active</span><span class="v">{{ $users->where('status', 'active')->count() }}</span></div>
@@ -63,7 +63,7 @@
     @if($orgs->count() > 1)
     <div class="field"><label for="organisation_id">Organisation</label>
       <select id="organisation_id" name="organisation_id" required onchange="document.querySelectorAll('[data-roles-for]').forEach(s => { const on = s.dataset.rolesFor === this.selectedOptions[0].dataset.type; s.hidden = !on; s.disabled = !on; })">
-        @foreach($orgs as $o)<option value="{{ $o->id }}" data-type="{{ $o->type }}" @selected(old('organisation_id', $tabOrgs->first()?->id) == $o->id)>{{ $o->name }} ({{ ['compass' => 'Compass', 'client' => 'client', 'partner' => 'partner'][$o->type] }})</option>@endforeach
+        @foreach($orgs as $o)<option value="{{ $o->id }}" data-type="{{ $o->type }}" @selected(old('organisation_id', $tabOrgs->first()?->id) == $o->id)>{{ $o->name }} ({{ ['operator' => 'staff', 'client' => 'client', 'partner' => 'partner'][$o->type] }})</option>@endforeach
       </select></div>
     @else
       <input type="hidden" name="organisation_id" value="{{ $orgs->first()->id }}">
@@ -78,7 +78,7 @@
   <div class="row end"><button class="btn primary">Send invite</button></div>
 </form></div>
 
-@if($actor->isCompassAdmin())
+@if($actor->isOperatorAdmin())
 <div class="panel"><div class="panel-h"><h2>Add a client or partner company</h2><span class="small muted">So you can invite their people. Full partner details come with the contractors section.</span></div>
 <form method="post" action="{{ route('organisations.store') }}" class="panel-b">@csrf
   <div class="grid g2">

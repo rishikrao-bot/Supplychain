@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Throwable;
 
-/** Shared bits for the CRM screens: Compass office staff only. */
+/** Shared bits for the CRM screens: office staff only. */
 abstract class CrmController extends Controller
 {
     protected function guard(Request $request): void
@@ -20,11 +20,11 @@ abstract class CrmController extends Controller
         abort_unless($request->user()->canUseCrm(), 403);
     }
 
-    /** Compass staff who can own records and be given tasks. */
+    /** your own staff who can own records and be given tasks. */
     protected function staff(): Collection
     {
         return User::where('status', User::ACTIVE)->whereIn('role', [Roles::ADMIN, Roles::HELPDESK, Roles::FINANCE])
-            ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::COMPASS))->orderBy('name')->get();
+            ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::OPERATOR))->orderBy('name')->get();
     }
 
     /** Validation rule: an id in this account's table. */

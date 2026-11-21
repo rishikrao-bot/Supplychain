@@ -18,7 +18,7 @@
     @if($a->contact && empty($links['contact_id']))<span>· <a href="{{ route('contacts.show', $a->contact) }}">{{ $a->contact->name() }}</a></span>@endif
     @if($a->opportunity && empty($links['opportunity_id']))<span>· <a href="{{ route('pipeline.show', $a->opportunity) }}">{{ $a->opportunity->title }}</a></span>@endif
     @if($a->outlook_link)<a href="{{ $a->outlook_link }}" target="_blank" rel="noopener">Open in Outlook</a>@endif
-    @if($a->user_id === auth()->id() || auth()->user()->isCompassAdmin())
+    @if($a->user_id === auth()->id() || auth()->user()->isOperatorAdmin())
     <form method="post" action="{{ route('activities.destroy', $a) }}" style="margin-left:auto" onsubmit="return confirm('Remove this from the history?')">@csrf @method('delete')<button class="btn sm" aria-label="Remove">Remove</button></form>@endif
   </div>
   @if($a->subject)<b>{{ $a->subject }}</b>@endif

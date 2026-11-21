@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * The portal's app registration in Compass's Microsoft Entra ID. Gets app-only access tokens
+ * The portal's app registration in your company's Microsoft Entra ID. Gets app-only access tokens
  * (client credentials) for Microsoft Graph and Dataverse, cached until shortly before they expire.
  */
 class MicrosoftApp

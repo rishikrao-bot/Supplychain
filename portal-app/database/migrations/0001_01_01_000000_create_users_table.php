@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            // Every user belongs to one company account (Compass first) and one organisation
-            // inside it: Compass itself, a client such as Wates, or a supply chain partner.
+            // Every user belongs to one company account (the operator first) and one organisation
+            // inside it: the operator itself, a client, or a supply chain partner.
             // The foreign keys are added in the domain migration once those tables exist.
             $table->unsignedBigInteger('account_id')->index();
             $table->unsignedBigInteger('organisation_id')->index();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
-            // Compass: admin, helpdesk, finance, engineer. Client: client_admin, approver, viewer.
+            // Operator: admin, helpdesk, finance, engineer. Client: client_admin, approver, viewer.
             // Partner: partner_manager, site_engineer.
             $table->string('role');
             $table->string('job_title')->nullable();

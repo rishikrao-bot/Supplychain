@@ -17,7 +17,7 @@
   </div>
   <label class="opt" style="align-self:flex-start"><input type="checkbox" name="vat_registered" value="1" @checked(old('vat_registered', $org->vat_registered))> VAT registered</label>
 </div></div>
-<div class="panel"><div class="panel-h"><h2>Their rates</h2><span class="small muted">Subcontractors only. What Compass pays them; never shown to clients.</span></div><div class="panel-b"><div class="grid g4">
+<div class="panel"><div class="panel-h"><h2>Their rates</h2><span class="small muted">Subcontractors only. What you pay them; never shown to clients.</span></div><div class="panel-b"><div class="grid g4">
   <div class="field"><label for="rate_normal">Normal hours (£/h)</label><input id="rate_normal" type="number" step="0.01" min="0" name="rate_normal" value="{{ old('rate_normal', $rates['normal'] ?? '') }}"></div>
   <div class="field"><label for="rate_ooh">Out of hours (£/h)</label><input id="rate_ooh" type="number" step="0.01" min="0" name="rate_ooh" value="{{ old('rate_ooh', $rates['ooh'] ?? '') }}"></div>
   <div class="field"><label for="rate_sun">Sunday / bank holiday (£/h)</label><input id="rate_sun" type="number" step="0.01" min="0" name="rate_sun" value="{{ old('rate_sun', $rates['sun'] ?? '') }}"></div>

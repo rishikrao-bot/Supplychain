@@ -11,7 +11,7 @@ class Organisation extends Model
 {
     use BelongsToAccount;
 
-    public const COMPASS = 'compass';
+    public const OPERATOR = 'operator';
     public const CLIENT = 'client';
     public const PARTNER = 'partner';
     // CRM-only companies: nobody from them logs in to the portal.
@@ -20,7 +20,7 @@ class Organisation extends Model
     public const OTHER = 'other';
 
     /** Types that can have portal users. */
-    public const PORTAL_TYPES = [self::COMPASS, self::CLIENT, self::PARTNER];
+    public const PORTAL_TYPES = [self::OPERATOR, self::CLIENT, self::PARTNER];
 
     public const CRM_TYPES = [self::CLIENT => 'Client', self::PROSPECT => 'Prospect', self::PARTNER => 'Supply chain partner',
         self::SUPPLIER => 'Supplier', self::OTHER => 'Other'];
@@ -82,7 +82,7 @@ class Organisation extends Model
         return self::CRM_TYPES[$this->type] ?? ucfirst($this->type);
     }
 
-    public function isCompass(): bool { return $this->type === self::COMPASS; }
+    public function isOperator(): bool { return $this->type === self::OPERATOR; }
     public function isClient(): bool { return $this->type === self::CLIENT; }
     public function isPartner(): bool { return $this->type === self::PARTNER; }
 }

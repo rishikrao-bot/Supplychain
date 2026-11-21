@@ -27,12 +27,13 @@ class CompletionReport
 
             return 'data:'.$mime.';base64,'.base64_encode($disk->get($path));
         };
-        $logo = public_path('img/compass-mep-logo.png');
+        $logo = public_path(config('portal.logo'));
         $html = view('pdf.completion-report', [
             'wo' => $wo,
             'logo' => is_file($logo) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logo)) : null,
             'img' => $img,
             'generatedAt' => now(),
+            'operator' => \App\Models\Organisation::withoutGlobalScopes()->where('account_id', $wo->account_id)->where('type', \App\Models\Organisation::OPERATOR)->first(),
         ])->render();
 
         $pdf = Pdf::loadHTML($html)->setPaper('a4')->setOption(['isRemoteEnabled' => false, 'defaultFont' => 'DejaVu Sans']);

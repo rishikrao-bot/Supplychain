@@ -17,7 +17,7 @@ class InviteMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your invitation to the Compass MEP portal');
+        return new Envelope(subject: 'Your invitation to the '.config('portal.name'));
     }
 
     public function content(): Content

@@ -16,7 +16,7 @@ class Dashboard extends Model
 
     public function visibleTo(User $user): bool
     {
-        return $user->isCompass() && $user->isActive() && in_array($user->role, $this->roles ?? [], true);
+        return $user->isOperator() && $user->isActive() && in_array($user->role, $this->roles ?? [], true);
     }
 
     /**

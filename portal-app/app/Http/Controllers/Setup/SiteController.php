@@ -13,7 +13,7 @@ class SiteController extends Controller
 {
     private function guard(Request $r): void
     {
-        abort_unless($r->user()->isCompassStaff(), 403);
+        abort_unless($r->user()->isOperatorStaff(), 403);
     }
 
     public function index(Request $request)

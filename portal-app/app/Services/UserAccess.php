@@ -12,11 +12,11 @@ use Illuminate\Support\Str;
 
 /**
  * Who may manage whom:
- * - Compass admins manage everyone in the account.
+ * - admins manage everyone in the account.
  * - Client admins manage people in their own client organisation.
  * - Partner managers manage people in their own partner organisation (their site staff).
  * Nobody changes their own role or deactivates themselves, and the last active
- * Compass admin cannot be removed.
+ * admin cannot be removed.
  */
 class UserAccess
 {
@@ -33,8 +33,8 @@ class UserAccess
         if (! $actor->canManageUsers()) {
             return collect();
         }
-        if ($actor->isCompassAdmin()) {
-            return Organisation::whereIn('type', Organisation::PORTAL_TYPES)->orderByRaw("CASE type WHEN 'compass' THEN 0 WHEN 'client' THEN 1 ELSE 2 END")->orderBy('name')->get();
+        if ($actor->isOperatorAdmin()) {
+            return Organisation::whereIn('type', Organisation::PORTAL_TYPES)->orderByRaw("CASE type WHEN 'operator' THEN 0 WHEN 'client' THEN 1 ELSE 2 END")->orderBy('name')->get();
         }
 
         return Organisation::whereKey($actor->organisation_id)->get();
@@ -46,13 +46,13 @@ class UserAccess
             return false;
         }
 
-        return $actor->isCompassAdmin() || $actor->organisation_id === $target->organisation_id;
+        return $actor->isOperatorAdmin() || $actor->organisation_id === $target->organisation_id;
     }
 
     public static function rolesFor(User $actor, Organisation $org): array
     {
         $roles = Roles::forOrgType($org->type);
-        // Client admins and partner managers can't create Compass roles, obviously; partner
+        // Client admins and partner managers can't create staff roles, obviously; partner
         // managers may add managers and site engineers in their own company only.
         return $roles;
     }
@@ -61,7 +61,7 @@ class UserAccess
     {
         return $target->role === Roles::ADMIN && $target->status === User::ACTIVE
             && User::where('role', Roles::ADMIN)->where('status', User::ACTIVE)
-                ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::COMPASS))->count() <= 1;
+                ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::OPERATOR))->count() <= 1;
     }
 
     /** Creates (or re-sends) an invite and emails the link. Returns the link. */

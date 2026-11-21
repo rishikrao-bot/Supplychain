@@ -1,9 +1,9 @@
 # Resource planner (replaces the Resources Tracker spreadsheet)
 
-Portal menu: **Resources → Resource planner** and **Projects**. Compass admins change the plan;
-Compass admin, helpdesk and finance staff can view it.
+Portal menu: **Resources → Resource planner** and **Projects**. admins change the plan;
+admin, helpdesk and finance staff can view it.
 
-## What changed for Mike
+## What changed for the planner
 
 | In the spreadsheet | In the portal |
 |---|---|
@@ -21,17 +21,17 @@ for Excel** (CSV) for anyone who still wants a spreadsheet.
 
 Upload the latest copy of the tracker to the server (e.g. with cPanel File Manager into `~/`), then:
 
-    cd ~/compass-portal/portal-app
+    cd ~/portal/portal-app
     php artisan migrate --force
-    php artisan portal:resources-import ~/Compass_MEP_Resources_Tracker.xlsx --dry-run
-    php artisan portal:resources-import ~/Compass_MEP_Resources_Tracker.xlsx
+    php artisan portal:resources-import ~/your company_MEP_Resources_Tracker.xlsx --dry-run
+    php artisan portal:resources-import ~/your company_MEP_Resources_Tracker.xlsx
 
 - **People** come from each person's sheet name (the name cell is ignored: several sheets still show
   a name copied from another sheet). Position and team come from the Utilisation sheet. Hidden sheets come in as not shown.
 - **Projects** come from one combined list: the master list (lead, type, client, completion) plus every project
   typed into any sheet. They're matched by project number, or by name for "TBC" projects.
 - **Figures** are converted from fractions of a week to days (0.2 → 1 day, 0.1 → ½ day).
-- It's safe to run again with a newer copy. It updates rather than duplicates, so Mike can keep using the
+- It's safe to run again with a newer copy. It updates rather than duplicates, so the planner can keep using the
   spreadsheet until the switch-over and import once more on the day.
 
 Checked against the October tracker: 16 people, 50 projects, 699 weekly entries. Every person's weekly total

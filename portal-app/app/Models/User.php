@@ -46,7 +46,7 @@ class User extends Authenticatable
 
     public function orgType(): string
     {
-        return $this->organisation?->type ?? Organisation::COMPASS;
+        return $this->organisation?->type ?? Organisation::OPERATOR;
     }
 
     public function roleLabel(): string
@@ -55,20 +55,20 @@ class User extends Authenticatable
     }
 
     public function isActive(): bool { return $this->status === self::ACTIVE; }
-    public function isCompass(): bool { return $this->orgType() === Organisation::COMPASS; }
-    public function isCompassAdmin(): bool { return $this->isCompass() && $this->role === Roles::ADMIN; }
+    public function isOperator(): bool { return $this->orgType() === Organisation::OPERATOR; }
+    public function isOperatorAdmin(): bool { return $this->isOperator() && $this->role === Roles::ADMIN; }
     public function hasTwoFactor(): bool { return $this->two_factor_confirmed_at !== null; }
 
-    /** Compass admin or helpdesk: may manage sites, contractors and other set-up data. */
-    public function isCompassStaff(): bool
+    /** admin or helpdesk: may manage sites, contractors and other set-up data. */
+    public function isOperatorStaff(): bool
     {
-        return $this->isCompass() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK], true);
+        return $this->isOperator() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK], true);
     }
 
-    /** Compass office staff (admin, helpdesk, finance) use the CRM. Engineers don't. */
+    /** office staff (admin, helpdesk, finance) use the CRM. Engineers don't. */
     public function canUseCrm(): bool
     {
-        return $this->isCompass() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK, Roles::FINANCE], true) && $this->isActive();
+        return $this->isOperator() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK, Roles::FINANCE], true) && $this->isActive();
     }
 
     /** Outlook and To Do are connected for this person. */

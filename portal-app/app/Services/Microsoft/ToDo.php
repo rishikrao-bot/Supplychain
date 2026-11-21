@@ -10,7 +10,7 @@ use Throwable;
 
 /**
  * Two-way sync between portal tasks and each person's Microsoft To Do, in a list called
- * "Compass MEP Portal" (created automatically).
+ * "your company Portal" (created automatically).
  *
  *  - Portal → To Do: when a task is added or changed, it is created/updated in the assignee's list.
  *    Reassigning moves it to the new person's list.
@@ -20,9 +20,12 @@ use Throwable;
  */
 class ToDo
 {
-    public const LIST_NAME = 'Compass MEP Portal';
+    public static function listName(): string
+    {
+        return (string) config('portal.name');
+    }
 
-    /** The person's "Compass MEP Portal" list id, created if missing. */
+    /** The person's "your company Portal" list id, created if missing. */
     public static function listId(User $user): string
     {
         $graph = MicrosoftUser::graph($user);
@@ -36,8 +39,8 @@ class ToDo
             }
         }
         $lists = MicrosoftUser::check($graph->get('/me/todo/lists'), 'To Do')['value'] ?? [];
-        $found = collect($lists)->firstWhere('displayName', self::LIST_NAME);
-        $id = $found['id'] ?? MicrosoftUser::check($graph->post('/me/todo/lists', ['displayName' => self::LIST_NAME]), 'To Do')['id'];
+        $found = collect($lists)->firstWhere('displayName', self::listName());
+        $id = $found['id'] ?? MicrosoftUser::check($graph->post('/me/todo/lists', ['displayName' => self::listName()]), 'To Do')['id'];
         $user->forceFill(['todo_list_id' => $id])->saveQuietly();
 
         return $id;
@@ -54,7 +57,7 @@ class ToDo
             'dueDateTime' => $task->due_on ? ['dateTime' => $task->due_on->format('Y-m-d').'T00:00:00', 'timeZone' => 'Europe/London'] : null,
         ];
         if ($new) {
-            $data['linkedResources'] = [['webUrl' => $url, 'applicationName' => 'Compass MEP Portal', 'displayName' => 'Task #'.$task->id]];
+            $data['linkedResources'] = [['webUrl' => $url, 'applicationName' => config('portal.name'), 'displayName' => 'Task #'.$task->id]];
         }
 
         return $data;

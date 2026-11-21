@@ -53,7 +53,7 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::post('/organisations', [OrganisationController::class, 'store'])->name('organisations.store');
     Route::get('/jobs/{workOrder}/completion-report.pdf', WorkOrderReportController::class)->name('jobs.report');
 
-    // Set-up data (Compass admin and helpdesk)
+    // Set-up data (admin and helpdesk)
     Route::resource('sites', SiteController::class)->except(['show', 'destroy']);
     Route::resource('contractors', ContractorController::class)->except(['show', 'destroy'])->parameters(['contractors' => 'contractor']);
     Route::post('/contractors/{contractor}/suspend', [ContractorController::class, 'suspend'])->name('contractors.suspend');
@@ -64,7 +64,7 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::get('/rates-and-rules', [RulesController::class, 'index'])->name('rules.index');
     Route::patch('/rates-and-rules/{setting}', [RulesController::class, 'update'])->name('rules.update');
 
-    // CRM (Compass office staff)
+    // CRM (office staff)
     Route::resource('crm/companies', CompanyController::class)->except(['destroy'])->names('companies')->parameters(['companies' => 'company']);
     Route::resource('crm/contacts', ContactController::class)->except(['destroy'])->names('contacts');
     Route::resource('crm/pipeline', OpportunityController::class)->except(['destroy'])->names('pipeline')->parameters(['pipeline' => 'opportunity']);
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::post('/tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
-    // Resource planner (view: Compass office staff; change: Compass admins)
+    // Resource planner (view: office staff; change: admins)
     Route::get('/resources', [PlannerController::class, 'index'])->name('resources.index');
     Route::get('/resources/export.csv', [PlannerController::class, 'export'])->name('resources.export');
     Route::post('/resources/save', [PlannerController::class, 'save'])->name('resources.save');
@@ -107,7 +107,7 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::post('/microsoft-365/api-keys', [IntegrationsController::class, 'createKey'])->name('integrations.keys.store');
     Route::delete('/microsoft-365/api-keys/{apiKey}', [IntegrationsController::class, 'revokeKey'])->name('integrations.keys.destroy');
 
-    // Microsoft 365 connections (Compass admins)
+    // Microsoft 365 connections (admins)
     Route::get('/microsoft-365', [IntegrationsController::class, 'index'])->name('integrations.index');
     Route::post('/microsoft-365/test', [IntegrationsController::class, 'test'])->middleware('throttle:10,1')->name('integrations.test');
     Route::post('/microsoft-365/sync', [IntegrationsController::class, 'sync'])->middleware('throttle:5,1')->name('integrations.sync');

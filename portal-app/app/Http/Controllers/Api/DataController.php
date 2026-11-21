@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 /**
  * Read-only data for Power BI, Power Automate and agents. Every table answers
  * GET /api/v1/{table} with {"value": [ ...rows ]} (the same shape as OData, so Power Query reads it easily).
- * Costs and margins are included: keys are for Compass's own tools only.
+ * Costs and margins are included: keys are for your own tools only.
  */
 class DataController extends Controller
 {
@@ -47,7 +47,7 @@ class DataController extends Controller
 
     public function companies(Request $r)
     {
-        return $this->out($this->q($r, Organisation::class)->where('type', '!=', Organisation::COMPASS)->orderBy('id')->get()
+        return $this->out($this->q($r, Organisation::class)->where('type', '!=', Organisation::OPERATOR)->orderBy('id')->get()
             ->map(fn ($o) => ['id' => $o->id, 'name' => $o->name, 'type' => $o->type, 'sector' => $o->sector, 'phone' => $o->phone ?? $o->contact_phone,
                 'email' => $o->email ?? $o->contact_email, 'postcode' => $o->postcode, 'owner_id' => $o->owner_id, 'created_at' => $o->created_at?->toIso8601String()]));
     }

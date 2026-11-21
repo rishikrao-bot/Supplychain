@@ -45,7 +45,7 @@ class Dataverse
     }
 
     /**
-     * Read rows, e.g. Dataverse::rows('accounts', ['$select' => 'name,telephone1', '$filter' => "name eq 'Wates'", '$top' => 10]).
+     * Read rows, e.g. Dataverse::rows('accounts', ['$select' => 'name,telephone1', '$filter' => "name eq 'Client Co'", '$top' => 10]).
      *
      * @return array<int, array>
      */

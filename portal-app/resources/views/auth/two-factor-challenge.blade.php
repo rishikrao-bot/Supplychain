@@ -2,7 +2,7 @@
 @section('title', 'Enter your code')
 @section('content')
 <h1>Enter your code</h1>
-<p class="muted">Open your authenticator app and enter the 6-digit code for the Compass MEP portal.</p>
+<p class="muted">Open your authenticator app and enter the 6-digit code for the {{ config('portal.name') }}.</p>
 <form method="post" action="{{ route('two-factor.verify') }}" class="grid">
   @csrf
   <div class="field"><label for="code">Code</label><input id="code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus></div>

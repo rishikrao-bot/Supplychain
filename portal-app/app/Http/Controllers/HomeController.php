@@ -13,8 +13,8 @@ class HomeController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
-        $activity = $user->isCompassAdmin() ? ActivityLog::with('user')->latest('created_at')->limit(15)->get() : collect();
-        $onHold = $user->isCompass() ? Setting::whereIn('status', ['on_hold', 'proposed'])->orderBy('status')->get() : collect();
+        $activity = $user->isOperatorAdmin() ? ActivityLog::with('user')->latest('created_at')->limit(15)->get() : collect();
+        $onHold = $user->isOperator() ? Setting::whereIn('status', ['on_hold', 'proposed'])->orderBy('status')->get() : collect();
 
         $myTasks = $user->canUseCrm() ? Task::with(['organisation', 'contact', 'opportunity'])->where('assigned_to', $user->id)->where('status', Task::OPEN)
             ->orderByRaw('due_on is null')->orderBy('due_on')->limit(8)->get() : collect();

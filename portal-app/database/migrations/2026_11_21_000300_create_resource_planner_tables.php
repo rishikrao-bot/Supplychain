@@ -75,7 +75,7 @@ return new class extends Migration
                 $t->string('title', 120);
                 $t->string('description', 255)->nullable();
                 $t->string('embed_url', 1000);
-                $t->json('roles');                                 // Compass roles that can see it
+                $t->json('roles');                                 // staff roles that can see it
                 $t->unsignedSmallInteger('sort')->default(0);
                 $t->timestamps();
             });

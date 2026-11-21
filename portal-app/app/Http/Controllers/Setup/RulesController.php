@@ -13,18 +13,18 @@ class RulesController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless($request->user()->isCompassStaff(), 403);
+        abort_unless($request->user()->isOperatorStaff(), 403);
 
         return view('setup.rules', [
             'cards' => RateCard::with(['items', 'client'])->orderBy('name')->get(),
             'settings' => Setting::orderByRaw("CASE status WHEN 'on_hold' THEN 0 WHEN 'proposed' THEN 1 ELSE 2 END")->orderBy('key')->get(),
-            'canEdit' => $request->user()->isCompassAdmin(),
+            'canEdit' => $request->user()->isOperatorAdmin(),
         ]);
     }
 
     public function update(Request $request, Setting $setting)
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
         $data = $request->validate(['value' => ['nullable', 'string', 'max:120'], 'status' => ['required', Rule::in(['agreed', 'proposed', 'on_hold'])]]);
         $old = $setting->value;
         $raw = $data['value'] ?? '';

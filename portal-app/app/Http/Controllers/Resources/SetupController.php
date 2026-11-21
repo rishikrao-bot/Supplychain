@@ -24,7 +24,7 @@ class SetupController extends PlannerController
             ->orderByDesc('internal')->orderByRaw('number is null')->orderBy('number')->get();
 
         return view('resources.projects', ['projects' => $projects, 'days' => ResourcePlan::projectDays(), 'show' => $show, 'q' => $q,
-            'canEdit' => $request->user()->isCompassAdmin()]);
+            'canEdit' => $request->user()->isOperatorAdmin()]);
     }
 
     private function projectForm(Project $project)
@@ -91,13 +91,13 @@ class SetupController extends PlannerController
         $this->view($request);
 
         return view('resources.staff', ['staff' => Staff::with('user')->orderByDesc('active')->orderBy('team')->orderBy('name')->get(),
-            'canEdit' => $request->user()->isCompassAdmin()]);
+            'canEdit' => $request->user()->isOperatorAdmin()]);
     }
 
     private function staffForm(Staff $staff)
     {
         $users = \App\Models\User::whereIn('role', [Roles::ADMIN, Roles::HELPDESK, Roles::FINANCE, Roles::ENGINEER])
-            ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::COMPASS))->orderBy('name')->get();
+            ->whereHas('organisation', fn ($q) => $q->where('type', Organisation::OPERATOR))->orderBy('name')->get();
 
         return view('resources.staff-form', ['person' => $staff, 'users' => $users]);
     }

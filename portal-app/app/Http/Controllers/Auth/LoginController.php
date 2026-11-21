@@ -35,7 +35,7 @@ class LoginController extends Controller
         if ($user->status !== User::ACTIVE) {
             return back()->withErrors(['email' => $user->status === User::INVITED
                 ? 'Finish setting up your account using the link in your invite email first.'
-                : 'Your access has been removed. Contact Compass MEP if you think this is wrong.'])->onlyInput('email');
+                : 'Your access has been removed. Contact '.config('portal.company').' if you think this is wrong.'])->onlyInput('email');
         }
 
         RateLimiter::clear($key);

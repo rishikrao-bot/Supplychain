@@ -13,15 +13,15 @@ class CompetencyController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless($request->user()->isCompassStaff(), 403);
+        abort_unless($request->user()->isOperatorStaff(), 403);
         $groups = CompetencyGroup::with(['competencies' => fn ($q) => $q->withCount(['organisations' => fn ($o) => $o->whereNull('suspended_at')])->orderBy('name')])->orderBy('sort')->get();
 
-        return view('setup.competencies', ['groups' => $groups, 'canEdit' => $request->user()->isCompassAdmin()]);
+        return view('setup.competencies', ['groups' => $groups, 'canEdit' => $request->user()->isOperatorAdmin()]);
     }
 
     public function store(Request $request)
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
         $acct = $request->user()->account_id;
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120', Rule::unique('competencies', 'name')->where('account_id', $acct)],

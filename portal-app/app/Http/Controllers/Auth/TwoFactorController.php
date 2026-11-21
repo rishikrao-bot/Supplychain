@@ -24,7 +24,7 @@ class TwoFactorController extends Controller
         }
         $secret = $request->session()->get('two_factor_pending') ?: $g2fa->generateSecretKey(32);
         $request->session()->put('two_factor_pending', $secret);
-        $url = $g2fa->getQRCodeUrl('Compass MEP Portal', $user->email, $secret);
+        $url = $g2fa->getQRCodeUrl(config('portal.name'), $user->email, $secret);
         $qr = (new Writer(new ImageRenderer(new RendererStyle(200, 1), new SvgImageBackEnd())))->writeString($url);
 
         return view('auth.two-factor-setup', ['qr' => $qr, 'secret' => trim(chunk_split($secret, 4, ' '))]);

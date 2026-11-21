@@ -17,13 +17,13 @@ class CompanyController extends CrmController
         $this->guard($request);
         $q = trim((string) $request->query('q'));
         $type = $request->query('type');
-        $companies = Organisation::where('type', '!=', Organisation::COMPASS)
+        $companies = Organisation::where('type', '!=', Organisation::OPERATOR)
             ->when(isset(Organisation::CRM_TYPES[$type]), fn ($w) => $w->where('type', $type))
             ->when($q, fn ($w) => $w->where(fn ($x) => $x->where('name', 'like', "%$q%")->orWhere('postcode', 'like', "%$q%")->orWhere('email', 'like', "%$q%")))
             ->withCount(['contacts', 'tasks as open_tasks_count' => fn ($t) => $t->where('status', Task::OPEN)])
             ->withSum(['opportunities as pipeline_value' => fn ($o) => $o->whereIn('stage', Opportunity::openStages())], 'value')
             ->with('owner')->orderBy('name')->paginate(50)->withQueryString();
-        $counts = Organisation::where('type', '!=', Organisation::COMPASS)->selectRaw('type, count(*) as n')->groupBy('type')->pluck('n', 'type');
+        $counts = Organisation::where('type', '!=', Organisation::OPERATOR)->selectRaw('type, count(*) as n')->groupBy('type')->pluck('n', 'type');
 
         return view('crm.companies.index', compact('companies', 'q', 'type', 'counts'));
     }
@@ -31,7 +31,7 @@ class CompanyController extends CrmController
     public function show(Request $request, Organisation $company)
     {
         $this->guard($request);
-        abort_if($company->isCompass(), 404);
+        abort_if($company->isOperator(), 404);
         $company->load(['contacts', 'owner', 'opportunities' => fn ($o) => $o->with('owner')->latest(),
             'tasks' => fn ($t) => $t->with('assignee', 'contact')->orderBy('status')->orderByRaw('due_on is null')->orderBy('due_on')]);
         $activities = $company->crmActivities()->with(['user', 'contact', 'opportunity'])->limit(100)->get();
@@ -54,7 +54,7 @@ class CompanyController extends CrmController
     public function edit(Request $request, Organisation $company)
     {
         $this->guard($request);
-        abort_if($company->isCompass(), 404);
+        abort_if($company->isOperator(), 404);
 
         return view('crm.companies.form', ['company' => $company, 'staff' => $this->staff()]);
     }
@@ -97,7 +97,7 @@ class CompanyController extends CrmController
     public function update(Request $request, Organisation $company)
     {
         $this->guard($request);
-        abort_if($company->isCompass(), 404);
+        abort_if($company->isOperator(), 404);
         $company->update($this->validated($request, $company));
         Activity::log('crm.company_updated', "{$request->user()->name} updated {$company->name}.", $company);
 

@@ -13,12 +13,12 @@ use App\Services\Microsoft\ReportFiler;
 use App\Services\Microsoft\SharePoint;
 use Illuminate\Http\Request;
 
-/** Compass admins: see and test the Microsoft 365 connections. Settings themselves live in .env on the server. */
+/** admins: see and test the Microsoft 365 connections. Settings themselves live in .env on the server. */
 class IntegrationsController extends Controller
 {
     private function authorise(Request $request): void
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
     }
 
     public function index(Request $request)

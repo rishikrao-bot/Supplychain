@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Private starting data and branding: on the server only, never in Git
+/database/seeders/data/portal.json
+/public/brand/

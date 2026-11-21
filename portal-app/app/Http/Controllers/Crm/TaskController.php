@@ -44,7 +44,7 @@ class TaskController extends CrmController
     {
         return [
             'staff' => $this->staff(),
-            'companies' => Organisation::where('type', '!=', Organisation::COMPASS)->orderBy('name')->get(['id', 'name']),
+            'companies' => Organisation::where('type', '!=', Organisation::OPERATOR)->orderBy('name')->get(['id', 'name']),
             'contacts' => Contact::with('organisation:id,name')->orderBy('first_name')->get(),
             'opportunities' => Opportunity::whereIn('stage', Opportunity::openStages())->orderBy('title')->get(['id', 'title']),
         ];
@@ -126,6 +126,6 @@ class TaskController extends CrmController
         $this->guard($request);
         MicrosoftUser::disconnect($request->user());
 
-        return back()->with('status', 'Outlook and To Do are disconnected. Your tasks stay in the portal; the "Compass MEP Portal" list stays in To Do.');
+        return back()->with('status', 'Outlook and To Do are disconnected. Your tasks stay in the portal; the "'.ToDo::listName().'" list stays in To Do.');
     }
 }

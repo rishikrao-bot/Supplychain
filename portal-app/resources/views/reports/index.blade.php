@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Management reports')
 @section('content')
-<div><h1>Management reports</h1><p class="muted">Power BI reports, inside the portal. You'll be asked to sign in to Power BI with your Compass Microsoft account the first time.</p></div>
+<div><h1>Management reports</h1><p class="muted">Power BI reports, inside the portal. You'll be asked to sign in to Power BI with your work Microsoft account the first time.</p></div>
 @if($dashboards->isEmpty())<div class="note">No reports yet.@if($canManage) Add the first one below.@endif</div>@endif
 <div class="grid g2">
 @foreach($dashboards as $d)

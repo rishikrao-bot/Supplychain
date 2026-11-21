@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
-/** A Compass person whose time is planned (whether or not they log in to the portal). */
+/** A person whose time is planned (whether or not they log in to the portal). */
 class Staff extends Model
 {
     use BelongsToAccount;

@@ -46,7 +46,7 @@ class MicrosoftCheck extends Command
         }
 
         $out[] = config('services.microsoft.sign_in')
-            ? ['name' => 'Microsoft sign-in', 'state' => 'ok', 'message' => 'Shown on the login page for Compass staff.']
+            ? ['name' => 'Microsoft sign-in', 'state' => 'ok', 'message' => 'Shown on the login page for your own staff.']
             : ['name' => 'Microsoft sign-in', 'state' => 'off', 'message' => 'Turned off (MICROSOFT_SIGN_IN=false).'];
 
         if (! SharePoint::isConfigured()) {

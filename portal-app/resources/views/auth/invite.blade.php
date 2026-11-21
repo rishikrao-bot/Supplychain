@@ -2,7 +2,7 @@
 @section('title', 'Set up your account')
 @section('content')
 <h1>Welcome, {{ $user->name }}</h1>
-<p class="muted">You've been invited to the Compass MEP portal as <b>{{ $user->roleLabel() }}</b> at {{ $user->organisation->name }}. Choose a password to finish setting up.</p>
+<p class="muted">You've been invited to the {{ config('portal.name') }} as <b>{{ $user->roleLabel() }}</b> at {{ $user->organisation->name }}. Choose a password to finish setting up.</p>
 <form method="post" action="{{ route('invite.accept', $token) }}" class="grid">
   @csrf
   <div class="field"><label>Email</label><input type="email" value="{{ $user->email }}" disabled></div>

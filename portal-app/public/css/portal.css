@@ -1,4 +1,4 @@
-/* Compass MEP portal: brand tokens (Deep Blue #294653, Compass Teal #25C4A9, Soft Mist #F1F7F6) */
+/* Portal brand tokens (deep blue #294653, teal #25C4A9, mist #F1F7F6) */
 :root{--bg:#F1F7F6;--surface:#FFFFFF;--surface-2:#E9F1F0;--line:#D5E2E1;--fg:#1E3440;--muted:#587078;--deep:#294653;--accent:#25C4A9;--accent-ink:#13806D;--accent-soft:#DDF4EF;--accent-fg:#14303A;--ok:#23784A;--ok-soft:#DDF1E5;--warn:#9A6212;--warn-soft:#FBEFD9;--crit:#B23A2E;--crit-soft:#F9E1DE;--info:#3A5A8C;--info-soft:#E1E9F5;--f-display:"Montserrat",system-ui,sans-serif;--f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
 @media (prefers-color-scheme:dark){:root{--bg:#0E181D;--surface:#15232A;--surface-2:#1B2C34;--line:#2A3E47;--fg:#E4EEEE;--muted:#93AAB0;--deep:#1B323C;--accent-ink:#43D8BE;--accent-soft:#123A35;--accent-fg:#0E181D;--ok:#5CC48A;--ok-soft:#14301F;--warn:#E3A84B;--warn-soft:#33270F;--crit:#F0806F;--crit-soft:#3A1A16;--info:#8FB0E3;--info-soft:#1B2840;color-scheme:dark}}
 *{box-sizing:border-box}[hidden]{display:none!important}

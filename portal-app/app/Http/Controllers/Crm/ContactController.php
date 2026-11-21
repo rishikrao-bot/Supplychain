@@ -37,7 +37,7 @@ class ContactController extends CrmController
 
     private function companies()
     {
-        return Organisation::where('type', '!=', Organisation::COMPASS)->orderBy('name')->get(['id', 'name', 'type']);
+        return Organisation::where('type', '!=', Organisation::OPERATOR)->orderBy('name')->get(['id', 'name', 'type']);
     }
 
     public function create(Request $request)

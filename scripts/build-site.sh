@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Builds the hosted demo (site/compassmep/demo/index.html) from prototype/index.html,
+# Builds the hosted demo (site/portal-site/demo/index.html) from prototype/index.html,
 # wrapping it in a full HTML document with a permanent DEMO banner, then zips the
-# compassmep site for upload to cPanel.
+# start-page site for upload to cPanel.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/site/compassmep/demo/index.html"
+OUT="$ROOT/site/portal-site/demo/index.html"
 {
 cat <<'HEAD'
 <!doctype html>
@@ -29,8 +29,8 @@ HEAD
 cat "$ROOT/prototype/index.html"
 printf '\n</body>\n</html>\n'
 } > "$OUT"
-sed -i 's|<title>Compass Job Portal</title>|<title>DEMO · Compass MEP Reactive Maintenance</title>|' "$OUT"
+sed -i 's|<title>Job Portal</title>|<title>DEMO · Reactive Maintenance Portal</title>|' "$OUT"
 cd "$ROOT/site"
-rm -f compassmep-upload.zip
-(cd compassmep && zip -qr ../compassmep-upload.zip . -x '*.DS_Store')
-echo "Built $OUT and site/compassmep-upload.zip"
+rm -f site-upload.zip
+(cd portal-site && zip -qr ../site-upload.zip . -x '*.DS_Store')
+echo "Built $OUT and site/site-upload.zip"

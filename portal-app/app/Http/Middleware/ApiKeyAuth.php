@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * The portal's data API: a key created by a Compass admin (Microsoft 365 page), sent as
+ * The portal's data API: a key created by a admin (Microsoft 365 page), sent as
  * "Authorization: Bearer cmp_…", "X-Api-Key: cmp_…" or ?key=cmp_… (Power BI's Web API credential).
  */
 class ApiKeyAuth

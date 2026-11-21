@@ -6,7 +6,7 @@ use App\Models\Concerns\BelongsToAccount;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** A follow-up for one person, kept in step with their Microsoft To Do ("Compass MEP Portal" list). */
+/** A follow-up for one person, kept in step with their Microsoft To Do ("your company Portal" list). */
 class Task extends Model
 {
     use BelongsToAccount;
@@ -29,7 +29,7 @@ class Task extends Model
     public function isDone(): bool { return $this->status === self::DONE; }
     public function isOverdue(): bool { return ! $this->isDone() && $this->due_on && $this->due_on->isPast() && ! $this->due_on->isToday(); }
 
-    /** What it's about, for lists: "Wates · Jo Harding · Castle Point tender". */
+    /** What it's about, for lists: "Client Co · Jo Bloggs · North Region tender". */
     public function about(): string
     {
         return collect([$this->organisation?->name, $this->contact?->name(), $this->opportunity?->title])->filter()->implode(' · ');

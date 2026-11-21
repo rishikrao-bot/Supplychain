@@ -146,7 +146,7 @@ class ResourcesImport extends Command
             return self::SUCCESS;
         }
 
-        $account = Account::where('slug', 'compass-mep')->first() ?? Account::firstOrFail();
+        $account = Account::orderBy('id')->firstOrFail();
         DB::transaction(function () use ($account, $people, $projects, $cells) {
             $staffIds = [];
             foreach ($people as $p) {
@@ -159,7 +159,7 @@ class ResourcesImport extends Command
                 $s->save();
                 $staffIds[self::key($p['name'])] = $s->id;
             }
-            $clients = Organisation::withoutGlobalScopes()->where('account_id', $account->id)->where('type', '!=', Organisation::COMPASS)
+            $clients = Organisation::withoutGlobalScopes()->where('account_id', $account->id)->where('type', '!=', Organisation::OPERATOR)
                 ->get(['id', 'name'])->mapWithKeys(fn ($o) => [self::key($o->name) => $o->id]);
             $projectIds = [];
             foreach ($projects as $key => $p) {

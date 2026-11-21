@@ -24,7 +24,7 @@ class SecurePortal
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->withErrors(['email' => 'Your access has been removed. Contact Compass MEP if you think this is wrong.']);
+            return redirect()->route('login')->withErrors(['email' => 'Your access has been removed. Contact '.config('portal.company').' if you think this is wrong.']);
         }
         // Microsoft sign-in: Microsoft's own multi-factor check stands in for the authenticator app.
         if ($request->session()->get('login_method') === 'microsoft' && $request->session()->get('two_factor_passed')) {

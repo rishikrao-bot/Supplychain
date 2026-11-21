@@ -19,11 +19,11 @@ final class Roles
 
     /** @var array<string, array<string, array{0:string,1:string}>> */
     public const BY_ORG_TYPE = [
-        'compass' => [
+        'operator' => [
             self::ADMIN => ['Admin', 'Everything, including users, settings, rates and finance'],
             self::HELPDESK => ['Helpdesk', 'Log orders, offer and assign jobs, check reports. No finance, settings or users'],
             self::FINANCE => ['Finance', 'Valuations and payments. Read-only on jobs'],
-            self::ENGINEER => ['Compass engineer', 'Engineer app only: their own jobs and visit reports'],
+            self::ENGINEER => ['Engineer', 'Engineer app only: their own jobs and visit reports'],
         ],
         'client' => [
             self::CLIENT_ADMIN => ['Client admin', 'Approve estimates, decide on exceptions, add and remove their own users'],

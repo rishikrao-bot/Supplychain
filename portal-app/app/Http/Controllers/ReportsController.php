@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Management reports: Power BI reports shown inside the portal ("secure embed"). Viewers sign in to
  * Power BI with their own Microsoft account and need a Pro/E5 licence; Power BI's own permissions and
- * row-level security still apply. Compass admins choose which reports appear and who sees them.
+ * row-level security still apply. admins choose which reports appear and who sees them.
  */
 class ReportsController extends Controller
 {
@@ -23,9 +23,9 @@ class ReportsController extends Controller
         $me = $request->user();
         $dashboards = Dashboard::orderBy('sort')->orderBy('title')->get();
         $visible = $dashboards->filter(fn ($d) => $d->visibleTo($me));
-        abort_unless($me->isCompassAdmin() || $visible->isNotEmpty(), 403);
+        abort_unless($me->isOperatorAdmin() || $visible->isNotEmpty(), 403);
 
-        return view('reports.index', ['dashboards' => $me->isCompassAdmin() ? $dashboards : $visible, 'roles' => self::ROLES, 'canManage' => $me->isCompassAdmin()]);
+        return view('reports.index', ['dashboards' => $me->isOperatorAdmin() ? $dashboards : $visible, 'roles' => self::ROLES, 'canManage' => $me->isOperatorAdmin()]);
     }
 
     public function show(Request $request, Dashboard $dashboard)
@@ -58,7 +58,7 @@ class ReportsController extends Controller
 
     public function store(Request $request)
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
         $d = Dashboard::create($this->data($request) + ['account_id' => $request->user()->account_id]);
         Activity::log('reports.added', "{$request->user()->name} added the report {$d->title}.", $d);
 
@@ -67,7 +67,7 @@ class ReportsController extends Controller
 
     public function update(Request $request, Dashboard $dashboard)
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
         $dashboard->update($this->data($request));
 
         return redirect()->route('reports.index')->with('status', 'Saved.');
@@ -75,7 +75,7 @@ class ReportsController extends Controller
 
     public function destroy(Request $request, Dashboard $dashboard)
     {
-        abort_unless($request->user()->isCompassAdmin(), 403);
+        abort_unless($request->user()->isOperatorAdmin(), 403);
         $dashboard->delete();
 
         return redirect()->route('reports.index')->with('status', 'Removed from the portal (the report itself is still in Power BI).');

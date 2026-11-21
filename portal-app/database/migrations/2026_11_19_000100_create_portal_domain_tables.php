@@ -5,10 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Core tables for the Compass MEP reactive maintenance portal (stage 1).
+ * Core tables for the your company reactive maintenance portal (stage 1).
  *
  * Every business table carries account_id so more than one company can run on the
- * same system later with their data kept apart. Compass MEP is the first account.
+ * same system later with their data kept apart. your company is the first account.
  *
  * Note: Laravel already uses a table called "jobs" for its queue, so maintenance
  * jobs are stored in "work_orders".
@@ -27,11 +27,11 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        // Compass itself, each client (e.g. Wates) and each supply chain partner.
+        // The operator itself, each client and each supply chain partner.
         $this->createIfMissing('organisations', function (Blueprint $t) {
             $t->id();
             $t->foreignId('account_id')->constrained()->cascadeOnDelete();
-            $t->string('type'); // compass | client | partner
+            $t->string('type'); // operator | client | partner (+ prospect | supplier | other for the CRM)
             $t->string('name');
             $t->string('contact_name')->nullable();
             $t->string('contact_phone')->nullable();
@@ -168,7 +168,7 @@ return new class extends Migration
             $t->foreignId('contract_id')->constrained();
             $t->foreignId('site_id')->nullable()->constrained()->nullOnDelete();
             $t->foreignId('parent_id')->nullable()->constrained('work_orders')->nullOnDelete();
-            $t->string('client_ref')->nullable();      // e.g. Wates job number
+            $t->string('client_ref')->nullable();      // e.g. the client's own job number
             $t->string('client_order_no')->nullable(); // PO number given on approval
             $t->string('source');                     // email | phone | client_portal | return_visit
             $t->string('priority');                   // emergency | urgent | routine | planned

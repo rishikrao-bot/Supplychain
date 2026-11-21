@@ -13,7 +13,7 @@ class OrganisationController extends Controller
     public function store(Request $request)
     {
         $actor = $request->user();
-        abort_unless($actor->isCompassAdmin(), 403);
+        abort_unless($actor->isOperatorAdmin(), 403);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'type' => ['required', Rule::in([Organisation::CLIENT, Organisation::PARTNER])],

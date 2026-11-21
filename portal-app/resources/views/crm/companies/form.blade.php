@@ -15,7 +15,7 @@
     <div class="field"><label for="type">Type</label><select id="type" name="type">@foreach($types as $k => $l)<option value="{{ $k }}" @selected(old('type', $company->type) === $k)>{{ $l }}</option>@endforeach</select></div>
     <div class="field"><label for="phone">Phone</label><input id="phone" type="tel" name="phone" value="{{ old('phone', $company->phone) }}"></div>
     <div class="field"><label for="email">Main email</label><input id="email" type="email" name="email" value="{{ old('email', $company->email) }}"></div>
-    <div class="field"><label for="website">Website</label><input id="website" type="text" name="website" value="{{ old('website', $company->website) }}" placeholder="e.g. wates.co.uk"></div>
+    <div class="field"><label for="website">Website</label><input id="website" type="text" name="website" value="{{ old('website', $company->website) }}" placeholder="e.g. example.co.uk"></div>
     <div class="field"><label for="sector">Sector</label><input id="sector" type="text" name="sector" value="{{ old('sector', $company->sector) }}" list="sectors" placeholder="e.g. Main contractor, Local authority"><datalist id="sectors"><option>Main contractor</option><option>Local authority</option><option>Housing association</option><option>Facilities management</option><option>Education</option><option>Healthcare</option><option>Commercial property</option></datalist></div>
     <div class="field"><label for="address">Address</label><input id="address" type="text" name="address" value="{{ old('address', $company->address) }}"></div>
     <div class="field"><label for="postcode">Postcode</label><input id="postcode" type="text" name="postcode" value="{{ old('postcode', $company->postcode) }}"></div>

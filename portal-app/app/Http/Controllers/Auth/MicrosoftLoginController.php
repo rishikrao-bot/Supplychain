@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Activity;
 use App\Services\Microsoft\MicrosoftApp;
 use App\Services\Microsoft\MicrosoftUser;
+use App\Services\Microsoft\ToDo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -14,9 +15,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * "Sign in with Microsoft" for Compass staff (OpenID Connect, authorisation code with PKCE).
+ * "Sign in with Microsoft" for your own staff (OpenID Connect, authorisation code with PKCE).
  *
- * Only accounts in Compass's own Microsoft 365 tenant can use it, and only if Compass MEP has
+ * Only accounts in your own Microsoft 365 tenant can use it, and only if your company has
  * already given them portal access (matched on email the first time, then on their Microsoft ID).
  * Microsoft's own multi-factor sign-in replaces the portal's authenticator-app step for these logins,
  * so the tenant must require MFA (Security Defaults or Conditional Access).
@@ -109,7 +110,7 @@ class MicrosoftLoginController extends Controller
             && ($claims['exp'] ?? 0) > time() - 60
             && filled($claims['oid'] ?? null);
         if (! $valid) {
-            return $fail('That Microsoft account is not from Compass MEP. Use your email and password instead.');
+            return $fail('That Microsoft account is not from '.config('portal.company').'. Use your email and password instead.');
         }
 
         $email = Str::lower((string) ($claims['email'] ?? $claims['preferred_username'] ?? ''));
@@ -130,17 +131,17 @@ class MicrosoftLoginController extends Controller
             MicrosoftUser::connect($me, $res->json('refresh_token'));
             Activity::log('microsoft.connected', $me->name.' connected Outlook and To Do.', $me);
 
-            return $back->with('status', 'Outlook and To Do are connected. Your portal tasks will appear in To Do in a list called "Compass MEP Portal".');
+            return $back->with('status', 'Outlook and To Do are connected. Your portal tasks will appear in To Do in a list called "'.ToDo::listName().'".');
         }
 
-        if (! $user || ! $user->isCompass()) {
-            return $fail("{$email} does not have portal access yet. Ask a Compass MEP admin to add you.");
+        if (! $user || ! $user->isOperator()) {
+            return $fail("{$email} does not have portal access yet. Ask an admin to add you.");
         }
         if ($user->status === User::DISABLED) {
-            return $fail('Your access has been removed. Contact Compass MEP if you think this is wrong.');
+            return $fail('Your access has been removed. Contact '.config('portal.company').' if you think this is wrong.');
         }
 
-        // An invited Compass user who signs in with Microsoft has proved their email: their invite is done.
+        // An invited staff member who signs in with Microsoft has proved their email: their invite is done.
         $user->forceFill([
             'microsoft_oid' => $claims['oid'],
             'status' => User::ACTIVE,

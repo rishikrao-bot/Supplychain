@@ -35,8 +35,8 @@
   .avoid { page-break-inside: avoid; }
 </style></head>
 <body>
-<header>@if($logo)<img src="{{ $logo }}" alt="Compass MEP">@endif<div class="t">Job completion report<br><b>{{ $wo->ref() }}</b></div></header>
-<footer>Compass MEP Ltd · 20 Garrett Street, London, EC1Y 0TW · Report created {{ $generatedAt->format('j M Y, H:i') }}</footer>
+<header>@if($logo)<img src="{{ $logo }}" alt="{{ config('portal.company') }}">@endif<div class="t">Job completion report<br><b>{{ $wo->ref() }}</b></div></header>
+<footer>{{ $operator?->name ?? config('portal.company') }}@if($operator?->address) · {{ $operator->address }}@endif · Report created {{ $generatedAt->format('j M Y, H:i') }}</footer>
 
 <h1>Job completion report</h1>
 <div><span class="ref">{{ $wo->ref() }}</span> <span class="muted">· {{ $wo->client->name }} job no. {{ $wo->client_ref ?: '—' }}@if($wo->client_order_no) · Order no. {{ $wo->client_order_no }}@endif</span></div>
@@ -66,7 +66,7 @@
   <h2>Visit{{ $wo->visits->count() > 1 ? ' '.($loop->iteration) : '' }} · {{ $v->arrived_at?->format('l j F Y') }}</h2>
   <table class="kv">
     <tr><td class="k">Outcome</td><td><span class="badge {{ $cls }}">{{ $outcome[$oc] ?? ucfirst((string) $oc) }}</span>@if($v->outcome_detail)<br>{{ $v->outcome_detail }}@endif</td></tr>
-    <tr><td class="k">Engineer</td><td>{{ $v->user?->name ?? '—' }}, on behalf of Compass MEP</td></tr>
+    <tr><td class="k">Engineer</td><td>{{ $v->user?->name ?? '—' }}, on behalf of {{ $operator?->name ?? config('portal.company') }}</td></tr>
     <tr><td class="k">Arrived / left</td><td>{{ $v->arrived_at?->format('H:i') ?? '—' }} – {{ $v->departed_at?->format('H:i') ?? '—' }}@if($hours) ({{ $hrs($hours) }} on site)@endif</td></tr>
     @if($v->arrival_lat)<tr><td class="k">Location check</td><td>GPS {{ number_format($v->arrival_lat, 4) }}, {{ number_format($v->arrival_lng, 4) }} recorded on arrival</td></tr>@endif
     @if($oc === 'noaccess')<tr><td class="k">No access</td><td>{{ $v->calls_to_site ?? 0 }} call(s) to the site contact · arrived {{ $v->within_window ? 'within' : 'outside' }} the agreed window</td></tr>@endif

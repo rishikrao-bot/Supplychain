@@ -16,17 +16,17 @@ abstract class PortalTestCase extends TestCase
     use RefreshDatabase;
 
     protected Account $account;
-    protected Organisation $compass;
-    protected Organisation $wates;
+    protected Organisation $operator;
+    protected Organisation $client;
 
     protected function setUp(): void
     {
         parent::setUp();
         Mail::fake();
         $this->seed(PortalSeeder::class);
-        $this->account = Account::where('slug', 'compass-mep')->first();
-        $this->compass = Organisation::withoutGlobalScopes()->where('type', 'compass')->first();
-        $this->wates = Organisation::withoutGlobalScopes()->where('name', 'Wates')->first();
+        $this->account = Account::where('slug', 'main')->first();
+        $this->operator = Organisation::withoutGlobalScopes()->where('type', 'operator')->first();
+        $this->client = Organisation::withoutGlobalScopes()->where('name', 'Client Co')->first();
     }
 
     protected function makeUser(Organisation $org, string $role, array $attrs = []): User

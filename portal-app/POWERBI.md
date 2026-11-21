@@ -2,7 +2,7 @@
 
 ## 1. Management reports in the portal
 
-Portal menu: **Resources → Management reports**. Compass admins add reports and choose which roles see them.
+Portal menu: **Resources → Management reports**. admins add reports and choose which roles see them.
 
 1. In Power BI (app.powerbi.com), open the report → **File → Embed report → Website or portal** and copy the
    link. (The report's address from the browser bar works too.) **Never use "Publish to web"**: it makes the
@@ -10,12 +10,12 @@ Portal menu: **Resources → Management reports**. Compass admins add reports an
 2. In the portal: **Management reports → Add a Power BI report**, paste it, tick who sees it.
 3. Share the report (or its workspace) in Power BI with the managers who should see it.
 
-Viewers sign in to Power BI with their Compass Microsoft account (they have Pro/E5 licences). Power BI's own
+Viewers sign in to Power BI with their work Microsoft account (they have Pro/E5 licences). Power BI's own
 permissions and row-level security still apply. The portal only decides who sees the link.
 
 ## 2. Getting portal data into Power BI
 
-The portal has a read-only data API. A Compass admin creates a key under **Microsoft 365 → API keys**
+The portal has a read-only data API. A admin creates a key under **Microsoft 365 → API keys**
 (name it "Power BI"). The key is shown once.
 
 Tables (each returns `{"value": [ ... ]}`):
@@ -34,7 +34,7 @@ Tables (each returns `{"value": [ ... ]}`):
 In Power BI Desktop: **Get data → Blank query → Advanced editor**, for example:
 
     let
-        Source = Json.Document(Web.Contents("https://compass-mep.jobsavvy.co.uk/portal/api/v1/utilisation", [ApiKeyName = "key"])),
+        Source = Json.Document(Web.Contents("https://portal.example.com/portal/api/v1/utilisation", [ApiKeyName = "key"])),
         Rows = Table.FromRecords(Source[value])
     in
         Rows

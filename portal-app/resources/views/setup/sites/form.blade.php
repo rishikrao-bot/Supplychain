@@ -13,8 +13,8 @@
     <div class="field"><label for="site_type">Type of site</label><input id="site_type" type="text" name="site_type" value="{{ old('site_type', $site->site_type) }}" placeholder="e.g. Offices, Leisure centre, Swimming pool" list="site-types"><datalist id="site-types"><option>Offices</option><option>Leisure centre</option><option>Swimming pool</option><option>Community hall</option><option>Depot</option></datalist></div>
     <div class="field"><label for="contact_name">Site contact</label><input id="contact_name" type="text" name="contact_name" value="{{ old('contact_name', $site->contact_name) }}"></div>
     <div class="field"><label for="contact_phone">Contact phone</label><input id="contact_phone" type="tel" name="contact_phone" value="{{ old('contact_phone', $site->contact_phone) }}"></div>
-    <div class="field"><label for="latitude">Latitude (for GPS check-in)</label><input id="latitude" type="text" name="latitude" value="{{ old('latitude', $site->latitude) }}" placeholder="e.g. 51.5303"></div>
-    <div class="field"><label for="longitude">Longitude</label><input id="longitude" type="text" name="longitude" value="{{ old('longitude', $site->longitude) }}" placeholder="e.g. 0.5713"></div>
+    <div class="field"><label for="latitude">Latitude (for GPS check-in)</label><input id="latitude" type="text" name="latitude" value="{{ old('latitude', $site->latitude) }}" placeholder="e.g. 52.1010"></div>
+    <div class="field"><label for="longitude">Longitude</label><input id="longitude" type="text" name="longitude" value="{{ old('longitude', $site->longitude) }}" placeholder="e.g. -1.2010"></div>
   </div>
   <div class="field"><label for="access_notes">Access notes</label><textarea id="access_notes" name="access_notes">{{ old('access_notes', $site->access_notes) }}</textarea></div>
   <div class="field"><label for="asbestos_notes">Asbestos register notes</label><textarea id="asbestos_notes" name="asbestos_notes">{{ old('asbestos_notes', $site->asbestos_notes) }}</textarea></div>

@@ -2,7 +2,7 @@
 @section('title', 'Tasks')
 @section('content')
 @php($me = auth()->user())
-<div class="page-head"><div><h1>Tasks</h1><p class="muted">Follow-ups for the team. Each person's tasks also appear in their Microsoft To Do, in a list called "Compass MEP Portal".</p></div></div>
+<div class="page-head"><div><h1>Tasks</h1><p class="muted">Follow-ups for the team. Each person's tasks also appear in their Microsoft To Do, in a list called "{{ config('portal.name') }}".</p></div></div>
 @error('microsoft')<div class="note crit" role="alert">{{ $message }}</div>@enderror
 
 <div class="panel"><div class="panel-b row" style="justify-content:space-between">
@@ -11,7 +11,7 @@
   <div class="row"><form method="post" action="{{ route('tasks.sync') }}">@csrf<button class="btn sm">Sync now</button></form>
   <form method="post" action="{{ route('tasks.disconnect') }}" onsubmit="return confirm('Disconnect Outlook and To Do?')">@csrf<button class="btn sm">Disconnect</button></form></div>
 @elseif($microsoftReady)
-  <div><b>Connect Outlook &amp; To Do</b><div class="small muted">See your tasks in Microsoft To Do and your emails with clients on their CRM pages. You'll sign in with your Compass Microsoft 365 account.</div></div>
+  <div><b>Connect Outlook &amp; To Do</b><div class="small muted">See your tasks in Microsoft To Do and your emails with clients on their CRM pages. You'll sign in with your work Microsoft 365 account.</div></div>
   <a class="btn primary" href="{{ route('login.microsoft') }}">Connect</a>
 @else
   <div class="small muted">Microsoft To Do sync will be available once Microsoft 365 is set up for the portal.</div>
@@ -19,7 +19,7 @@
 </div></div>
 
 <div class="panel"><form method="post" action="{{ route('tasks.store') }}" class="panel-b">@csrf
-  <div class="row"><input type="text" name="title" required placeholder="Add a task, e.g. Call Jo at Wates about the Castle Point quote" aria-label="New task" style="flex:1;min-width:220px">
+  <div class="row"><input type="text" name="title" required placeholder="Add a task, e.g. Call Jo about the quote" aria-label="New task" style="flex:1;min-width:220px">
   <select name="assigned_to" aria-label="For" style="width:auto">@foreach($staff as $s)<option value="{{ $s->id }}" @selected($s->id === $me->id)>{{ $s->id === $me->id ? 'Me' : $s->name }}</option>@endforeach</select>
   <input type="date" name="due_on" aria-label="Due date" style="width:auto"><button class="btn primary">Add</button></div>
 </form></div>

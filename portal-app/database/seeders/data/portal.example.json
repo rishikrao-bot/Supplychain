@@ -1,0 +1,301 @@
+{
+    "_note": "Made-up example data. The real starting data lives in portal.json on the server only.",
+    "account": {
+        "slug": "main",
+        "name": "Example Services",
+        "brand_colour": "#294653",
+        "accent_colour": "#25C4A9",
+        "logo_path": "img/logo.svg"
+    },
+    "operator": {
+        "name": "Example Services Ltd",
+        "address": "1 Example Street, Exampletown, EX1 1AA",
+        "zones": [
+            "A",
+            "B",
+            "C"
+        ]
+    },
+    "clients": [
+        {
+            "name": "Client Co",
+            "settings": {
+                "afp_day": 25,
+                "due_days": 14,
+                "final_days": 30,
+                "portal_certify": true,
+                "terms_status": "on_hold"
+            },
+            "rate_card": {
+                "name": "Client Co schedule of rates",
+                "valid_from": "2026-01-01",
+                "items": [
+                    {
+                        "code": "labour.building.normal",
+                        "label": "Building services engineer, normal hours",
+                        "amount": 50,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.building.ooh",
+                        "label": "Building services engineer, out of hours",
+                        "amount": 75,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.building.sun",
+                        "label": "Building services engineer, Sunday / bank holiday",
+                        "amount": 100,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.specialist.normal",
+                        "label": "Specialist systems engineer, normal hours",
+                        "amount": 60,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.specialist.ooh",
+                        "label": "Specialist systems engineer, out of hours",
+                        "amount": 90,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.specialist.sun",
+                        "label": "Specialist systems engineer, Sunday / bank holiday",
+                        "amount": 120,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.lift.normal",
+                        "label": "Lift engineer, normal hours",
+                        "amount": 150,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.lift.ooh",
+                        "label": "Lift engineer, out of hours (TBC)",
+                        "amount": null,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "labour.lift.sun",
+                        "label": "Lift engineer, Sunday / bank holiday (TBC)",
+                        "amount": null,
+                        "unit": "per_hour"
+                    },
+                    {
+                        "code": "callout.emergency",
+                        "label": "Call-out: emergency (within 12 hours)",
+                        "amount": 80,
+                        "unit": "per_visit"
+                    },
+                    {
+                        "code": "callout.standard",
+                        "label": "Call-out: standard (planned, urgent or routine)",
+                        "amount": 40,
+                        "unit": "per_visit"
+                    },
+                    {
+                        "code": "zone.b",
+                        "label": "Zone B supplement",
+                        "amount": 50,
+                        "unit": "per_visit"
+                    },
+                    {
+                        "code": "markup.materials",
+                        "label": "Materials, plant hire and waste markup",
+                        "amount": 10,
+                        "unit": "percent"
+                    },
+                    {
+                        "code": "fee.specialist",
+                        "label": "Specialist management fee",
+                        "amount": 10,
+                        "unit": "percent"
+                    },
+                    {
+                        "code": "fee.specialist_min",
+                        "label": "Specialist management fee minimum",
+                        "amount": 40,
+                        "unit": "fixed"
+                    },
+                    {
+                        "code": "fee.inspection",
+                        "label": "Inspection and quote visit",
+                        "amount": 100,
+                        "unit": "fixed"
+                    },
+                    {
+                        "code": "day.apm",
+                        "label": "Assistant Project Manager / Assistant QS (day)",
+                        "amount": 300,
+                        "unit": "per_day"
+                    },
+                    {
+                        "code": "day.pm",
+                        "label": "Project Manager / QS / Engineer (day)",
+                        "amount": 400,
+                        "unit": "per_day"
+                    },
+                    {
+                        "code": "day.spm",
+                        "label": "Senior Project Manager / Senior QS / Senior Engineer (day)",
+                        "amount": 500,
+                        "unit": "per_day"
+                    },
+                    {
+                        "code": "day.cm",
+                        "label": "Commissioning Manager (day)",
+                        "amount": 550,
+                        "unit": "per_day"
+                    },
+                    {
+                        "code": "day.lcm",
+                        "label": "Senior / Lead Commissioning Manager (day)",
+                        "amount": 600,
+                        "unit": "per_day"
+                    }
+                ]
+            },
+            "contracts": [
+                {
+                    "name": "North Region",
+                    "end_client": "Example Borough Council"
+                },
+                {
+                    "name": "South Region",
+                    "end_client": null
+                }
+            ]
+        }
+    ],
+    "competencies": {
+        "Mechanical": {
+            "Plumbing & heating": null,
+            "Gas (Gas Safe)": "Gas Safe",
+            "Commercial boilers": null,
+            "HVAC & air conditioning (F-Gas)": "F-Gas",
+            "Ventilation & extract": null,
+            "Pumps & pressurisation": null,
+            "Pool plant & filtration": null,
+            "Refrigeration": null
+        },
+        "Electrical": {
+            "Electrical installation & repair": "NICEIC",
+            "Emergency lighting": null,
+            "EICR testing": "NICEIC",
+            "HV, generators & UPS": null,
+            "Lightning protection": null
+        },
+        "Specialist systems": {
+            "Fire alarm": "BAFE",
+            "Sprinklers": null,
+            "Smoke ventilation": null,
+            "BMS / controls": null,
+            "Intruder alarm": "NSI",
+            "CCTV": "NSI",
+            "Access control": "NSI",
+            "IT / data": null
+        },
+        "Lifts & access": {
+            "Passenger lifts": "LEIA",
+            "Platform & stair lifts": "LEIA",
+            "Doors & shutters": null,
+            "Scaffolding & access equipment": null
+        },
+        "Building fabric": {
+            "Builder's work": null,
+            "Roofing": null,
+            "Waterproofing": null,
+            "Drainage": null,
+            "Passive fire protection": null,
+            "Fire doors": null,
+            "Groundworks": null
+        },
+        "Compliance & surveys": {
+            "Asbestos surveys": "UKAS",
+            "Asbestos removal (licensed)": "HSE asbestos licence",
+            "Water hygiene / legionella": "Legionella Control Association",
+            "Structural engineering": null,
+            "Fire risk assessment": null
+        },
+        "Site services": {
+            "Waste removal": null,
+            "Traffic management": null,
+            "Ductwork & extract cleaning": null
+        }
+    },
+    "settings": [
+        {
+            "key": "return_visit_callout",
+            "value": false,
+            "status": "agreed",
+            "note": "No call-out charge on return visits."
+        },
+        {
+            "key": "multi_trade_callout",
+            "value": "per_trade",
+            "status": "on_hold",
+            "note": "Second trade on the same visit: to be agreed."
+        },
+        {
+            "key": "approval_policy",
+            "value": "except_emergency",
+            "status": "proposed",
+            "note": "Client approval before dispatch, except emergencies."
+        },
+        {
+            "key": "approval_threshold",
+            "value": 500,
+            "status": "proposed",
+            "note": "Used only if approval is required above a value."
+        },
+        {
+            "key": "inspection_credit_days",
+            "value": 180,
+            "status": "on_hold",
+            "note": "Inspection fee credited if the quote is accepted within this many days."
+        },
+        {
+            "key": "inspection_review_months",
+            "value": 6,
+            "status": "on_hold",
+            "note": "Review of unconverted quotes."
+        },
+        {
+            "key": "offer_reply_hours",
+            "value": 4,
+            "status": "agreed",
+            "note": "Reply deadline for planned, urgent and routine offers."
+        },
+        {
+            "key": "offer_reply_minutes_emergency",
+            "value": 30,
+            "status": "agreed",
+            "note": "Reply deadline for emergency offers."
+        },
+        {
+            "key": "show_cis",
+            "value": false,
+            "status": "on_hold",
+            "note": "CIS hidden for now."
+        },
+        {
+            "key": "completion_report_delivery",
+            "value": "portal_download",
+            "status": "agreed",
+            "note": "Completion reports are downloaded from the portal."
+        },
+        {
+            "key": "partner_pay_days",
+            "value": 30,
+            "status": "on_hold",
+            "note": "Partner payment terms."
+        }
+    ],
+    "sequences": {
+        "work_order": 1001,
+        "quote": 1
+    }
+}

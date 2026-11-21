@@ -27,58 +27,58 @@ class ResourcesTest extends PortalTestCase
 
     public function test_office_staff_view_but_only_admins_change_the_plan(): void
     {
-        $paul = $this->person('Pat Example');
-        $p = $this->proj('P0189', 'Westbury Hotel');
+        $pat = $this->person('Pat Example');
+        $p = $this->proj('P0101', 'Riverside Offices');
         $week = Weeks::ending()->toDateString();
 
-        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->get('/resources')->assertOk()->assertSee('Pat Example');
-        $this->get("/resources/people/{$paul->id}")->assertOk()->assertDontSee('Save changes');
-        $this->post('/resources/save', ['cells' => ["{$p->id}-{$paul->id}" => [$week => 2]]])->assertForbidden();
-        $this->signIn($this->makeUser($this->compass, 'engineer'))->get('/resources')->assertForbidden();
-        $this->signIn($this->makeUser($this->wates, 'client_admin'))->get('/resources')->assertForbidden();
+        $this->signIn($this->makeUser($this->operator, 'helpdesk'))->get('/resources')->assertOk()->assertSee('Pat Example');
+        $this->get("/resources/people/{$pat->id}")->assertOk()->assertDontSee('Save changes');
+        $this->post('/resources/save', ['cells' => ["{$p->id}-{$pat->id}" => [$week => 2]]])->assertForbidden();
+        $this->signIn($this->makeUser($this->operator, 'engineer'))->get('/resources')->assertForbidden();
+        $this->signIn($this->makeUser($this->client, 'client_admin'))->get('/resources')->assertForbidden();
 
-        $this->signIn($this->makeUser($this->compass, 'admin'))->post('/resources/save', ['cells' => ["{$p->id}-{$paul->id}" => [$week => 2]]])->assertRedirect();
+        $this->signIn($this->makeUser($this->operator, 'admin'))->post('/resources/save', ['cells' => ["{$p->id}-{$pat->id}" => [$week => 2]]])->assertRedirect();
         $this->assertSame(2.0, (float) Allocation::sole()->days);
     }
 
     public function test_grid_save_rounds_to_half_days_and_blank_removes(): void
     {
-        $paul = $this->person('Pat Example');
-        $p = $this->proj('P0189', 'Westbury Hotel');
+        $pat = $this->person('Pat Example');
+        $p = $this->proj('P0101', 'Riverside Offices');
         [$w1, $w2] = Weeks::range(Weeks::ending(), 2);
-        $this->signIn($this->makeUser($this->compass, 'admin'));
-        $this->post('/resources/save', ['cells' => ["{$p->id}-{$paul->id}" => [$w1->toDateString() => '1.3', $w2->toDateString() => '3']]]);
+        $this->signIn($this->makeUser($this->operator, 'admin'));
+        $this->post('/resources/save', ['cells' => ["{$p->id}-{$pat->id}" => [$w1->toDateString() => '1.3', $w2->toDateString() => '3']]]);
         $this->assertSame([1.5, 3.0], Allocation::orderBy('week')->pluck('days')->map(fn ($d) => (float) $d)->all());
-        $this->post('/resources/save', ['cells' => ["{$p->id}-{$paul->id}" => [$w1->toDateString() => '']]]);
+        $this->post('/resources/save', ['cells' => ["{$p->id}-{$pat->id}" => [$w1->toDateString() => '']]]);
         $this->assertSame(1, Allocation::count());
     }
 
     public function test_fill_weeks_and_utilisation_shows_over_100_percent(): void
     {
-        $paul = $this->person('Pat Example');
-        $a = $this->proj('P0189', 'Westbury Hotel');
-        $b = $this->proj('P0212', 'Newark Castle');
+        $pat = $this->person('Pat Example');
+        $a = $this->proj('P0101', 'Riverside Offices');
+        $b = $this->proj('P0102', 'Hilltop School');
         $from = Weeks::ending();
-        $this->signIn($this->makeUser($this->compass, 'admin'));
-        $this->post('/resources/fill', ['project_id' => $a->id, 'staff_id' => $paul->id, 'days' => 3, 'from' => $from->toDateString(), 'to' => $from->copy()->addWeeks(9)->toDateString(), 'overwrite' => 1])
+        $this->signIn($this->makeUser($this->operator, 'admin'));
+        $this->post('/resources/fill', ['project_id' => $a->id, 'staff_id' => $pat->id, 'days' => 3, 'from' => $from->toDateString(), 'to' => $from->copy()->addWeeks(9)->toDateString(), 'overwrite' => 1])
             ->assertSessionHas('status');
         $this->assertSame(10, Allocation::where('project_id', $a->id)->count());
         // A date mid-week is snapped to that week's Friday.
-        $this->post('/resources/fill', ['project_id' => $b->id, 'staff_id' => $paul->id, 'days' => 3, 'from' => $from->copy()->subDays(2)->toDateString(), 'to' => $from->toDateString()]);
+        $this->post('/resources/fill', ['project_id' => $b->id, 'staff_id' => $pat->id, 'days' => 3, 'from' => $from->copy()->subDays(2)->toDateString(), 'to' => $from->toDateString()]);
         $this->assertSame($from->toDateString(), Allocation::where('project_id', $b->id)->sole()->week->toDateString());
 
         $this->get('/resources?from='.$from->toDateString())->assertSee('120%')->assertSee('u-over');
-        $this->get("/resources/people/{$paul->id}?from=".$from->toDateString())->assertSee('Newark Castle')->assertSee('Westbury Hotel');
+        $this->get("/resources/people/{$pat->id}?from=".$from->toDateString())->assertSee('Hilltop School')->assertSee('Riverside Offices');
 
         // Without overwrite, weeks already planned are left alone.
-        $this->post('/resources/fill', ['project_id' => $a->id, 'staff_id' => $paul->id, 'days' => 1, 'from' => $from->toDateString(), 'to' => $from->copy()->addWeeks(11)->toDateString(), 'overwrite' => 0]);
+        $this->post('/resources/fill', ['project_id' => $a->id, 'staff_id' => $pat->id, 'days' => 1, 'from' => $from->toDateString(), 'to' => $from->copy()->addWeeks(11)->toDateString(), 'overwrite' => 0]);
         $this->assertSame(10, Allocation::where('project_id', $a->id)->where('days', 3)->count());
         $this->assertSame(2, Allocation::where('project_id', $a->id)->where('days', 1)->count());
     }
 
     public function test_new_project_and_person_appear_without_copying_anything(): void
     {
-        $this->signIn($this->makeUser($this->compass, 'admin'));
+        $this->signIn($this->makeUser($this->operator, 'admin'));
         $this->post('/resources/projects', ['number' => 'P0257', 'name' => 'Canary Wharf fit-out', 'status' => 'active', 'days_allowed' => 40])->assertRedirect();
         $this->post('/resources/people', ['name' => 'New Starter Sam', 'team' => 'Commercial', 'days_per_week' => 4, 'active' => 1, 'starts_on' => now()->addWeeks(3)->toDateString()])->assertRedirect();
         $this->post('/resources/projects', ['number' => 'P0257', 'name' => 'Duplicate', 'status' => 'active'])->assertSessionHasErrors('number');
@@ -92,13 +92,13 @@ class ResourcesTest extends PortalTestCase
 
     public function test_csv_export(): void
     {
-        $paul = $this->person('Pat Example');
-        $p = $this->proj('P0189', 'Westbury Hotel');
-        Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $paul->id, 'week' => Weeks::ending()->toDateString(), 'days' => 2]);
-        $res = $this->signIn($this->makeUser($this->compass, 'finance'))->get('/resources/export.csv?from='.Weeks::ending()->toDateString());
+        $pat = $this->person('Pat Example');
+        $p = $this->proj('P0101', 'Riverside Offices');
+        Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $pat->id, 'week' => Weeks::ending()->toDateString(), 'days' => 2]);
+        $res = $this->signIn($this->makeUser($this->operator, 'finance'))->get('/resources/export.csv?from='.Weeks::ending()->toDateString());
         $res->assertOk();
         $csv = $res->streamedContent();
-        $this->assertStringContainsString('"Pat Example","Project Management",P0189,"Westbury Hotel",2,', $csv);
+        $this->assertStringContainsString('"Pat Example","Project Management",P0101,"Riverside Offices",2,', $csv);
     }
 
     // ---- Import of the old spreadsheet ----------------------------------------------------------
@@ -141,7 +141,7 @@ class ResourcesTest extends PortalTestCase
             'Master_Projects' => ['hidden', [
                 3 => ['A' => 'PROJECT NO.', 'B' => 'PROJECT'],
                 4 => ['A' => 0, 'B' => 'Holiday'],
-                5 => ['A' => 'P0189', 'B' => 'Westbury Hotel', 'C' => 'Alex Lead', 'E' => 'TSM', 'H' => 'Wates', 'I' => 46171],
+                5 => ['A' => 'P0101', 'B' => 'Riverside Offices', 'C' => 'Alex Lead', 'E' => 'TSM', 'H' => 'Client Co', 'I' => 46171],
                 6 => ['A' => 'All', 'B' => 'Total Resource'],
             ]],
             'Utilisation' => ['visible', [
@@ -153,16 +153,16 @@ class ResourcesTest extends PortalTestCase
                 2 => ['A' => 'Alex Lead', 'B' => 'Project Manager'],
                 3 => ['C' => $start, 'D' => $start + 7, 'E' => $start + 14],
                 4 => ['A' => 0, 'B' => 'Holiday', 'E' => 1],
-                5 => ['A' => 'P0189', 'B' => 'Westbury Hotel', 'C' => 0.2, 'D' => 0.1],
-                6 => ['A' => 'TBC', 'B' => 'Sunbury Leisure Centre', 'D' => 0.4],
+                5 => ['A' => 'P0101', 'B' => 'Riverside Offices', 'C' => 0.2, 'D' => 0.1],
+                6 => ['A' => 'TBC', 'B' => 'Lakeside Leisure Centre', 'D' => 0.4],
                 8 => ['B' => 'Total', 'C' => 0.2],
                 9 => ['A' => 'P9999', 'B' => 'Below the total row', 'C' => 1],
             ]],
             'Cy_Counter' => ['visible', [
                 2 => ['A' => 'Someone Else', 'B' => 'Copied sheet'],
                 3 => ['C' => $start],
-                4 => ['A' => 'P0189 ', 'B' => ' Westbury  Hotel', 'C' => 0.6],
-                5 => ['A' => 'TBC ', 'B' => 'Sunbury Leisure Centre', 'C' => 0.2],
+                4 => ['A' => 'P0101 ', 'B' => ' Riverside  Offices', 'C' => 0.6],
+                5 => ['A' => 'TBC ', 'B' => 'Lakeside Leisure Centre', 'C' => 0.2],
                 6 => ['B' => 'Total'],
             ]],
             'Old Leaver' => ['hidden', [2 => ['A' => 'Old Leaver'], 3 => ['C' => $start], 4 => ['B' => 'Total']]],
@@ -180,17 +180,17 @@ class ResourcesTest extends PortalTestCase
         $this->assertSame(['Commercial', 'Senior QS'], [$cy->team, $cy->position]);
         $this->assertFalse(Staff::where('name', 'Old Leaver')->sole()->active);
 
-        $this->assertSame(3, Project::count()); // Holiday, Westbury (one, despite spacing), Sunbury (TBC, by name)
-        $westbury = Project::where('number', 'P0189')->sole();
-        $this->assertSame([$this->wates->id, 'TSM', '2026-05-29'], [$westbury->organisation_id, $westbury->type, $westbury->completion_on->toDateString()]);
-        $this->assertSame('Alex Lead', $westbury->lead->name);
+        $this->assertSame(3, Project::count()); // Holiday, Riverside (one, despite spacing), Lakeside (TBC, by name)
+        $riverside = Project::where('number', 'P0101')->sole();
+        $this->assertSame([$this->client->id, 'TSM', '2026-05-29'], [$riverside->organisation_id, $riverside->type, $riverside->completion_on->toDateString()]);
+        $this->assertSame('Alex Lead', $riverside->lead->name);
         $this->assertTrue(Project::where('name', 'Holiday')->sole()->internal);
-        $this->assertNull(Project::where('name', 'Sunbury Leisure Centre')->sole()->number);
+        $this->assertNull(Project::where('name', 'Lakeside Leisure Centre')->sole()->number);
 
         $alex = Staff::where('name', 'Alex Lead')->sole();
-        $this->assertSame(1.0, (float) Allocation::where(['staff_id' => $alex->id, 'project_id' => $westbury->id, 'week' => '2025-10-17'])->value('days'));
-        $this->assertSame(0.5, (float) Allocation::where(['staff_id' => $alex->id, 'project_id' => $westbury->id, 'week' => '2025-10-24'])->value('days'));
-        $this->assertSame(3.0, (float) Allocation::where(['staff_id' => $cy->id, 'project_id' => $westbury->id])->value('days'));
+        $this->assertSame(1.0, (float) Allocation::where(['staff_id' => $alex->id, 'project_id' => $riverside->id, 'week' => '2025-10-17'])->value('days'));
+        $this->assertSame(0.5, (float) Allocation::where(['staff_id' => $alex->id, 'project_id' => $riverside->id, 'week' => '2025-10-24'])->value('days'));
+        $this->assertSame(3.0, (float) Allocation::where(['staff_id' => $cy->id, 'project_id' => $riverside->id])->value('days'));
         $this->assertSame(6, Allocation::count()); // nothing from below the Total row
     }
 
@@ -198,7 +198,7 @@ class ResourcesTest extends PortalTestCase
 
     public function test_admin_adds_power_bi_report_from_its_browser_address(): void
     {
-        $admin = $this->makeUser($this->compass, 'admin');
+        $admin = $this->makeUser($this->operator, 'admin');
         $this->signIn($admin)->post('/reports', ['title' => 'Monthly performance', 'roles' => ['admin', 'finance'],
             'embed_url' => 'https://app.powerbi.com/groups/1a2b3c4d-0000-0000-0000-000000000001/reports/9f8e7d6c-0000-0000-0000-000000000002/ReportSection?ctid=11111111-2222-3333-4444-555555555555&experience=power-bi'])
             ->assertRedirect();
@@ -206,15 +206,15 @@ class ResourcesTest extends PortalTestCase
         $this->assertSame('https://app.powerbi.com/reportEmbed?reportId=9f8e7d6c-0000-0000-0000-000000000002&autoAuth=true&groupId=1a2b3c4d-0000-0000-0000-000000000001&ctid=11111111-2222-3333-4444-555555555555', $d->embed_url);
         $this->get("/reports/{$d->id}")->assertOk()->assertSee('<iframe', false)->assertSee('reportEmbed?reportId=9f8e7d6c', false);
 
-        $this->signIn($this->makeUser($this->compass, 'finance'))->get("/reports/{$d->id}")->assertOk();
-        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->get("/reports/{$d->id}")->assertForbidden();
-        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->get('/reports')->assertForbidden();
-        $this->signIn($this->makeUser($this->wates, 'client_admin'))->get("/reports/{$d->id}")->assertForbidden();
+        $this->signIn($this->makeUser($this->operator, 'finance'))->get("/reports/{$d->id}")->assertOk();
+        $this->signIn($this->makeUser($this->operator, 'helpdesk'))->get("/reports/{$d->id}")->assertForbidden();
+        $this->signIn($this->makeUser($this->operator, 'helpdesk'))->get('/reports')->assertForbidden();
+        $this->signIn($this->makeUser($this->client, 'client_admin'))->get("/reports/{$d->id}")->assertForbidden();
     }
 
     public function test_only_power_bi_links_are_accepted(): void
     {
-        $this->signIn($this->makeUser($this->compass, 'admin'));
+        $this->signIn($this->makeUser($this->operator, 'admin'));
         foreach (['https://evil.example/reportEmbed?reportId=x', 'http://app.powerbi.com/reportEmbed?reportId=x', 'javascript:alert(1)'] as $url) {
             $this->post('/reports', ['title' => 'X', 'roles' => ['admin'], 'embed_url' => $url])->assertSessionHasErrors('embed_url');
         }
@@ -226,21 +226,21 @@ class ResourcesTest extends PortalTestCase
 
     public function test_api_needs_a_valid_key_and_returns_tables(): void
     {
-        $paul = $this->person('Pat Example');
-        $p = $this->proj('P0189', 'Westbury Hotel', ['days_allowed' => 20]);
-        Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $paul->id, 'week' => '2026-11-27', 'days' => 4]);
+        $pat = $this->person('Pat Example');
+        $p = $this->proj('P0101', 'Riverside Offices', ['days_allowed' => 20]);
+        Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $pat->id, 'week' => '2026-11-27', 'days' => 4]);
         Opportunity::create(['account_id' => $this->account->id, 'title' => 'Big tender', 'stage' => 'pricing', 'kind' => 'tender', 'value' => 100000, 'probability' => 40]);
 
         $this->getJson('/api/v1/projects')->assertUnauthorized();
         $this->getJson('/api/v1/projects?key=cmp_wrong')->assertUnauthorized();
 
-        $admin = $this->makeUser($this->compass, 'admin');
+        $admin = $this->makeUser($this->operator, 'admin');
         $this->signIn($admin)->post('/microsoft-365/api-keys', ['name' => 'Power BI'])->assertSessionHas('new_api_key');
         $secret = session('new_api_key')['secret'];
         $this->assertStringNotContainsString($secret, (string) ApiKey::sole()->toJson()); // only the hash is stored
 
         $this->getJson('/api/v1/projects', ['Authorization' => 'Bearer '.$secret])->assertOk()
-            ->assertJsonPath('value.0.number', 'P0189')->assertJsonPath('value.0.days_planned', 4);
+            ->assertJsonPath('value.0.number', 'P0101')->assertJsonPath('value.0.days_planned', 4);
         $this->getJson('/api/v1/utilisation?key='.$secret)->assertOk()
             ->assertJsonPath('value.0.name', 'Pat Example')->assertJsonPath('value.0.utilisation_pct', 80);
         $this->getJson('/api/v1/opportunities', ['X-Api-Key' => $secret])->assertOk()->assertJsonPath('value.0.weighted_value', 40000);
@@ -253,9 +253,9 @@ class ResourcesTest extends PortalTestCase
         $this->getJson('/api/v1/projects?key='.$secret)->assertUnauthorized();
     }
 
-    public function test_only_compass_admins_create_api_keys(): void
+    public function test_only_operator_admins_create_api_keys(): void
     {
-        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->post('/microsoft-365/api-keys', ['name' => 'x'])->assertForbidden();
+        $this->signIn($this->makeUser($this->operator, 'helpdesk'))->post('/microsoft-365/api-keys', ['name' => 'x'])->assertForbidden();
         $this->assertSame(0, ApiKey::count());
     }
 }

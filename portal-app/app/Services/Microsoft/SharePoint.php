@@ -9,7 +9,7 @@ use RuntimeException;
 
 /**
  * Files in a SharePoint document library, through Microsoft Graph with the portal's own
- * app permission (Sites.Selected: only the sites Compass has granted it).
+ * app permission (Sites.Selected: only the sites you have granted it).
  */
 class SharePoint
 {
@@ -61,7 +61,7 @@ class SharePoint
     }
 
     /**
-     * Upload (or replace) a file. $folder is a path inside the library, e.g. "Portal/Completion reports/Wates";
+     * Upload (or replace) a file. $folder is a path inside the library, e.g. "Portal/Completion reports/Client Co";
      * missing folders are created. Returns the SharePoint item: id, name, webUrl.
      */
     public static function upload(string $folder, string $filename, string $contents, string $mime = 'application/octet-stream'): array

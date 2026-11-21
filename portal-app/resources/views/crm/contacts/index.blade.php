@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Contacts')
 @section('content')
-<div class="page-head"><div><h1>Contacts</h1><p class="muted">Everyone Compass MEP deals with, at clients, prospects, suppliers and partners.</p></div>
+<div class="page-head"><div><h1>Contacts</h1><p class="muted">Everyone you deal with, at clients, prospects, suppliers and partners.</p></div>
   <a class="btn primary" href="{{ route('contacts.create') }}">+ Add a person</a></div>
 <form method="get" class="row"><input type="search" name="q" value="{{ $q }}" placeholder="Search by name, company, email or job title" aria-label="Search contacts" style="max-width:380px"><button class="btn">Search</button>@if($q)<a class="btn" href="{{ route('contacts.index') }}">Clear</a>@endif</form>
 <div class="panel"><div class="tbl"><table>

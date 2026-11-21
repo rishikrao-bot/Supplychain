@@ -44,7 +44,7 @@ class OpportunityController extends CrmController
     private function options(): array
     {
         return [
-            'companies' => Organisation::where('type', '!=', Organisation::COMPASS)->orderBy('name')->get(['id', 'name']),
+            'companies' => Organisation::where('type', '!=', Organisation::OPERATOR)->orderBy('name')->get(['id', 'name']),
             'contacts' => Contact::with('organisation:id,name')->orderBy('first_name')->get(),
             'staff' => $this->staff(),
         ];

@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 /**
- * The resource planner. Compass office staff can look; Compass admins (Mike) change the plan.
+ * The resource planner. office staff can look; admins change the plan.
  */
 class PlannerController extends Controller
 {
@@ -24,7 +24,7 @@ class PlannerController extends Controller
 
     protected function edit(Request $r): void
     {
-        abort_unless($r->user()->canUseCrm() && $r->user()->isCompassAdmin(), 403);
+        abort_unless($r->user()->canUseCrm() && $r->user()->isOperatorAdmin(), 403);
     }
 
     /** Weeks shown: ?from=YYYY-MM-DD (any day; snapped to its Friday), ?weeks=N. Starts one week back by default. */
@@ -47,7 +47,7 @@ class PlannerController extends Controller
 
         return view('resources.index', [
             'weeks' => $weeks, 'teams' => $teams, 'totals' => ResourcePlan::totals($weeks),
-            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isCompassAdmin(),
+            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isOperatorAdmin(),
         ]);
     }
 
@@ -67,7 +67,7 @@ class PlannerController extends Controller
             'staff' => $staff, 'weeks' => $weeks, 'grid' => $grid, 'projects' => $projects,
             'totals' => ResourcePlan::totals($weeks)[$staff->id] ?? [],
             'allProjects' => Project::where('status', 'active')->orderByDesc('internal')->orderBy('number')->get(),
-            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isCompassAdmin(),
+            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isOperatorAdmin(),
         ]);
     }
 
@@ -88,7 +88,7 @@ class PlannerController extends Controller
             'project' => $project->load(['client', 'lead']), 'weeks' => $weeks, 'grid' => $grid, 'people' => $people, 'days' => $days,
             'totals' => ResourcePlan::totals($weeks),
             'allStaff' => Staff::where('active', true)->orderBy('name')->get(),
-            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isCompassAdmin(),
+            'thisWeek' => Weeks::ending()->toDateString(), 'canEdit' => $request->user()->isOperatorAdmin(),
         ]);
     }
 
@@ -117,7 +117,7 @@ class PlannerController extends Controller
         return back()->with('status', $changed ? "Saved {$changed} change(s)." : 'No changes.');
     }
 
-    /** "Put Paul on Westbury Hotel for 1 day a week from 7 Nov to 30 Jan." */
+    /** "Put Pat on Riverside Offices for 1 day a week from 7 Nov to 30 Jan." */
     public function fill(Request $request)
     {
         $this->edit($request);

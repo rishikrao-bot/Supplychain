@@ -74,7 +74,7 @@ class ActivityController extends CrmController
     public function destroy(Request $request, CrmActivity $activity)
     {
         $this->guard($request);
-        abort_unless($activity->user_id === $request->user()->id || $request->user()->isCompassAdmin(), 403);
+        abort_unless($activity->user_id === $request->user()->id || $request->user()->isOperatorAdmin(), 403);
         $activity->delete();
 
         return back()->with('status', 'Removed.');

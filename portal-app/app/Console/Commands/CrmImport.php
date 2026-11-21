@@ -41,7 +41,7 @@ class CrmImport extends Command
 
             return self::FAILURE;
         }
-        $this->account = Account::where('slug', 'compass-mep')->first() ?? Account::firstOrFail();
+        $this->account = Account::orderBy('id')->firstOrFail();
         $dry = (bool) $this->option('dry-run');
 
         $portalUsers = User::withoutGlobalScopes()->where('account_id', $this->account->id)->pluck('id', 'email')->mapWithKeys(fn ($id, $e) => [Str::lower($e) => $id]);
@@ -75,7 +75,7 @@ class CrmImport extends Command
 
         foreach ($accounts as $a) {
             $org = Organisation::withoutGlobalScopes()->where('account_id', $this->account->id)->where('dataverse_id', $a['accountid'])->first()
-                ?? Organisation::withoutGlobalScopes()->where('account_id', $this->account->id)->whereNull('dataverse_id')->where('type', '!=', Organisation::COMPASS)->whereRaw('LOWER(name) = ?', [Str::lower(trim($a['name'] ?? ''))])->first()
+                ?? Organisation::withoutGlobalScopes()->where('account_id', $this->account->id)->whereNull('dataverse_id')->where('type', '!=', Organisation::OPERATOR)->whereRaw('LOWER(name) = ?', [Str::lower(trim($a['name'] ?? ''))])->first()
                 ?? new Organisation(['account_id' => $this->account->id, 'type' => $this->type($a['customertypecode'] ?? null)]);
             $org->fill(array_filter([
                 'name' => mb_substr(trim($a['name'] ?? 'Unnamed company'), 0, 160),

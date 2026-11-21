@@ -10,21 +10,21 @@ use App\Support\Roles;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-/** Creates the first Compass admin and prints their invite link. Run once after deploying. */
+/** Creates the first admin and prints their invite link. Run once after deploying. */
 class InviteAdmin extends Command
 {
     protected $signature = 'portal:invite-admin {email} {name}';
-    protected $description = 'Invite a Compass MEP admin and print the invite link';
+    protected $description = 'Invite the first admin and print the invite link';
 
     public function handle(): int
     {
-        $account = Account::where('slug', 'compass-mep')->first();
+        $account = Account::orderBy('id')->first();
         if (! $account) {
             $this->error('Run "php artisan db:seed --force" first.');
 
             return self::FAILURE;
         }
-        $org = Organisation::withoutGlobalScopes()->where('account_id', $account->id)->where('type', 'compass')->firstOrFail();
+        $org = Organisation::withoutGlobalScopes()->where('account_id', $account->id)->where('type', Organisation::OPERATOR)->firstOrFail();
         $email = Str::lower($this->argument('email'));
         $user = User::withoutGlobalScopes()->firstOrNew(['email' => $email]);
         if ($user->exists && $user->status === User::ACTIVE) {
