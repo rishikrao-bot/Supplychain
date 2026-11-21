@@ -17,6 +17,14 @@
   <nav class="nav" aria-label="Sections">
     <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>Dashboard</a>
     @if($me->canManageUsers())<a href="{{ route('users.index') }}" @if(request()->routeIs('users.*')) aria-current="page" @endif>{{ $me->isCompassAdmin() ? 'Users & access' : 'Users' }}</a>@endif
+    @if($me->canUseCrm())
+    <span class="nav-h">CRM</span>
+    <a href="{{ route('companies.index') }}" @if(request()->routeIs('companies.*')) aria-current="page" @endif>Companies</a>
+    <a href="{{ route('contacts.index') }}" @if(request()->routeIs('contacts.*')) aria-current="page" @endif>Contacts</a>
+    <a href="{{ route('pipeline.index') }}" @if(request()->routeIs('pipeline.*')) aria-current="page" @endif>Pipeline &amp; tenders</a>
+    <a href="{{ route('tasks.index') }}" @if(request()->routeIs('tasks.*')) aria-current="page" @endif>Tasks</a>
+    <span class="nav-h">Set-up</span>
+    @endif
     @if($me->isCompassStaff())
     <a href="{{ route('sites.index') }}" @if(request()->routeIs('sites.*')) aria-current="page" @endif>Sites</a>
     <a href="{{ route('contractors.index') }}" @if(request()->routeIs('contractors.*')) aria-current="page" @endif>Contractors</a>

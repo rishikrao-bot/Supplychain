@@ -6,7 +6,8 @@ One **app registration** in Compass MEP's Microsoft Entra ID gives the portal th
 |---|---|---|
 | Sign in with Microsoft | Compass staff log in with their Microsoft 365 account (and Microsoft's MFA). Clients and partners keep email + password + authenticator app. | `MICROSOFT_SIGN_IN=true` |
 | SharePoint | Every completion report is copied to `<site>/<library>/Portal/Completion reports/<Client>/<Contract>/`. Failed copies retry every 15 minutes. | `SHAREPOINT_SITE=...` |
-| Dataverse CRM | The portal can read and write CRM tables (accounts, contacts, opportunities, custom tables) as its own application user. | `DATAVERSE_URL=...` |
+| Outlook & To Do (CRM) | Each Compass person connects their own mailbox and To Do: CRM tasks sync both ways with a To Do list called "Compass MEP Portal", and company/contact pages show their Outlook emails with those people. | Each person clicks **Connect** on the Tasks page (or just uses Microsoft sign-in) |
+| Dataverse CRM | Used once, to import the old CRM into the portal's own CRM (`php artisan portal:crm-import`). | `DATAVERSE_URL=...` |
 
 Each part is optional and can be set up on its own. Nothing changes in the portal until the settings
 are in `.env`. You need to be a Microsoft 365 **Global Administrator** (or Application Administrator +
@@ -31,10 +32,16 @@ SharePoint Administrator + Power Platform Administrator) for Compass MEP's tenan
 4. **Certificates & secrets → Client secrets → New client secret**. Description `portal`, expiry 24 months.
    Copy the **Value** straight away (it is shown once) → `MICROSOFT_CLIENT_SECRET`.
    Put a reminder in your calendar a month before it expires; see "Renewing the secret" below.
-5. **API permissions**: `User.Read` (delegated) is already there, which is all sign-in needs.
-   For SharePoint add: **Add a permission → Microsoft Graph → Application permissions → `Sites.Selected`**
-   → **Grant admin consent for Compass MEP**.
+5. **API permissions** → **Add a permission → Microsoft Graph**:
+   - **Delegated permissions** (each person's own data, only when they connect): `offline_access`,
+     `Mail.Read`, `Tasks.ReadWrite` (`User.Read`, `openid`, `profile`, `email` are already there or added the same way).
+   - **Application permissions** (the portal itself): `Sites.Selected` for SharePoint.
+   - Then **Grant admin consent for Compass MEP** so staff aren't each asked to approve.
    (Dataverse needs no permission here; it's granted in step 4.)
+
+   `Mail.Read` lets the portal *read* the connected person's own mailbox to show emails with a client;
+   it can't send, and nothing is stored unless they click "Save to record". `Tasks.ReadWrite` covers their
+   To Do. Nobody's mailbox is reachable unless they connect it themselves.
 
 ## 2. Make sure Microsoft MFA is on
 
@@ -111,6 +118,34 @@ Each line shows ✔ working, – not set up, or ✘ with Microsoft's reason. The
 portal under **Microsoft 365 → Test connections** (Compass admins only).
 
 Make sure the scheduler cron job from DEPLOY.md is set up: it retries SharePoint copies.
+
+## Moving the old CRM across (once)
+
+The portal has its own CRM now (Companies, Contacts, Pipeline & tenders, Tasks). To bring over what's in
+Dataverse (`compassmepdev`), after steps 1, 4 and 5:
+
+    php artisan portal:crm-import --dry-run    # shows how many of each it found; saves nothing
+    php artisan portal:crm-import
+
+It brings over active accounts (as companies: Customer → client, Supplier/Vendor → supplier, others →
+prospect), contacts, opportunities (open ones as "Qualifying", plus won/lost), open tasks, and notes,
+phone calls and appointments as history. Owners are matched to portal users by email. Companies whose
+name matches one already in the portal (e.g. Wates) are linked, not duplicated. Running it again updates
+rather than duplicates, so you can import, keep using Dataverse for a few days, and import again before
+switching off.
+
+## Outlook & To Do for each person
+
+- On the **Tasks** page, click **Connect**, and sign in with your own Compass Microsoft 365 account.
+  (Staff who log in with "Sign in with Microsoft" are connected automatically.)
+- A list called **Compass MEP Portal** appears in Microsoft To Do (and Outlook's tasks). Tasks assigned
+  to you in the portal appear there; ticking off, renaming or changing the due date in either place
+  updates the other within 5 minutes (or click **Sync now**). Tasks you add to that list in To Do appear in
+  the portal. Reassigning a task moves it to the other person's list.
+- Company and contact pages show your Outlook emails with those people; **Save to record** adds one
+  to the shared history.
+- **Disconnect** on the Tasks page stops it. Changing your Microsoft password or an admin revoking access
+  also disconnects you; just connect again.
 
 ## How Microsoft sign-in matches people
 

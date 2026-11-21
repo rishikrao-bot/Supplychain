@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Activity;
 use App\Services\Microsoft\MicrosoftApp;
+use App\Services\Microsoft\MicrosoftUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -20,6 +21,9 @@ use Illuminate\Support\Str;
  * Microsoft's own multi-factor sign-in replaces the portal's authenticator-app step for these logins,
  * so the tenant must require MFA (Security Defaults or Conditional Access).
  * Clients and partners keep email, password and authenticator app.
+ *
+ * The same flow connects the person's own Outlook mail (read) and Microsoft To Do for the CRM: on sign-in,
+ * or later from the CRM ("Connect Outlook & To Do") if they logged in with email and password.
  */
 class MicrosoftLoginController extends Controller
 {
@@ -35,33 +39,42 @@ class MicrosoftLoginController extends Controller
 
     public function redirect(Request $request)
     {
-        abort_unless(self::enabled(), 404);
+        // Already logged in: this is "Connect Outlook & To Do" for the CRM (works even if Microsoft sign-in is off).
+        $connect = Auth::check() && $request->session()->get('two_factor_passed');
+        abort_unless($connect ? MicrosoftApp::isConfigured() : self::enabled(), 404);
+        if (Auth::check() && ! $connect) {
+            return redirect()->route('two-factor.challenge');
+        }
+        if ($connect && ! $request->user()->canUseCrm()) {
+            abort(403);
+        }
         $state = Str::random(40);
         $nonce = Str::random(40);
         $verifier = Str::random(64);
-        $request->session()->put('ms_login', compact('state', 'nonce', 'verifier'));
+        $request->session()->put('ms_login', compact('state', 'nonce', 'verifier', 'connect'));
 
         $query = http_build_query([
             'client_id' => MicrosoftApp::config('client_id'),
             'response_type' => 'code',
             'redirect_uri' => $this->callbackUrl(),
             'response_mode' => 'query',
-            'scope' => 'openid profile email',
+            'scope' => MicrosoftUser::SCOPES,
             'state' => $state,
             'nonce' => $nonce,
             'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
             'code_challenge_method' => 'S256',
-            'prompt' => 'select_account',
-        ]);
+        ] + ($connect ? ['login_hint' => $request->user()->email] : ['prompt' => 'select_account']));
 
         return redirect()->away(MicrosoftApp::authority().'/oauth2/v2.0/authorize?'.$query);
     }
 
     public function callback(Request $request)
     {
-        abort_unless(self::enabled(), 404);
         $saved = $request->session()->pull('ms_login');
-        $fail = fn (string $msg) => redirect()->route('login')->withErrors(['email' => $msg]);
+        abort_unless(! empty($saved['connect']) ? MicrosoftApp::isConfigured() : self::enabled(), 404);
+        $fail = fn (string $msg) => ! empty($saved['connect']) && Auth::check()
+            ? redirect()->route('tasks.index')->withErrors(['microsoft' => $msg])
+            : redirect()->route('login')->withErrors(['email' => $msg]);
 
         if ($request->filled('error')) {
             return $fail('Microsoft sign-in was cancelled or refused: '.Str::limit((string) $request->input('error_description', $request->input('error')), 200));
@@ -79,7 +92,7 @@ class MicrosoftLoginController extends Controller
             'code' => $request->input('code'),
             'redirect_uri' => $this->callbackUrl(),
             'code_verifier' => $saved['verifier'],
-            'scope' => 'openid profile email',
+            'scope' => MicrosoftUser::SCOPES,
         ]);
         $claims = $res->successful() ? self::claims((string) $res->json('id_token')) : null;
         if (! $claims) {
@@ -103,6 +116,23 @@ class MicrosoftLoginController extends Controller
         $user = User::withoutGlobalScopes()->where('microsoft_oid', $claims['oid'])->first()
             ?? ($email !== '' ? User::withoutGlobalScopes()->where('email', $email)->whereNull('microsoft_oid')->first() : null);
 
+        // "Connect Outlook & To Do" from inside the portal: must be the same person.
+        if (! empty($saved['connect'])) {
+            $me = $request->user();
+            $back = redirect()->route('tasks.index');
+            if (! $me || ! $user || $me->id !== $user->id) {
+                return $back->withErrors(['microsoft' => "You signed in to Microsoft as {$email}, which isn't your portal account. Try again with your own Microsoft 365 account."]);
+            }
+            if (! $res->json('refresh_token')) {
+                return $back->withErrors(['microsoft' => 'Microsoft did not give access to Outlook and To Do. Ask your Microsoft 365 admin to grant consent for the portal (MICROSOFT.md, step 1).']);
+            }
+            $me->forceFill(['microsoft_oid' => $claims['oid']])->save();
+            MicrosoftUser::connect($me, $res->json('refresh_token'));
+            Activity::log('microsoft.connected', $me->name.' connected Outlook and To Do.', $me);
+
+            return $back->with('status', 'Outlook and To Do are connected. Your portal tasks will appear in To Do in a list called "Compass MEP Portal".');
+        }
+
         if (! $user || ! $user->isCompass()) {
             return $fail("{$email} does not have portal access yet. Ask a Compass MEP admin to add you.");
         }
@@ -117,6 +147,10 @@ class MicrosoftLoginController extends Controller
             'invite_token_hash' => null,
             'last_login_at' => now(),
         ])->save();
+
+        if ($res->json('refresh_token') && $user->canUseCrm()) {
+            MicrosoftUser::connect($user, $res->json('refresh_token'));
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

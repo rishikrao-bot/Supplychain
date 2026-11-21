@@ -108,7 +108,8 @@ database.
 
 ## Scheduled tasks (cron job, once)
 
-The portal runs small background tasks (for example retrying SharePoint copies every 15 minutes).
+The portal runs small background tasks: To Do sync every 5 minutes and retrying SharePoint copies
+every 15 minutes.
 In cPanel → **Cron Jobs** → Add New Cron Job, "Once Per Minute" (`* * * * *`), command:
 
     cd ~/compass-portal/portal-app && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1

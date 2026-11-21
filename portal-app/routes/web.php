@@ -4,6 +4,11 @@ use App\Http\Controllers\Auth\InviteController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MicrosoftLoginController;
 use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\Crm\ActivityController;
+use App\Http\Controllers\Crm\CompanyController;
+use App\Http\Controllers\Crm\ContactController;
+use App\Http\Controllers\Crm\OpportunityController;
+use App\Http\Controllers\Crm\TaskController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IntegrationsController;
 use App\Http\Controllers\OrganisationController;
@@ -18,9 +23,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:20,1');
-    Route::get('/login/microsoft', [MicrosoftLoginController::class, 'redirect'])->middleware('throttle:20,1')->name('login.microsoft');
-    Route::get('/login/microsoft/callback', [MicrosoftLoginController::class, 'callback'])->middleware('throttle:20,1')->name('login.microsoft.callback');
 });
+// Microsoft sign-in, and "Connect Outlook & To Do" for people already logged in.
+Route::get('/login/microsoft', [MicrosoftLoginController::class, 'redirect'])->middleware('throttle:20,1')->name('login.microsoft');
+Route::get('/login/microsoft/callback', [MicrosoftLoginController::class, 'callback'])->middleware('throttle:20,1')->name('login.microsoft.callback');
 Route::get('/invite/{token}', [InviteController::class, 'show'])->name('invite.show');
 Route::post('/invite/{token}', [InviteController::class, 'accept'])->middleware('throttle:10,1')->name('invite.accept');
 
@@ -54,6 +60,22 @@ Route::middleware(['auth', 'secure'])->group(function () {
     Route::post('/competencies', [CompetencyController::class, 'store'])->name('competencies.store');
     Route::get('/rates-and-rules', [RulesController::class, 'index'])->name('rules.index');
     Route::patch('/rates-and-rules/{setting}', [RulesController::class, 'update'])->name('rules.update');
+
+    // CRM (Compass office staff)
+    Route::resource('crm/companies', CompanyController::class)->except(['destroy'])->names('companies')->parameters(['companies' => 'company']);
+    Route::resource('crm/contacts', ContactController::class)->except(['destroy'])->names('contacts');
+    Route::resource('crm/pipeline', OpportunityController::class)->except(['destroy'])->names('pipeline')->parameters(['pipeline' => 'opportunity']);
+    Route::post('/crm/activities', [ActivityController::class, 'store'])->name('activities.store');
+    Route::post('/crm/activities/email', [ActivityController::class, 'storeEmail'])->name('activities.email');
+    Route::delete('/crm/activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
+    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::post('/tasks/sync', [TaskController::class, 'sync'])->middleware('throttle:10,1')->name('tasks.sync');
+    Route::post('/tasks/disconnect', [TaskController::class, 'disconnect'])->name('tasks.disconnect');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::post('/tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Microsoft 365 connections (Compass admins)
     Route::get('/microsoft-365', [IntegrationsController::class, 'index'])->name('integrations.index');

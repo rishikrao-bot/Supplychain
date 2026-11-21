@@ -54,6 +54,21 @@ class Dataverse
         return self::check(self::http()->get($table, $query))['value'] ?? [];
     }
 
+    /** Every row, following Dataverse's paging. */
+    public static function all(string $table, array $query = []): array
+    {
+        $rows = [];
+        $res = self::http()->withHeaders(['Prefer' => 'odata.maxpagesize=500'])->get($table, $query);
+        while (true) {
+            $page = self::check($res);
+            $rows = array_merge($rows, $page['value'] ?? []);
+            if (empty($page['@odata.nextLink'])) {
+                return $rows;
+            }
+            $res = self::http()->withHeaders(['Prefer' => 'odata.maxpagesize=500'])->baseUrl('')->get($page['@odata.nextLink']);
+        }
+    }
+
     public static function find(string $table, string $id, array $query = []): array
     {
         return self::check(self::http()->get("{$table}({$id})", $query));

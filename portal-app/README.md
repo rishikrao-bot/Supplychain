@@ -24,6 +24,10 @@ Laravel 12 application for the live reactive maintenance portal at
 - Email: sends through Microsoft 365 (Rishi's mailbox for now); if sending isn't set up, invite links
   are shown on screen to copy.
 
+- CRM (Compass admin, helpdesk and finance): companies (clients, prospects, suppliers, partners), contacts,
+  activity history (notes, calls, meetings, saved Outlook emails), pipeline & tenders with return dates and
+  win rate, and tasks that sync both ways with each person's Microsoft To Do. One-off import from the old
+  Dataverse CRM: `php artisan portal:crm-import`.
 - Microsoft 365 (optional, see `MICROSOFT.md`): Compass staff can sign in with Microsoft; completion
   reports are copied to a SharePoint library by client and contract; a Dataverse CRM connection for
   syncing clients and jobs. Compass admins test it all under **Microsoft 365**.
