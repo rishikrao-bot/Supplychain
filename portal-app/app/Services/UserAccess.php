@@ -34,7 +34,7 @@ class UserAccess
             return collect();
         }
         if ($actor->isCompassAdmin()) {
-            return Organisation::orderByRaw("CASE type WHEN 'compass' THEN 0 WHEN 'client' THEN 1 ELSE 2 END")->orderBy('name')->get();
+            return Organisation::whereIn('type', Organisation::PORTAL_TYPES)->orderByRaw("CASE type WHEN 'compass' THEN 0 WHEN 'client' THEN 1 ELSE 2 END")->orderBy('name')->get();
         }
 
         return Organisation::whereKey($actor->organisation_id)->get();

@@ -14,9 +14,20 @@ class Organisation extends Model
     public const COMPASS = 'compass';
     public const CLIENT = 'client';
     public const PARTNER = 'partner';
+    // CRM-only companies: nobody from them logs in to the portal.
+    public const PROSPECT = 'prospect';
+    public const SUPPLIER = 'supplier';
+    public const OTHER = 'other';
+
+    /** Types that can have portal users. */
+    public const PORTAL_TYPES = [self::COMPASS, self::CLIENT, self::PARTNER];
+
+    public const CRM_TYPES = [self::CLIENT => 'Client', self::PROSPECT => 'Prospect', self::PARTNER => 'Supply chain partner',
+        self::SUPPLIER => 'Supplier', self::OTHER => 'Other'];
 
     protected $fillable = ['account_id', 'type', 'name', 'contact_name', 'contact_phone', 'contact_email', 'address',
-        'partner_type', 'zones', 'job_limit', 'vat_registered', 'cis_status', 'rates', 'suspended_at', 'settings', 'notes'];
+        'partner_type', 'zones', 'job_limit', 'vat_registered', 'cis_status', 'rates', 'suspended_at', 'settings', 'notes',
+        'phone', 'email', 'website', 'postcode', 'sector', 'owner_id', 'dataverse_id'];
 
     protected $casts = ['zones' => 'array', 'rates' => 'array', 'settings' => 'array', 'vat_registered' => 'boolean',
         'suspended_at' => 'datetime', 'job_limit' => 'decimal:2'];
@@ -39,6 +50,36 @@ class Organisation extends Model
     public function contracts(): HasMany
     {
         return $this->hasMany(Contract::class, 'client_id');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class)->orderBy('first_name');
+    }
+
+    public function opportunities(): HasMany
+    {
+        return $this->hasMany(Opportunity::class);
+    }
+
+    public function crmActivities(): HasMany
+    {
+        return $this->hasMany(CrmActivity::class)->latest('occurred_at');
+    }
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function owner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function typeLabel(): string
+    {
+        return self::CRM_TYPES[$this->type] ?? ucfirst($this->type);
     }
 
     public function isCompass(): bool { return $this->type === self::COMPASS; }

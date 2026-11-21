@@ -24,6 +24,19 @@ Laravel 12 application for the live reactive maintenance portal at
 - Email: sends through Microsoft 365 (Rishi's mailbox for now); if sending isn't set up, invite links
   are shown on screen to copy.
 
+- CRM (Compass admin, helpdesk and finance): companies (clients, prospects, suppliers, partners), contacts,
+  activity history (notes, calls, meetings, saved Outlook emails), pipeline & tenders with return dates and
+  win rate, and tasks that sync both ways with each person's Microsoft To Do. One-off import from the old
+  Dataverse CRM: `php artisan portal:crm-import`.
+- Resource planner (replaces the Resources Tracker spreadsheet, see `RESOURCES.md`): one project list, people,
+  days per project per week, utilisation by week with over-booking in red, "plan several weeks at once",
+  CSV export, and an import of the old spreadsheet (`php artisan portal:resources-import file.xlsx`).
+- Management reports and data API (see `POWERBI.md`): Power BI reports embedded for chosen roles; a read-only,
+  key-protected JSON API (`/api/v1/...`) for Power BI refresh, Power Automate and future agents.
+- Microsoft 365 (optional, see `MICROSOFT.md`): Compass staff can sign in with Microsoft; completion
+  reports are copied to a SharePoint library by client and contract; a Dataverse CRM connection for
+  syncing clients and jobs. Compass admins test it all under **Microsoft 365**.
+
 - Set-up screens (Compass admin and helpdesk):
   - Sites: register by client and contract, with zone, contacts, access, asbestos notes and GPS.
   - Contractors: contact details, type, zones, job limit, their rates, competencies (multi-select with
@@ -43,4 +56,4 @@ Laravel 12 application for the live reactive maintenance portal at
 
 Tests: `php artisan test`
 
-See `DEPLOY.md` for the hosting set-up.
+See `DEPLOY.md` for the hosting set-up and `MICROSOFT.md` for Microsoft 365 (staff sign-in, SharePoint, Dataverse CRM).

@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected $fillable = ['account_id', 'organisation_id', 'name', 'email', 'phone', 'role', 'job_title', 'status',
         'password', 'invited_at', 'invited_by', 'last_login_at', 'disabled_at'];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'invite_token_hash'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'invite_token_hash', 'microsoft_oid', 'microsoft_refresh_token'];
 
     protected function casts(): array
     {
@@ -33,6 +33,9 @@ class User extends Authenticatable
             'invited_at' => 'datetime',
             'last_login_at' => 'datetime',
             'disabled_at' => 'datetime',
+            'microsoft_refresh_token' => 'encrypted',
+            'microsoft_connected_at' => 'datetime',
+            'todo_synced_at' => 'datetime',
         ];
     }
 
@@ -60,6 +63,18 @@ class User extends Authenticatable
     public function isCompassStaff(): bool
     {
         return $this->isCompass() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK], true);
+    }
+
+    /** Compass office staff (admin, helpdesk, finance) use the CRM. Engineers don't. */
+    public function canUseCrm(): bool
+    {
+        return $this->isCompass() && in_array($this->role, [Roles::ADMIN, Roles::HELPDESK, Roles::FINANCE], true) && $this->isActive();
+    }
+
+    /** Outlook and To Do are connected for this person. */
+    public function hasMicrosoft(): bool
+    {
+        return $this->microsoft_refresh_token !== null;
     }
 
     /** Can this person add or change users at all? */
