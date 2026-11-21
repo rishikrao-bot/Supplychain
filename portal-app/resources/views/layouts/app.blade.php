@@ -23,6 +23,7 @@
     <a href="{{ route('competencies.index') }}" @if(request()->routeIs('competencies.*')) aria-current="page" @endif>Competencies</a>
     <a href="{{ route('rules.index') }}" @if(request()->routeIs('rules.*')) aria-current="page" @endif>Rates &amp; rules</a>
     @endif
+    @if($me->isCompassAdmin())<a href="{{ route('integrations.index') }}" @if(request()->routeIs('integrations.*')) aria-current="page" @endif>Microsoft 365</a>@endif
     <span class="soon small">Jobs, orders and the engineer app are being built</span>
   </nav>
   <main><div class="wrap">

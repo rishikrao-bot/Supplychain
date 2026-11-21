@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected $fillable = ['account_id', 'organisation_id', 'name', 'email', 'phone', 'role', 'job_title', 'status',
         'password', 'invited_at', 'invited_by', 'last_login_at', 'disabled_at'];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'invite_token_hash'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'invite_token_hash', 'microsoft_oid'];
 
     protected function casts(): array
     {

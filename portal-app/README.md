@@ -24,6 +24,10 @@ Laravel 12 application for the live reactive maintenance portal at
 - Email: sends through Microsoft 365 (Rishi's mailbox for now); if sending isn't set up, invite links
   are shown on screen to copy.
 
+- Microsoft 365 (optional, see `MICROSOFT.md`): Compass staff can sign in with Microsoft; completion
+  reports are copied to a SharePoint library by client and contract; a Dataverse CRM connection for
+  syncing clients and jobs. Compass admins test it all under **Microsoft 365**.
+
 - Set-up screens (Compass admin and helpdesk):
   - Sites: register by client and contract, with zone, contacts, access, asbestos notes and GPS.
   - Contractors: contact details, type, zones, job limit, their rates, competencies (multi-select with
@@ -43,4 +47,4 @@ Laravel 12 application for the live reactive maintenance portal at
 
 Tests: `php artisan test`
 
-See `DEPLOY.md` for the hosting set-up.
+See `DEPLOY.md` for the hosting set-up and `MICROSOFT.md` for Microsoft 365 (staff sign-in, SharePoint, Dataverse CRM).

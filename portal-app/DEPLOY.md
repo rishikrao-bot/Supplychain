@@ -105,3 +105,18 @@ job (stored under `storage/app/private/reports/`). Compass staff, the job's clie
 who did the work can download it at `/portal/jobs/{id}/completion-report.pdf`. It shows no prices.
 A sample is in `docs/sample-completion-report.pdf`. Back up `storage/app/private` along with the
 database.
+
+## Scheduled tasks (cron job, once)
+
+The portal runs small background tasks (for example retrying SharePoint copies every 15 minutes).
+In cPanel → **Cron Jobs** → Add New Cron Job, "Once Per Minute" (`* * * * *`), command:
+
+    cd ~/compass-portal/portal-app && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
+
+(If `php -v` on the server shows a different PHP than 8.3, use the path cPanel's MultiPHP gives for 8.3,
+e.g. `/opt/cpanel/ea-php83/root/usr/bin/php`.)
+
+## Microsoft 365 (sign-in, SharePoint, Dataverse)
+
+See `MICROSOFT.md`. After an update that adds it, run `php artisan migrate --force` (adds one column
+to users) and then `php artisan portal:microsoft-check`.

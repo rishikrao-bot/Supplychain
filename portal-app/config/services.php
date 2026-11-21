@@ -35,4 +35,26 @@ return [
         ],
     ],
 
+    /*
+    | Microsoft 365: one app registration in Compass's Microsoft Entra ID gives the portal
+    | Microsoft sign-in for Compass staff, SharePoint (through Microsoft Graph) and Dataverse.
+    | Set-up steps: MICROSOFT.md. The secret is typed into .env on the server only.
+    */
+    'microsoft' => [
+        'tenant_id' => env('MICROSOFT_TENANT_ID'),
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+
+        // "Sign in with Microsoft" on the login page, for Compass staff only.
+        'sign_in' => (bool) env('MICROSOFT_SIGN_IN', false),
+
+        // SharePoint site that receives documents, e.g. compassmep.sharepoint.com:/sites/Operations
+        'sharepoint_site' => env('SHAREPOINT_SITE'),
+        'sharepoint_library' => env('SHAREPOINT_LIBRARY', 'Documents'),
+        'sharepoint_folder' => env('SHAREPOINT_FOLDER', 'Portal/Completion reports'),
+
+        // Dataverse environment URL, e.g. https://compassmep.crm11.dynamics.com
+        'dataverse_url' => env('DATAVERSE_URL'),
+    ],
+
 ];
