@@ -53,7 +53,7 @@ return [
         'sharepoint_library' => env('SHAREPOINT_LIBRARY', 'Documents'),
         'sharepoint_folder' => env('SHAREPOINT_FOLDER', 'Portal/Completion reports'),
 
-        // Dataverse environment URL, e.g. https://compassmepdev.crm17.dynamics.com
+        // Dataverse environment URL, e.g. https://yourorg.crm11.dynamics.com
         'dataverse_url' => env('DATAVERSE_URL'),
     ],
 

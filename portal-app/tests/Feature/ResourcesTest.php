@@ -27,11 +27,11 @@ class ResourcesTest extends PortalTestCase
 
     public function test_office_staff_view_but_only_admins_change_the_plan(): void
     {
-        $paul = $this->person('Paul Carless');
+        $paul = $this->person('Pat Example');
         $p = $this->proj('P0189', 'Westbury Hotel');
         $week = Weeks::ending()->toDateString();
 
-        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->get('/resources')->assertOk()->assertSee('Paul Carless');
+        $this->signIn($this->makeUser($this->compass, 'helpdesk'))->get('/resources')->assertOk()->assertSee('Pat Example');
         $this->get("/resources/people/{$paul->id}")->assertOk()->assertDontSee('Save changes');
         $this->post('/resources/save', ['cells' => ["{$p->id}-{$paul->id}" => [$week => 2]]])->assertForbidden();
         $this->signIn($this->makeUser($this->compass, 'engineer'))->get('/resources')->assertForbidden();
@@ -43,7 +43,7 @@ class ResourcesTest extends PortalTestCase
 
     public function test_grid_save_rounds_to_half_days_and_blank_removes(): void
     {
-        $paul = $this->person('Paul Carless');
+        $paul = $this->person('Pat Example');
         $p = $this->proj('P0189', 'Westbury Hotel');
         [$w1, $w2] = Weeks::range(Weeks::ending(), 2);
         $this->signIn($this->makeUser($this->compass, 'admin'));
@@ -55,7 +55,7 @@ class ResourcesTest extends PortalTestCase
 
     public function test_fill_weeks_and_utilisation_shows_over_100_percent(): void
     {
-        $paul = $this->person('Paul Carless');
+        $paul = $this->person('Pat Example');
         $a = $this->proj('P0189', 'Westbury Hotel');
         $b = $this->proj('P0212', 'Newark Castle');
         $from = Weeks::ending();
@@ -92,13 +92,13 @@ class ResourcesTest extends PortalTestCase
 
     public function test_csv_export(): void
     {
-        $paul = $this->person('Paul Carless');
+        $paul = $this->person('Pat Example');
         $p = $this->proj('P0189', 'Westbury Hotel');
         Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $paul->id, 'week' => Weeks::ending()->toDateString(), 'days' => 2]);
         $res = $this->signIn($this->makeUser($this->compass, 'finance'))->get('/resources/export.csv?from='.Weeks::ending()->toDateString());
         $res->assertOk();
         $csv = $res->streamedContent();
-        $this->assertStringContainsString('"Paul Carless","Project Management",P0189,"Westbury Hotel",2,', $csv);
+        $this->assertStringContainsString('"Pat Example","Project Management",P0189,"Westbury Hotel",2,', $csv);
     }
 
     // ---- Import of the old spreadsheet ----------------------------------------------------------
@@ -226,7 +226,7 @@ class ResourcesTest extends PortalTestCase
 
     public function test_api_needs_a_valid_key_and_returns_tables(): void
     {
-        $paul = $this->person('Paul Carless');
+        $paul = $this->person('Pat Example');
         $p = $this->proj('P0189', 'Westbury Hotel', ['days_allowed' => 20]);
         Allocation::create(['account_id' => $this->account->id, 'project_id' => $p->id, 'staff_id' => $paul->id, 'week' => '2026-11-27', 'days' => 4]);
         Opportunity::create(['account_id' => $this->account->id, 'title' => 'Big tender', 'stage' => 'pricing', 'kind' => 'tender', 'value' => 100000, 'probability' => 40]);
@@ -242,7 +242,7 @@ class ResourcesTest extends PortalTestCase
         $this->getJson('/api/v1/projects', ['Authorization' => 'Bearer '.$secret])->assertOk()
             ->assertJsonPath('value.0.number', 'P0189')->assertJsonPath('value.0.days_planned', 4);
         $this->getJson('/api/v1/utilisation?key='.$secret)->assertOk()
-            ->assertJsonPath('value.0.name', 'Paul Carless')->assertJsonPath('value.0.utilisation_pct', 80);
+            ->assertJsonPath('value.0.name', 'Pat Example')->assertJsonPath('value.0.utilisation_pct', 80);
         $this->getJson('/api/v1/opportunities', ['X-Api-Key' => $secret])->assertOk()->assertJsonPath('value.0.weighted_value', 40000);
         foreach (\App\Http\Controllers\Api\DataController::TABLES as $t) {
             $this->getJson("/api/v1/{$t}?key={$secret}")->assertOk()->assertJsonStructure(['value']);

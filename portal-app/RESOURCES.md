@@ -26,8 +26,8 @@ Upload the latest copy of the tracker to the server (e.g. with cPanel File Manag
     php artisan portal:resources-import ~/Compass_MEP_Resources_Tracker.xlsx --dry-run
     php artisan portal:resources-import ~/Compass_MEP_Resources_Tracker.xlsx
 
-- **People** come from each person's sheet name (the name cell is ignored: several sheets still say
-  "Reuben Bisla"). Position and team come from the Utilisation sheet. Hidden sheets come in as not shown.
+- **People** come from each person's sheet name (the name cell is ignored: several sheets still show
+  a name copied from another sheet). Position and team come from the Utilisation sheet. Hidden sheets come in as not shown.
 - **Projects** come from one combined list: the master list (lead, type, client, completion) plus every project
   typed into any sheet. They're matched by project number, or by name for "TBC" projects.
 - **Figures** are converted from fractions of a week to days (0.2 → 1 day, 0.1 → ½ day).
@@ -37,5 +37,5 @@ Upload the latest copy of the tracker to the server (e.g. with cPanel File Manag
 Checked against the October tracker: 16 people, 50 projects, 699 weekly entries. Every person's weekly total
 (1,024 of them) matches the spreadsheet's own Total rows exactly.
 
-After importing: set start dates for new starters (e.g. Mick Shipp, Danny Akers), working days for anyone
+After importing: set start dates for new starters, working days for anyone
 part-time, and days allowed on projects (the spreadsheet's master list had none filled in).

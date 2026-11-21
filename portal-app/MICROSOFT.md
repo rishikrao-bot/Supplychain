@@ -84,7 +84,7 @@ Settings:
 ## 4. Give the app access to Dataverse
 
 1. <https://admin.powerplatform.microsoft.com> → **Environments** → your CRM environment.
-   Copy the **Environment URL** (e.g. `https://compassmepdev.crm17.dynamics.com`) → `DATAVERSE_URL`.
+   Copy the **Environment URL** (e.g. `https://yourorg.crm11.dynamics.com`) → `DATAVERSE_URL`.
 2. **Settings → Users + permissions → Application users → New app user → Add an app** → pick
    `Compass MEP Portal`. Business unit: the top one.
 3. Security role: for now **Basic User** plus read/write on the tables the portal should use.
@@ -107,7 +107,7 @@ Add (the secret is typed in here only; never email it or commit it):
     SHAREPOINT_SITE=compassmep.sharepoint.com:/sites/Operations
     SHAREPOINT_LIBRARY=Documents
     SHAREPOINT_FOLDER="Portal/Completion reports"
-    DATAVERSE_URL=https://compassmepdev.crm17.dynamics.com
+    DATAVERSE_URL=https://yourorg.crm11.dynamics.com
 
 Then:
 
@@ -122,7 +122,7 @@ Make sure the scheduler cron job from DEPLOY.md is set up: it retries SharePoint
 ## Moving the old CRM across (once)
 
 The portal has its own CRM now (Companies, Contacts, Pipeline & tenders, Tasks). To bring over what's in
-Dataverse (`compassmepdev`), after steps 1, 4 and 5:
+Dataverse, after steps 1, 4 and 5:
 
     php artisan portal:crm-import --dry-run    # shows how many of each it found; saves nothing
     php artisan portal:crm-import

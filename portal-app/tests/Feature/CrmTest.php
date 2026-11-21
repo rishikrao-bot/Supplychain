@@ -23,7 +23,7 @@ class CrmTest extends PortalTestCase
         config(['services.microsoft' => [
             'tenant_id' => self::TENANT, 'client_id' => self::CLIENT, 'client_secret' => 'test-secret', 'sign_in' => true,
             'sharepoint_site' => null, 'sharepoint_library' => 'Documents', 'sharepoint_folder' => 'Portal',
-            'dataverse_url' => 'https://compassmepdev.crm17.dynamics.com',
+            'dataverse_url' => 'https://example.crm11.dynamics.com',
         ]]);
     }
 
@@ -321,7 +321,7 @@ class CrmTest extends PortalTestCase
     public function test_import_from_dataverse_and_rerun_without_duplicates(): void
     {
         $owner = $this->staff('admin', ['email' => 'rishi.rao@compass-mep.com']);
-        $base = 'compassmepdev.crm17.dynamics.com/api/data/v9.2/';
+        $base = 'example.crm11.dynamics.com/api/data/v9.2/';
         Http::fake([
             'login.microsoftonline.com/*' => Http::response(['access_token' => 'tok', 'expires_in' => 3600]),
             $base.'systemusers*' => Http::response(['value' => [['systemuserid' => 'su-1', 'internalemailaddress' => 'Rishi.Rao@compass-mep.com']]]),
